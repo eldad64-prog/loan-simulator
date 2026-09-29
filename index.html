@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2563eb">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="סימולטור הלוואות">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>סימולטור הלוואות</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:#172033;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+main{max-width:620px;margin:auto;padding:18px}.app{background:#fff;border:1px solid #dfe5ec;border-radius:22px;padding:20px;box-shadow:0 8px 30px #17203312}
+h1{font-size:24px;margin:0 0 5px}.sub{color:#687386;font-size:14px;margin-bottom:22px}
+label{display:block;font-weight:750;margin:15px 0 7px}.wrap{display:flex;direction:ltr;border:1px solid #d8dee8;border-radius:13px;overflow:hidden;background:#fff;min-height:52px}
+input{width:100%;border:0;outline:0;padding:0 14px;font-size:19px;text-align:right;color:#172033}.unit{min-width:52px;display:grid;place-items:center;background:#eef2f6;color:#596579;font-weight:700}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.card{border:1px solid #dfe5ec;border-radius:16px;padding:14px;background:#fff}.main{grid-column:1/-1;background:#eaf1ff;border-color:#cbdafa}.k{font-size:12px;color:#687386}.v{font-size:22px;font-weight:850;margin-top:5px;overflow-wrap:anywhere}.main .v{font-size:31px}
+.note{margin-top:18px;padding:13px;border:1px dashed #d6dce5;border-radius:14px;color:#687386;font-size:13px;line-height:1.65}
+@media(max-width:480px){main{padding:10px}.app{padding:16px}.grid{grid-template-columns:1fr}.main{grid-column:auto}}
+</style>
+</head>
+<body>
+<main><section class="app">
+<h1>סימולטור עמלה חודשית</h1>
+<div class="sub">העמלה מחושבת בכל חודש על סכום ההשקעה המקורי — ללא ריבית דריבית.</div>
+
+<label>סכום התחלתי</label>
+<div class="wrap"><input id="capital" type="number" min="0" step="1000" value="100000" inputmode="decimal"><span class="unit">฿</span></div>
+
+<label>עמלה חודשית</label>
+<div class="wrap"><input id="fee" type="number" min="0" max="100" step="0.01" value="20" inputmode="decimal"><span class="unit">%</span></div>
+
+<label>מספר שנות השקעה</label>
+<div class="wrap"><input id="years" type="number" min="1" max="50" step="1" value="1" inputmode="numeric"><span class="unit">ש׳</span></div>
+
+<div class="grid" aria-live="polite">
+<div class="card main"><div class="k">סכום כולל בסוף התקופה</div><div class="v" id="final">฿0</div></div>
+<div class="card"><div class="k">הכנסה חודשית מהעמלה</div><div class="v" id="monthly">฿0</div></div>
+<div class="card"><div class="k">רווח שנתי</div><div class="v" id="yearly">฿0</div></div>
+<div class="card"><div class="k">סך הרווח בתקופה</div><div class="v" id="profit">฿0</div></div>
+<div class="card"><div class="k">מספר חודשי גבייה</div><div class="v" id="months">0</div></div>
+</div>
+
+<div class="note"><b>המודל:</b> הכנסה חודשית = סכום התחלתי × עמלה חודשית. הרווח בתקופה = הכנסה חודשית × מספר החודשים. הקרן אינה גדלה מהרווחים, ולכן אין כאן ריבית דריבית.</div>
+</section></main>
+<script>
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+const $=id=>document.getElementById(id);
+const money=n=>new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(Math.max(0,n));
+function calc(){
+ const c=Math.max(0,Number($('capital').value)||0);
+ const f=Math.max(0,Math.min(100,Number($('fee').value)||0))/100;
+ const y=Math.max(1,Math.min(50,Number($('years').value)||1));
+ const m=y*12, monthly=c*f, profit=monthly*m, final=c+profit;
+ $('monthly').textContent='฿'+money(monthly);
+ $('yearly').textContent='฿'+money(monthly*12);
+ $('profit').textContent='฿'+money(profit);
+ $('final').textContent='฿'+money(final);
+ $('months').textContent=m;
+}
+document.querySelectorAll('input').forEach(x=>x.addEventListener('input',calc));calc();
+</script>
+</body></html>
