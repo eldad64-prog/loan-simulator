@@ -2,65 +2,207 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#2563eb">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="סימולטור הלוואות">
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon.svg">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>סימולטור הלוואות</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>סימולטור הלוואות – תיקי סוכנים</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:#172033;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
-main{max-width:620px;margin:auto;padding:18px}.app{background:#fff;border:1px solid #dfe5ec;border-radius:22px;padding:20px;box-shadow:0 8px 30px #17203312}
-h1{font-size:24px;margin:0 0 5px}.sub{color:#687386;font-size:14px;margin-bottom:22px}
-label{display:block;font-weight:750;margin:15px 0 7px}.wrap{display:flex;direction:ltr;border:1px solid #d8dee8;border-radius:13px;overflow:hidden;background:#fff;min-height:52px}
-input{width:100%;border:0;outline:0;padding:0 14px;font-size:19px;text-align:right;color:#172033}.unit{min-width:52px;display:grid;place-items:center;background:#eef2f6;color:#596579;font-weight:700}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.card{border:1px solid #dfe5ec;border-radius:16px;padding:14px;background:#fff}.main{grid-column:1/-1;background:#eaf1ff;border-color:#cbdafa}.k{font-size:12px;color:#687386}.v{font-size:22px;font-weight:850;margin-top:5px;overflow-wrap:anywhere}.main .v{font-size:31px}
-.note{margin-top:18px;padding:13px;border:1px dashed #d6dce5;border-radius:14px;color:#687386;font-size:13px;line-height:1.65}
-@media(max-width:480px){main{padding:10px}.app{padding:16px}.grid{grid-template-columns:1fr}.main{grid-column:auto}}
+body{font-family:Arial,sans-serif;background:#f5f6f8;margin:0;padding:16px;color:#17202a}
+.wrap{max-width:1000px;margin:auto}.card{background:#fff;border:1px solid #ddd;border-radius:14px;padding:16px;margin-bottom:14px}
+h1{font-size:24px;margin:0 0 5px}h2{font-size:18px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+label{display:block;font-size:13px;color:#59636e;margin-bottom:5px}
+input,select{width:100%;box-sizing:border-box;padding:11px;border:1px solid #ccc;border-radius:9px;font-size:16px}
+button{padding:11px 15px;border:0;border-radius:9px;margin:4px 2px;cursor:pointer;font-size:15px}
+.primary{background:#2563eb;color:white}.secondary{background:#e8eefc}.danger{background:#fee2e2;color:#991b1b}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.stat{border:1px solid #ddd;border-radius:10px;padding:10px}
+.stat small{display:block;color:#69727d}.stat b{font-size:18px}
+.scroll{overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:9px;border-bottom:1px solid #ddd;text-align:right;white-space:nowrap}
+.notice{color:#59636e;font-size:13px}.hidden{display:none}.search{margin-bottom:10px}
+.backup-item{border:1px solid #ddd;border-radius:10px;padding:10px;margin:7px 0}
+@media(max-width:650px){.grid,.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child{grid-column:span 2}}
+@media(max-width:430px){.grid,.stats{grid-template-columns:1fr}.stats .stat:last-child{grid-column:auto}}
 </style>
 </head>
 <body>
-<main><section class="app">
-<h1>סימולטור עמלה חודשית</h1>
-<div class="sub">העמלה מחושבת בכל חודש על סכום ההשקעה המקורי — ללא ריבית דריבית.</div>
-
-<label>סכום התחלתי</label>
-<div class="wrap"><input id="capital" type="number" min="0" step="1000" value="100000" inputmode="decimal"><span class="unit">฿</span></div>
-
-<label>עמלה חודשית</label>
-<div class="wrap"><input id="fee" type="number" min="0" max="100" step="0.01" value="20" inputmode="decimal"><span class="unit">%</span></div>
-
-<label>מספר שנות השקעה</label>
-<div class="wrap"><input id="years" type="number" min="1" max="50" step="1" value="1" inputmode="numeric"><span class="unit">ש׳</span></div>
-
-<div class="grid" aria-live="polite">
-<div class="card main"><div class="k">סכום כולל בסוף התקופה</div><div class="v" id="final">฿0</div></div>
-<div class="card"><div class="k">הכנסה חודשית מהעמלה</div><div class="v" id="monthly">฿0</div></div>
-<div class="card"><div class="k">רווח שנתי</div><div class="v" id="yearly">฿0</div></div>
-<div class="card"><div class="k">סך הרווח בתקופה</div><div class="v" id="profit">฿0</div></div>
-<div class="card"><div class="k">מספר חודשי גבייה</div><div class="v" id="months">0</div></div>
+<div class="wrap">
+<div class="card">
+<h1>סימולטור הלוואות – תיקי סוכנים</h1>
+<div class="notice">הנתונים נשמרים אוטומטית במכשיר. כל סוכן מחזיק תיק עצמאי.</div>
 </div>
 
-<div class="note"><b>המודל:</b> הכנסה חודשית = סכום התחלתי × עמלה חודשית. הרווח בתקופה = הכנסה חודשית × מספר החודשים. הקרן אינה גדלה מהרווחים, ולכן אין כאן ריבית דריבית.</div>
-</section></main>
+<div class="card">
+<h2>תיק סוכן</h2>
+<div class="grid">
+<div><label>בחירת סוכן</label><select id="agentSelect"></select></div>
+<div><label>שם הסוכן</label><input id="agentName" placeholder="שם הסוכן"></div>
+</div>
+<button class="primary" id="newAgent">＋ סוכן חדש</button>
+<button class="secondary" id="saveAgent">שמור שם</button>
+<button class="danger" id="deleteAgent">מחק תיק</button>
+<div id="newAgentBox" class="hidden">
+<label>שם הסוכן החדש</label><input id="newAgentName" placeholder="לדוגמה: Somchai">
+<button class="primary" id="createAgent">צור תיק</button><button class="secondary" id="cancelAgent">ביטול</button>
+</div>
+</div>
+
+<div class="card">
+<h2>עמלות</h2>
+<div class="grid">
+<div><label>עמלה חודשית כללית (%)</label><input id="monthlyFee" type="number" min="0" step=".1"></div>
+<div><label>עמלת הסוכן מתוך העמלה (%)</label><input id="agentFee" type="number" min="0" step=".1"></div>
+</div>
+</div>
+
+<div class="card">
+<h2>הוספת לקוח</h2>
+<div class="grid">
+<div><label>שם הלקוח</label><input id="clientName" placeholder="שם הלקוח"></div>
+<div><label>סכום הלוואה (฿)</label><input id="amount" type="number" min="1" placeholder="30000"></div>
+<div><label>תקופת הלוואה (חודשים)</label><input id="months" type="number" min="1" value="12"></div>
+<div><label>סטטוס</label><select id="status"><option>פעיל</option><option>הסתיים</option><option>בעייתי</option></select></div>
+</div>
+<button class="primary" id="addClient">＋ הוסף לקוח</button>
+</div>
+
+<div class="card">
+<h2>סיכום התיק</h2>
+<div class="stats">
+<div class="stat"><small>לקוחות</small><b id="count">0</b></div>
+<div class="stat"><small>סך הלוואות</small><b id="total">฿0</b></div>
+<div class="stat"><small>עמלה חודשית</small><b id="gross">฿0</b></div>
+<div class="stat"><small>עמלה שנתית</small><b id="annual">฿0</b></div>
+</div>
+<div class="stats" style="margin-top:9px">
+<div class="stat"><small>חלק הסוכן חודשי</small><b id="agentMonthly">฿0</b></div>
+<div class="stat"><small>חלק הסוכן שנתי</small><b id="agentAnnual">฿0</b></div>
+</div>
+</div>
+
+<div class="card">
+<h2>רשימת לקוחות</h2>
+<input class="search" id="search" placeholder="חיפוש לקוח...">
+<div id="empty" class="notice">אין לקוחות בתיק.</div>
+<div id="tableWrap" class="scroll hidden">
+<table><thead><tr>
+<th>לקוח</th><th>הלוואה</th><th>חודשים</th><th>עמלה חודשית</th><th>עמלה שנתית</th><th>חלק הסוכן</th><th>סטטוס</th><th></th>
+</tr></thead><tbody id="rows"></tbody></table>
+</div>
+<button class="primary" id="reportBtn">📄 הצג דוח</button>
+</div>
+
+<div class="card">
+<h2>גיבוי ושחזור</h2>
+<button class="primary" id="backupBtn">💾 הורד גיבוי</button>
+<button class="secondary" id="showBackupBtn">👁 הצג גיבוי</button>
+<button class="secondary" id="restoreBtn">↩ שחזור מגיבוי</button>
+<input id="restoreFile" type="file" accept=".json,application/json" class="hidden">
+<div class="notice">הגיבוי כולל את כל תיקי הסוכנים והלקוחות.</div>
+</div>
+
+<div class="card hidden" id="reportBox"><h2>דוח תיק</h2><div id="report"></div></div>
+<div class="card hidden" id="backupBox"><h2>תוכן הגיבוי</h2><div id="backupView"></div></div>
+<div id="message" class="notice"></div>
+</div>
+
 <script>
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+const KEY='loan_agent_manager_v1';
+let db=[],active=0;
 const $=id=>document.getElementById(id);
-const money=n=>new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(Math.max(0,n));
-function calc(){
- const c=Math.max(0,Number($('capital').value)||0);
- const f=Math.max(0,Math.min(100,Number($('fee').value)||0))/100;
- const y=Math.max(1,Math.min(50,Number($('years').value)||1));
- const m=y*12, monthly=c*f, profit=monthly*m, final=c+profit;
- $('monthly').textContent='฿'+money(monthly);
- $('yearly').textContent='฿'+money(monthly*12);
- $('profit').textContent='฿'+money(profit);
- $('final').textContent='฿'+money(final);
- $('months').textContent=m;
+const money=n=>'฿'+Math.round(Number(n)||0).toLocaleString('en-US');
+
+function save(){localStorage.setItem(KEY,JSON.stringify({version:1,agents:db}));}
+function load(){
+ try{
+  const x=JSON.parse(localStorage.getItem(KEY)||'null');
+  if(x&&Array.isArray(x.agents)&&x.agents.length){db=x.agents;return}
+ }catch(e){}
+ db=[{name:'סוכן 1',fee:5,agentFee:20,clients:[]}];active=0;save();
 }
-document.querySelectorAll('input').forEach(x=>x.addEventListener('input',calc));calc();
+function esc(s){return String(s).replace(/[&<>"]/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[x]));}
+function current(){return db[active];}
+
+function render(){
+ const a=current(),sel=$('agentSelect');
+ sel.innerHTML='';
+ db.forEach((x,i)=>{let o=document.createElement('option');o.value=i;o.textContent=x.name||('סוכן '+(i+1));sel.appendChild(o)});
+ sel.value=active;
+ $('agentName').value=a.name;$('monthlyFee').value=a.fee;$('agentFee').value=a.agentFee;
+ const q=$('search').value.trim().toLowerCase();
+ let total=0,gross=0,agent=0,shown=0;const rows=$('rows');rows.innerHTML='';
+ a.clients.forEach((c,i)=>{
+  const g=c.amount*a.fee/100,p=g*a.agentFee/100;
+  total+=c.amount;gross+=g;agent+=p;
+  if(q&&!c.name.toLowerCase().includes(q))return;
+  shown++;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td>${esc(c.name)}</td><td>${money(c.amount)}</td><td>${c.months}</td><td>${money(g)}</td><td>${money(g*12)}</td><td>${money(p)}</td><td>${esc(c.status)}</td><td><button class="danger" onclick="deleteClient(${i})">מחק</button></td>`;
+  rows.appendChild(tr);
+ });
+ $('count').textContent=a.clients.length;$('total').textContent=money(total);$('gross').textContent=money(gross);$('annual').textContent=money(gross*12);
+ $('agentMonthly').textContent=money(agent);$('agentAnnual').textContent=money(agent*12);
+ $('empty').classList.toggle('hidden',a.clients.length>0);
+ $('tableWrap').classList.toggle('hidden',shown===0);
+ save();
+}
+window.deleteClient=i=>{current().clients.splice(i,1);render();};
+
+$('agentSelect').onchange=e=>{active=Number(e.target.value);$('reportBox').classList.add('hidden');render()};
+$('newAgent').onclick=()=>{$('newAgentBox').classList.remove('hidden');$('newAgentName').value='';$('newAgentName').focus()};
+$('cancelAgent').onclick=()=>{$('newAgentBox').classList.add('hidden')};
+$('createAgent').onclick=()=>{
+ const n=$('newAgentName').value.trim();
+ if(!n){$('message').textContent='נא להזין שם סוכן.';return}
+ db.push({name:n,fee:5,agentFee:20,clients:[]});active=db.length-1;
+ $('newAgentBox').classList.add('hidden');$('message').textContent='תיק חדש נוצר עבור '+n;render();
+};
+$('saveAgent').onclick=()=>{let n=$('agentName').value.trim();if(n){current().name=n;save();render();$('message').textContent='שם הסוכן נשמר.'}};
+$('deleteAgent').onclick=()=>{if(db.length===1){$('message').textContent='חייב להישאר לפחות תיק אחד.';return}if(confirm('למחוק את התיק?')){db.splice(active,1);active=Math.max(0,active-1);render()}};
+$('monthlyFee').oninput=e=>{current().fee=Math.max(0,Number(e.target.value)||0);render()};
+$('agentFee').oninput=e=>{current().agentFee=Math.max(0,Number(e.target.value)||0);render()};
+$('addClient').onclick=()=>{
+ const n=$('clientName').value.trim(),amount=Number($('amount').value),months=Number($('months').value);
+ if(!n||amount<=0||months<1){$('message').textContent='יש למלא שם לקוח, סכום ותקופה.';return}
+ current().clients.push({name:n,amount,months,status:$('status').value});
+ $('clientName').value='';$('amount').value='';save();render();$('message').textContent='הלקוח נוסף לתיק.';
+};
+$('search').oninput=render;
+
+$('reportBtn').onclick=()=>{
+ const a=current();let total=0,gross=0,agent=0,html=`<p><b>סוכן:</b> ${esc(a.name)}</p><div class="scroll"><table><tr><th>לקוח</th><th>הלוואה</th><th>חודשים</th><th>עמלה חודשית</th><th>עמלה שנתית</th><th>חלק הסוכן</th><th>סטטוס</th></tr>`;
+ a.clients.forEach(c=>{let g=c.amount*a.fee/100,p=g*a.agentFee/100;total+=c.amount;gross+=g;agent+=p;html+=`<tr><td>${esc(c.name)}</td><td>${money(c.amount)}</td><td>${c.months}</td><td>${money(g)}</td><td>${money(g*12)}</td><td>${money(p)}</td><td>${esc(c.status)}</td></tr>`});
+ html+=`</table></div><p><b>סך הלוואות:</b> ${money(total)}<br><b>עמלה חודשית:</b> ${money(gross)}<br><b>עמלה שנתית:</b> ${money(gross*12)}<br><b>חלק הסוכן חודשי:</b> ${money(agent)}<br><b>חלק הסוכן שנתי:</b> ${money(agent*12)}</p>`;
+ $('report').innerHTML=html;$('reportBox').classList.remove('hidden');$('reportBox').scrollIntoView({behavior:'smooth'});
+};
+
+$('backupBtn').onclick=()=>{
+ const blob=new Blob([JSON.stringify({version:1,agents:db},null,2)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='loan-agents-backup.json';a.click();
+ $('message').textContent='קובץ הגיבוי הורד.';
+};
+$('showBackupBtn').onclick=()=>{
+ let html='';
+ db.forEach((a,i)=>{
+  let total=a.clients.reduce((s,c)=>s+c.amount,0);
+  html+=`<div class="backup-item"><b>${i+1}. ${esc(a.name)}</b><br>לקוחות: ${a.clients.length} | סך הלוואות: ${money(total)}<br>`;
+  a.clients.forEach(c=>html+=`• ${esc(c.name)} — ${money(c.amount)} — ${c.months} חודשים — ${esc(c.status)}<br>`);
+  html+='</div>';
+ });
+ $('backupView').innerHTML=html||'אין נתונים';$('backupBox').classList.remove('hidden');$('backupBox').scrollIntoView({behavior:'smooth'});
+};
+$('restoreBtn').onclick=()=>$('restoreFile').click();
+$('restoreFile').onchange=e=>{
+ const f=e.target.files[0];if(!f)return;
+ const r=new FileReader();
+ r.onload=()=>{
+  try{
+   const x=JSON.parse(r.result);
+   if(!Array.isArray(x.agents)||!x.agents.length)throw Error();
+   db=x.agents;active=0;save();render();$('message').textContent='כל התיקים שוחזרו בהצלחה.';
+  }catch(err){$('message').textContent='קובץ הגיבוי אינו תקין.'}
+ };
+ r.readAsText(f);
+};
+load();render();
 </script>
-</body></html>
+</body>
+</html>
