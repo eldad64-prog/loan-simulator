@@ -1,208 +1,1319 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>סימולטור הלוואות – תיקי סוכנים</title>
 <style>
-body{font-family:Arial,sans-serif;background:#f5f6f8;margin:0;padding:16px;color:#17202a}
-.wrap{max-width:1000px;margin:auto}.card{background:#fff;border:1px solid #ddd;border-radius:14px;padding:16px;margin-bottom:14px}
-h1{font-size:24px;margin:0 0 5px}h2{font-size:18px;margin:0 0 12px}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-label{display:block;font-size:13px;color:#59636e;margin-bottom:5px}
-input,select{width:100%;box-sizing:border-box;padding:11px;border:1px solid #ccc;border-radius:9px;font-size:16px}
-button{padding:11px 15px;border:0;border-radius:9px;margin:4px 2px;cursor:pointer;font-size:15px}
-.primary{background:#2563eb;color:white}.secondary{background:#e8eefc}.danger{background:#fee2e2;color:#991b1b}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.stat{border:1px solid #ddd;border-radius:10px;padding:10px}
-.stat small{display:block;color:#69727d}.stat b{font-size:18px}
-.scroll{overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px}
-th,td{padding:9px;border-bottom:1px solid #ddd;text-align:right;white-space:nowrap}
-.notice{color:#59636e;font-size:13px}.hidden{display:none}.search{margin-bottom:10px}
-.backup-item{border:1px solid #ddd;border-radius:10px;padding:10px;margin:7px 0}
-@media(max-width:650px){.grid,.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child{grid-column:span 2}}
-@media(max-width:430px){.grid,.stats{grid-template-columns:1fr}.stats .stat:last-child{grid-column:auto}}
+:root{--blue:#2864e8;--bg:#f3f5f8;--card:#fff;--border:#d9dde3;--text:#20242c;--muted:#73777f;--red:#e65a62}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,sans-serif;color:var(--text)}
+main{max-width:720px;margin:auto;padding:16px}
+.card{background:#fff;border:1px solid var(--border);border-radius:24px;padding:22px;margin-bottom:18px;box-shadow:0 1px 1px #00000005}
+h1{font-size:31px;line-height:1.15;text-align:center;margin:8px 0 12px}
+h2{font-size:26px;margin:0 0 20px}
+h3{font-size:23px;margin:0 0 16px}
+.subtitle{text-align:center;color:#6f747c;font-size:17px;line-height:1.5}
+label{display:block;color:#73777f;font-size:17px;margin:14px 0 7px}
+input,select{width:100%;height:58px;border:1px solid #cfd3d8;border-radius:13px;background:#fff;padding:0 17px;font-size:19px;color:#222}
+button{border:0;border-radius:13px;padding:13px 18px;font-size:18px;font-weight:700;cursor:pointer}
+.primary{background:var(--blue);color:#fff}.soft{background:#e8eefc;color:#222}.danger{background:#fbe0e2;color:#9e3037}.danger-solid{background:#e94e55;color:#fff}.gray{background:#eef0f3;color:#30343a}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:150px}
+.stats{display:grid;grid-template-columns:1fr;gap:10px}
+.stat{border:1px solid #d8dadd;border-radius:18px;padding:16px 20px;background:#fff}
+.stat .label{font-size:18px;color:#767b83}.stat .num{font-size:25px;font-weight:800;margin-top:5px}
+.section-title{font-size:27px;font-weight:800;margin-bottom:16px}
+.search{margin-bottom:13px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th,td{padding:14px 10px;border-bottom:1px solid #e1e3e6;text-align:right;white-space:nowrap;font-size:17px}
+th{font-size:16px}
+.action-buttons{display:flex;gap:7px;flex-wrap:wrap}
+.action-buttons button{padding:9px 11px;font-size:15px}
+.loan-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.loan-box{background:#fff;border:1px solid #e0e3e7;border-radius:12px;padding:13px}
+.loan-box span{display:block;color:#747981;font-size:15px}.loan-box b{font-size:20px;display:block;margin-top:5px}
+.rep-table{min-width:550px}
+.modal-bg{display:none;position:fixed;inset:0;background:#0008;z-index:20;align-items:center;justify-content:center;padding:18px}
+.modal{width:min(560px,100%);background:#fff;border-radius:22px;padding:22px;max-height:90vh;overflow:auto}
+.modal h2{margin-top:0}.note{font-size:15px;color:#73777f;line-height:1.5}
+.warning{background:#fff1f2;border:1px solid #f4c5c9;border-radius:13px;padding:14px;line-height:1.55}
+@media(max-width:520px){main{padding:11px}.card{padding:18px;border-radius:20px}h1{font-size:27px}h2{font-size:24px}.row>*{min-width:130px}.loan-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="wrap">
-<div class="card">
+<main>
+
+<section class="card">
+<div style="background:#e8f0ff;border:2px solid #2864e8;border-radius:14px;padding:13px 15px;margin-bottom:16px;text-align:center;font-weight:800;color:#1747a5">
+✓ גרסה חדשה — עריכת הלוואה, החזרים, תיקון/מחיקת החזר, מחיקת לקוח וריכוז תיקי סוכנים
+</div>
 <h1>סימולטור הלוואות – תיקי סוכנים</h1>
-<div class="notice">הנתונים נשמרים אוטומטית במכשיר. כל סוכן מחזיק תיק עצמאי.</div>
-</div>
+<div class="subtitle">הנתונים נשמרים אוטומטית במכשיר. כל סוכן מחזיק תיק עצמאי.</div>
+</section>
 
-<div class="card">
-<h2>תיק סוכן</h2>
-<div class="grid">
-<div><label>בחירת סוכן</label><select id="agentSelect"></select></div>
-<div><label>שם הסוכן</label><input id="agentName" placeholder="שם הסוכן"></div>
-</div>
+<section class="card">
+<div class="section-title">תיק סוכן</div>
+<label>בחירת סוכן</label>
+<select id="agentSelect"></select>
+
+<label>שם הסוכן</label>
+<input id="agentName" placeholder="שם הסוכן">
+
+<div class="row" style="margin-top:12px">
 <button class="primary" id="newAgent">＋ סוכן חדש</button>
-<button class="secondary" id="saveAgent">שמור שם</button>
+<button class="soft" id="saveAgent">שמור שם</button>
+<button class="primary" id="portfolioSummary">📊 ריכוז תיקי סוכנים</button>
 <button class="danger" id="deleteAgent">מחק תיק</button>
-<div id="newAgentBox" class="hidden">
-<label>שם הסוכן החדש</label><input id="newAgentName" placeholder="לדוגמה: Somchai">
-<button class="primary" id="createAgent">צור תיק</button><button class="secondary" id="cancelAgent">ביטול</button>
 </div>
-</div>
+</section>
 
-<div class="card">
-<h2>עמלות</h2>
-<div class="grid">
-<div><label>עמלה חודשית כללית (%)</label><input id="monthlyFee" type="number" min="0" step=".1"></div>
-<div><label>עמלת הסוכן מתוך העמלה (%)</label><input id="agentFee" type="number" min="0" step=".1"></div>
-</div>
-</div>
+<section class="card">
+<div class="section-title">עמלות</div>
 
-<div class="card">
-<h2>הוספת לקוח</h2>
-<div class="grid">
-<div><label>שם הלקוח</label><input id="clientName" placeholder="שם הלקוח"></div>
-<div><label>סכום הלוואה (฿)</label><input id="amount" type="number" min="1" placeholder="30000"></div>
-<div><label>תקופת הלוואה (חודשים)</label><input id="months" type="number" min="1" value="12"></div>
-<div><label>סטטוס</label><select id="status"><option>פעיל</option><option>הסתיים</option><option>בעייתי</option></select></div>
-</div>
-<button class="primary" id="addClient">＋ הוסף לקוח</button>
-</div>
+<label>עמלה חודשית כללית (%)</label>
+<input id="monthlyFee" type="number" min="0" step="0.1">
 
-<div class="card">
+<label>עמלת הסוכן מתוך העמלה (%)</label>
+<input id="agentShare" type="number" min="0" step="0.1">
+</section>
+
+<section class="card">
+<div class="section-title">הוספת לקוח</div>
+
+<label>שם הלקוח</label>
+<input id="clientName" placeholder="שם הלקוח">
+
+<label>סכום ההלוואה (฿)</label>
+<input id="loanAmount" type="number" min="0" step="1" value="30000">
+
+<label>תקופת ההלוואה (חודשים)</label>
+<input id="loanMonths" type="number" min="1" step="1" value="12">
+
+<button class="primary" id="addClient" style="margin-top:14px">
+＋ הוסף לקוח
+</button>
+</section>
+
+<section class="card">
+<div class="section-title">סטטוס</div>
+
+<label>סטטוס</label>
+<select id="statusFilter">
+<option value="active">פעיל</option>
+<option value="closed">סגור</option>
+<option value="all">הכל</option>
+</select>
+</section>
+
+<section class="card">
 <h2>סיכום התיק</h2>
-<div class="stats">
-<div class="stat"><small>לקוחות</small><b id="count">0</b></div>
-<div class="stat"><small>סך הלוואות</small><b id="total">฿0</b></div>
-<div class="stat"><small>עמלה חודשית</small><b id="gross">฿0</b></div>
-<div class="stat"><small>עמלה שנתית</small><b id="annual">฿0</b></div>
-</div>
-<div class="stats" style="margin-top:9px">
-<div class="stat"><small>חלק הסוכן חודשי</small><b id="agentMonthly">฿0</b></div>
-<div class="stat"><small>חלק הסוכן שנתי</small><b id="agentAnnual">฿0</b></div>
-</div>
+
+<div style="background:#e8f7ee;border:1px solid #b8dfc6;border-radius:13px;padding:11px 13px;margin-bottom:12px;font-weight:700">
+הסכומים והעמלות מחושבים לפי יתרות ההלוואות לאחר ההחזרים.
 </div>
 
-<div class="card">
-<h2>רשימת לקוחות</h2>
-<input class="search" id="search" placeholder="חיפוש לקוח...">
-<div id="empty" class="notice">אין לקוחות בתיק.</div>
-<div id="tableWrap" class="scroll hidden">
-<table><thead><tr>
-<th>לקוח</th><th>הלוואה</th><th>חודשים</th><th>עמלה חודשית</th><th>עמלה שנתית</th><th>חלק הסוכן</th><th>סטטוס</th><th></th>
-</tr></thead><tbody id="rows"></tbody></table>
+<div class="stats">
+
+<div class="stat">
+<div class="label">לקוחות</div>
+<div class="num" id="sClients">0</div>
 </div>
+
+<div class="stat">
+<div class="label">סך יתרות ההלוואות</div>
+<div class="num" id="sLoans">฿0</div>
+</div>
+
+<div class="stat">
+<div class="label">עמלה חודשית</div>
+<div class="num" id="sMonthly">฿0</div>
+</div>
+
+<div class="stat">
+<div class="label">עמלה שנתית</div>
+<div class="num" id="sYearly">฿0</div>
+</div>
+
+<div class="stat">
+<div class="label">חלק הסוכן חודשי</div>
+<div class="num" id="sAgentMonthly">฿0</div>
+</div>
+
+<div class="stat">
+<div class="label">חלק הסוכן שנתי</div>
+<div class="num" id="sAgentYearly">฿0</div>
+</div>
+
+</div>
+</section>
+
+<section class="card">
+<h2>רשימת לקוחות</h2>
+
+<input class="search" id="search" placeholder="חיפוש לקוח...">
+
+<div style="background:#e8f0ff;border:1px solid #c7d8ff;border-radius:12px;padding:10px 12px;margin-bottom:12px;font-weight:700">
+לחץ על סכום <b>סה״כ הוחזר 💰</b> כדי להציג את פירוט כל ההחזרים.
+העמלה לכל לקוח מחושבת לפי היתרה הנוכחית.
+</div>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>לקוח</th>
+<th>הלוואה מקורית</th>
+<th>סה״כ הוחזר</th>
+<th>יתרה</th>
+<th>סטטוס</th>
+<th>עמלה חודשית</th>
+<th>עמלה שנתית</th>
+<th>פעולות</th>
+</tr>
+</thead>
+
+<tbody id="clientTable"></tbody>
+</table>
+</div>
+
+<div class="row" style="margin-top:14px">
 <button class="primary" id="reportBtn">📄 הצג דוח</button>
 </div>
+</section>
 
-<div class="card">
+<section class="card">
 <h2>גיבוי ושחזור</h2>
-<button class="primary" id="backupBtn">💾 הורד גיבוי</button>
-<button class="secondary" id="showBackupBtn">👁 הצג גיבוי</button>
-<button class="secondary" id="restoreBtn">↩ שחזור מגיבוי</button>
-<input id="restoreFile" type="file" accept=".json,application/json" class="hidden">
-<div class="notice">הגיבוי כולל את כל תיקי הסוכנים והלקוחות.</div>
+
+<div class="row">
+<button class="primary" id="download">💾 הורד גיבוי</button>
+<button class="soft" id="showBackup">👁 הצג גיבוי</button>
+<button class="soft" id="restore">← שחזור מגיבוי</button>
 </div>
 
-<div class="card hidden" id="reportBox"><h2>דוח תיק</h2><div id="report"></div></div>
-<div class="card hidden" id="backupBox"><h2>תוכן הגיבוי</h2><div id="backupView"></div></div>
-<div id="message" class="notice"></div>
+<p class="note">הגיבוי כולל את כל תיקי הסוכנים והלקוחות.</p>
+<input type="file" id="file" accept=".json" style="display:none">
+</section>
+
+</main>
+
+<div class="modal-bg" id="modalBg">
+<div class="modal" id="modal"></div>
 </div>
 
 <script>
-const KEY='loan_agent_manager_v1';
-let db=[],active=0;
-const $=id=>document.getElementById(id);
-const money=n=>'฿'+Math.round(Number(n)||0).toLocaleString('en-US');
 
-function save(){localStorage.setItem(KEY,JSON.stringify({version:1,agents:db}));}
-function load(){
- try{
-  const x=JSON.parse(localStorage.getItem(KEY)||'null');
-  if(x&&Array.isArray(x.agents)&&x.agents.length){db=x.agents;return}
- }catch(e){}
- db=[{name:'סוכן 1',fee:5,agentFee:20,clients:[]}];active=0;save();
+const KEY="loan_portfolios_v3";
+const OLD_KEY="loan_agent_manager_v1";
+
+function normalizeDb(x){
+
+if(!x || !Array.isArray(x.agents)) return null;
+
+let nextAgent=1;
+let nextClient=1;
+let nextRepayment=1;
+
+const agents=x.agents.map((a,ai)=>{
+
+const agentId=Number(a.id)||ai+1;
+nextAgent=Math.max(nextAgent,agentId+1);
+
+const clients=Array.isArray(a.clients)?a.clients.map((c,ci)=>{
+
+const clientId=Number(c.id)||nextClient;
+nextClient=Math.max(nextClient,clientId+1);
+
+const reps=Array.isArray(c.repayments)?c.repayments.map((r,ri)=>{
+
+const rid=Number(r.id)||nextRepayment;
+nextRepayment=Math.max(nextRepayment,rid+1);
+
+return {
+id:rid,
+amount:Math.max(0,Number(r.amount)||0),
+date:r.date||new Date().toISOString().slice(0,10),
+note:r.note||""
+};
+
+}):[];
+
+return {
+id:clientId,
+name:c.name||"לקוח",
+amount:Math.max(0,Number(c.amount)||0),
+months:Math.max(1,Number(c.months)||1),
+status:c.status||"פעיל",
+repayments:reps
+};
+
+}):[];
+
+return {
+id:agentId,
+name:a.name||`סוכן ${ai+1}`,
+monthlyFee:Math.max(0,Number(a.monthlyFee ?? a.fee)||0),
+agentShare:Math.max(0,Number(a.agentShare ?? a.agentFee)||0),
+clients
+};
+
+});
+
+return {
+agents,
+nextAgent,
+nextClient,
+nextRepayment
+};
+
 }
-function esc(s){return String(s).replace(/[&<>"]/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[x]));}
-function current(){return db[active];}
+
+let db=null;
+
+try{
+db=normalizeDb(JSON.parse(localStorage.getItem(KEY)||"null"));
+}catch(e){
+db=null;
+}
+
+if(!db){
+
+try{
+db=normalizeDb(JSON.parse(localStorage.getItem(OLD_KEY)||"null"));
+}catch(e){
+db=null;
+}
+
+}
+
+if(!db){
+
+db={
+agents:[
+{
+id:1,
+name:"סוכן 1",
+monthlyFee:5,
+agentShare:20,
+clients:[]
+}
+],
+nextAgent:2,
+nextClient:1,
+nextRepayment:1
+};
+
+}
+
+localStorage.setItem(KEY,JSON.stringify(db));
+
+let selectedClient=null;
+
+const $=id=>document.getElementById(id);
+
+const money=n=>"฿"+Number(n||0).toLocaleString("en-US",{
+maximumFractionDigits:0
+});
+
+const agent=()=>db.agents.find(a=>a.id==$("agentSelect").value);
+
+function save(){
+localStorage.setItem(KEY,JSON.stringify(db));
+}
+
+function currentClient(){
+return agent()?.clients.find(c=>c.id===selectedClient);
+}
+
+function esc(s){
+return String(s??"").replace(/[&<>"']/g,m=>({
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;",
+"'":"&#039;"
+}[m]));
+}
+
+function showPortfolioSummary(){
+
+const rows=db.agents.map(a=>{
+
+const original=a.clients.reduce((s,c)=>s+c.amount,0);
+
+const paid=a.clients.reduce(
+(s,c)=>s+c.repayments.reduce((x,r)=>x+r.amount,0),0
+);
+
+const balance=a.clients.reduce(
+(s,c)=>s+Math.max(
+0,
+c.amount-c.repayments.reduce((x,r)=>x+r.amount,0)
+),
+0
+);
+
+const monthly=balance*(a.monthlyFee/100);
+const yearly=monthly*12;
+const agentMonthly=monthly*(a.agentShare/100);
+const agentYearly=yearly*(a.agentShare/100);
+
+return `
+<tr>
+<td><b>${esc(a.name)}</b></td>
+<td>${a.clients.length}</td>
+<td>${money(original)}</td>
+<td>${money(paid)}</td>
+<td><b>${money(balance)}</b></td>
+<td>${money(monthly)}</td>
+<td>${money(yearly)}</td>
+<td>${money(agentMonthly)}</td>
+<td>${money(agentYearly)}</td>
+</tr>
+`;
+
+}).join("");
+
+const totalOriginal=db.agents.reduce(
+(s,a)=>s+a.clients.reduce((x,c)=>x+c.amount,0),0
+);
+
+const totalPaid=db.agents.reduce(
+(s,a)=>s+a.clients.reduce(
+(x,c)=>x+c.repayments.reduce((z,r)=>z+r.amount,0),0
+),0
+);
+
+const totalBalance=db.agents.reduce(
+(s,a)=>s+a.clients.reduce(
+(x,c)=>x+Math.max(
+0,
+c.amount-c.repayments.reduce((z,r)=>z+r.amount,0)
+),0
+),0
+);
+
+showModal(`
+<h2>📊 ריכוז תיקי סוכנים</h2>
+
+<div class="loan-grid">
+
+<div class="loan-box">
+<span>סך ההלוואות המקוריות</span>
+<b>${money(totalOriginal)}</b>
+</div>
+
+<div class="loan-box">
+<span>סך כל ההחזרים</span>
+<b>${money(totalPaid)}</b>
+</div>
+
+<div class="loan-box">
+<span>סך היתרות</span>
+<b>${money(totalBalance)}</b>
+</div>
+
+<div class="loan-box">
+<span>מספר סוכנים</span>
+<b>${db.agents.length}</b>
+</div>
+
+</div>
+
+<div class="table-wrap" style="margin-top:18px">
+
+<table style="min-width:1050px">
+
+<thead>
+<tr>
+<th>סוכן</th>
+<th>לקוחות</th>
+<th>הלוואות מקוריות</th>
+<th>הוחזר</th>
+<th>יתרה</th>
+<th>עמלה חודשית</th>
+<th>עמלה שנתית</th>
+<th>חלק הסוכן חודשי</th>
+<th>חלק הסוכן שנתי</th>
+</tr>
+</thead>
+
+<tbody>
+${rows}
+</tbody>
+
+</table>
+
+</div>
+
+<button class="primary" onclick="closeModal()" style="margin-top:16px">
+סגור
+</button>
+`);
+
+}
+
+function init(){
+
+const sel=$("agentSelect");
+
+sel.innerHTML=db.agents.map(a=>
+`<option value="${a.id}">${esc(a.name)}</option>`
+).join("");
+
+if(!sel.value && db.agents.length){
+sel.value=db.agents[0].id;
+}
+
+const a=agent();
+
+if(a){
+$("agentName").value=a.name;
+$("monthlyFee").value=a.monthlyFee;
+$("agentShare").value=a.agentShare;
+}
+
+render();
+
+}
 
 function render(){
- const a=current(),sel=$('agentSelect');
- sel.innerHTML='';
- db.forEach((x,i)=>{let o=document.createElement('option');o.value=i;o.textContent=x.name||('סוכן '+(i+1));sel.appendChild(o)});
- sel.value=active;
- $('agentName').value=a.name;$('monthlyFee').value=a.fee;$('agentFee').value=a.agentFee;
- const q=$('search').value.trim().toLowerCase();
- let total=0,gross=0,agent=0,shown=0;const rows=$('rows');rows.innerHTML='';
- a.clients.forEach((c,i)=>{
-  const g=c.amount*a.fee/100,p=g*a.agentFee/100;
-  total+=c.amount;gross+=g;agent+=p;
-  if(q&&!c.name.toLowerCase().includes(q))return;
-  shown++;
-  const tr=document.createElement('tr');
-  tr.innerHTML=`<td>${esc(c.name)}</td><td>${money(c.amount)}</td><td>${c.months}</td><td>${money(g)}</td><td>${money(g*12)}</td><td>${money(p)}</td><td>${esc(c.status)}</td><td><button class="danger" onclick="deleteClient(${i})">מחק</button></td>`;
-  rows.appendChild(tr);
- });
- $('count').textContent=a.clients.length;$('total').textContent=money(total);$('gross').textContent=money(gross);$('annual').textContent=money(gross*12);
- $('agentMonthly').textContent=money(agent);$('agentAnnual').textContent=money(agent*12);
- $('empty').classList.toggle('hidden',a.clients.length>0);
- $('tableWrap').classList.toggle('hidden',shown===0);
- save();
+
+const a=agent();
+
+if(!a)return;
+
+$("agentName").value=a.name;
+$("monthlyFee").value=a.monthlyFee;
+$("agentShare").value=a.agentShare;
+
+const total=a.clients.reduce((s,c)=>{
+
+const paid=c.repayments.reduce((x,r)=>x+r.amount,0);
+
+return s+Math.max(0,c.amount-paid);
+
+},0);
+
+const monthly=total*(a.monthlyFee/100);
+const yearly=monthly*12;
+
+$("sClients").textContent=a.clients.length;
+$("sLoans").textContent=money(total);
+$("sMonthly").textContent=money(monthly);
+$("sYearly").textContent=money(yearly);
+$("sAgentMonthly").textContent=money(monthly*a.agentShare/100);
+$("sAgentYearly").textContent=money(yearly*a.agentShare/100);
+
+const q=$("search").value.trim().toLowerCase();
+const filter=$("statusFilter").value;
+
+const rows=a.clients.filter(c=>{
+
+const balance=Math.max(
+0,
+c.amount-c.repayments.reduce((s,r)=>s+r.amount,0)
+);
+
+const closed=balance===0;
+
+return (
+(!q||c.name.toLowerCase().includes(q)) &&
+(
+filter==="all" ||
+(filter==="closed"?closed:!closed)
+)
+);
+
+});
+
+$("clientTable").innerHTML=rows.length?rows.map(c=>{
+
+const paid=c.repayments.reduce((s,r)=>s+r.amount,0);
+const balance=Math.max(0,c.amount-paid);
+const m=balance*a.monthlyFee/100;
+
+return `
+<tr>
+
+<td>
+
+<b>${esc(c.name)}</b>
+
+<button
+title="עריכת פרטי הלקוח וההלוואה"
+aria-label="עריכת ${esc(c.name)}"
+onclick="editClient(${c.id})"
+style="background:#e8eefc;color:#2864e8;border-radius:50%;padding:5px 8px;font-size:16px;margin-right:5px">
+✏️
+</button>
+
+</td>
+
+<td>${money(c.amount)}</td>
+
+<td>
+
+<button
+class="soft"
+onclick="openClient(${c.id})"
+title="הצג את כל ההחזרים"
+style="padding:8px 12px;min-width:105px">
+
+${money(paid)} 💰
+
+</button>
+
+</td>
+
+<td><b>${money(balance)}</b></td>
+
+<td>${esc(c.status|| (balance===0?"הסתיים":"פעיל"))}</td>
+
+<td>${money(m)}</td>
+
+<td>${money(m*12)}</td>
+
+<td>
+
+<div class="action-buttons">
+
+<button class="primary" onclick="openClient(${c.id})">
+💰 החזרים
+</button>
+
+<button class="soft" onclick="editClient(${c.id})">
+✏️ עריכת לקוח
+</button>
+
+<button class="danger" onclick="deleteClient(${c.id})">
+🗑️ מחק
+</button>
+
+</div>
+
+</td>
+
+</tr>
+`;
+
+}).join(""):
+
+`
+<tr>
+<td colspan="8" style="text-align:center;padding:25px">
+אין לקוחות להצגה
+</td>
+</tr>
+`;
+
 }
-window.deleteClient=i=>{current().clients.splice(i,1);render();};
 
-$('agentSelect').onchange=e=>{active=Number(e.target.value);$('reportBox').classList.add('hidden');render()};
-$('newAgent').onclick=()=>{$('newAgentBox').classList.remove('hidden');$('newAgentName').value='';$('newAgentName').focus()};
-$('cancelAgent').onclick=()=>{$('newAgentBox').classList.add('hidden')};
-$('createAgent').onclick=()=>{
- const n=$('newAgentName').value.trim();
- if(!n){$('message').textContent='נא להזין שם סוכן.';return}
- db.push({name:n,fee:5,agentFee:20,clients:[]});active=db.length-1;
- $('newAgentBox').classList.add('hidden');$('message').textContent='תיק חדש נוצר עבור '+n;render();
-};
-$('saveAgent').onclick=()=>{let n=$('agentName').value.trim();if(n){current().name=n;save();render();$('message').textContent='שם הסוכן נשמר.'}};
-$('deleteAgent').onclick=()=>{if(db.length===1){$('message').textContent='חייב להישאר לפחות תיק אחד.';return}if(confirm('למחוק את התיק?')){db.splice(active,1);active=Math.max(0,active-1);render()}};
-$('monthlyFee').oninput=e=>{current().fee=Math.max(0,Number(e.target.value)||0);render()};
-$('agentFee').oninput=e=>{current().agentFee=Math.max(0,Number(e.target.value)||0);render()};
-$('addClient').onclick=()=>{
- const n=$('clientName').value.trim(),amount=Number($('amount').value),months=Number($('months').value);
- if(!n||amount<=0||months<1){$('message').textContent='יש למלא שם לקוח, סכום ותקופה.';return}
- current().clients.push({name:n,amount,months,status:$('status').value});
- $('clientName').value='';$('amount').value='';save();render();$('message').textContent='הלקוח נוסף לתיק.';
-};
-$('search').oninput=render;
+function openClient(id){
 
-$('reportBtn').onclick=()=>{
- const a=current();let total=0,gross=0,agent=0,html=`<p><b>סוכן:</b> ${esc(a.name)}</p><div class="scroll"><table><tr><th>לקוח</th><th>הלוואה</th><th>חודשים</th><th>עמלה חודשית</th><th>עמלה שנתית</th><th>חלק הסוכן</th><th>סטטוס</th></tr>`;
- a.clients.forEach(c=>{let g=c.amount*a.fee/100,p=g*a.agentFee/100;total+=c.amount;gross+=g;agent+=p;html+=`<tr><td>${esc(c.name)}</td><td>${money(c.amount)}</td><td>${c.months}</td><td>${money(g)}</td><td>${money(g*12)}</td><td>${money(p)}</td><td>${esc(c.status)}</td></tr>`});
- html+=`</table></div><p><b>סך הלוואות:</b> ${money(total)}<br><b>עמלה חודשית:</b> ${money(gross)}<br><b>עמלה שנתית:</b> ${money(gross*12)}<br><b>חלק הסוכן חודשי:</b> ${money(agent)}<br><b>חלק הסוכן שנתי:</b> ${money(agent*12)}</p>`;
- $('report').innerHTML=html;$('reportBox').classList.remove('hidden');$('reportBox').scrollIntoView({behavior:'smooth'});
+selectedClient=id;
+
+const c=currentClient();
+
+if(!c)return;
+
+const paid=c.repayments.reduce((s,r)=>s+r.amount,0);
+const balance=Math.max(0,c.amount-paid);
+
+showModal(`
+
+<h2>פרטי לקוח והחזרים – ${esc(c.name)}</h2>
+
+<div class="loan-grid">
+
+<div class="loan-box">
+<span>סכום ההלוואה המקורי</span>
+<b>${money(c.amount)}</b>
+</div>
+
+<div class="loan-box">
+<span>סה״כ הוחזר</span>
+<b>${money(paid)}</b>
+</div>
+
+<div class="loan-box">
+<span>יתרה נוכחית</span>
+<b>${money(balance)}</b>
+</div>
+
+<div class="loan-box">
+<span>תקופה</span>
+<b>${c.months} חודשים</b>
+</div>
+
+</div>
+
+<div style="background:#e8f7ee;border:1px solid #b8dfc6;border-radius:13px;padding:12px;margin-top:10px;font-weight:700">
+
+הנתונים מתעדכנים אוטומטית בכל פעם שמוסיפים, עורכים או מוחקים החזר.
+
+</div>
+
+<h3 style="margin-top:22px">
+היסטוריית החזרים
+</h3>
+
+${
+c.repayments.length?
+
+`
+<div class="table-wrap">
+
+<table class="rep-table">
+
+<thead>
+<tr>
+<th>תאריך</th>
+<th>סכום</th>
+<th>הערה</th>
+<th>פעולות</th>
+</tr>
+</thead>
+
+<tbody>
+
+${c.repayments.map(r=>`
+
+<tr>
+
+<td>${r.date}</td>
+
+<td>${money(r.amount)}</td>
+
+<td>${esc(r.note||"")}</td>
+
+<td>
+
+<div class="action-buttons">
+
+<button
+class="soft"
+onclick="editRepayment(${r.id})">
+✏️ ערוך
+</button>
+
+<button
+class="danger"
+onclick="deleteRepayment(${r.id})">
+🗑️ מחק
+</button>
+
+</div>
+
+</td>
+
+</tr>
+
+`).join("")}
+
+</tbody>
+
+</table>
+
+</div>
+`
+
+:
+
+`<p class="note">עדיין לא נרשמו החזרים.</p>`
+
+}
+
+<div class="row" style="margin-top:18px">
+
+<button
+class="primary"
+onclick="addRepayment()">
+＋ הוסף החזר
+</button>
+
+<button
+class="gray"
+onclick="closeModal()">
+סגור
+</button>
+
+</div>
+
+`);
+
+}
+
+function showModal(html){
+
+$("modal").innerHTML=html;
+$("modalBg").style.display="flex";
+
+}
+
+function closeModal(){
+
+$("modalBg").style.display="none";
+
+}
+
+$("modalBg").onclick=e=>{
+
+if(e.target===$("modalBg")){
+closeModal();
+}
+
 };
 
-$('backupBtn').onclick=()=>{
- const blob=new Blob([JSON.stringify({version:1,agents:db},null,2)],{type:'application/json'});
- const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='loan-agents-backup.json';a.click();
- $('message').textContent='קובץ הגיבוי הורד.';
+function editClient(id){
+
+const c=agent().clients.find(x=>x.id===id);
+
+showModal(`
+
+<h2>עריכת הלוואה</h2>
+
+<label>שם הלקוח</label>
+<input id="eName" value="${esc(c.name)}">
+
+<label>סכום ההלוואה (฿)</label>
+<input id="eAmount" type="number" min="0" value="${c.amount}">
+
+<label>תקופה (חודשים)</label>
+<input id="eMonths" type="number" min="1" value="${c.months}">
+
+<label>סטטוס</label>
+
+<select id="eStatus">
+
+<option ${c.status==="פעיל"?"selected":""}>
+פעיל
+</option>
+
+<option ${c.status==="הסתיים"?"selected":""}>
+הסתיים
+</option>
+
+<option ${c.status==="בעייתי"?"selected":""}>
+בעייתי
+</option>
+
+</select>
+
+<div class="row" style="margin-top:18px">
+
+<button
+class="primary"
+onclick="saveClientEdit(${id})">
+שמור
+</button>
+
+<button
+class="gray"
+onclick="closeModal()">
+ביטול
+</button>
+
+</div>
+
+`);
+
+}
+
+function saveClientEdit(id){
+
+const c=agent().clients.find(x=>x.id===id);
+
+c.name=$("eName").value.trim()||"לקוח";
+c.amount=Math.max(0,Number($("eAmount").value));
+c.months=Math.max(1,Number($("eMonths").value));
+c.status=$("eStatus").value;
+
+save();
+closeModal();
+render();
+
+}
+
+function addRepayment(rid=null){
+
+const c=currentClient();
+
+if(!c)return;
+
+const r=rid?c.repayments.find(x=>x.id===rid):null;
+
+showModal(`
+
+<h2>
+${r?"עריכת החזר":"הוספת החזר"}
+</h2>
+
+<label>סכום ההחזר (฿)</label>
+
+<input
+id="rAmount"
+type="number"
+min="0"
+value="${r?r.amount:""}">
+
+<label>תאריך</label>
+
+<input
+id="rDate"
+type="date"
+value="${r?r.date:new Date().toISOString().slice(0,10)}">
+
+<label>הערה</label>
+
+<input
+id="rNote"
+value="${esc(r?.note||"")}">
+
+<p class="note">
+היתרה תחושב אוטומטית לפי סכום ההלוואה פחות כל ההחזרים.
+</p>
+
+<div class="row" style="margin-top:18px">
+
+<button
+class="primary"
+onclick="saveRepayment(${rid||0})">
+
+${r?"עדכן":"שמור החזר"}
+
+</button>
+
+<button
+class="gray"
+onclick="closeModal()">
+ביטול
+</button>
+
+</div>
+
+`);
+
+}
+
+function saveRepayment(rid){
+
+const c=currentClient();
+
+const amount=Math.max(
+0,
+Number($("rAmount").value)
+);
+
+if(!amount){
+alert("יש להזין סכום החזר.");
+return;
+}
+
+if(rid){
+
+const r=c.repayments.find(x=>x.id===rid);
+
+r.amount=amount;
+r.date=$("rDate").value;
+r.note=$("rNote").value.trim();
+
+}else{
+
+c.repayments.push({
+
+id:db.nextRepayment++,
+amount,
+date:$("rDate").value,
+note:$("rNote").value.trim()
+
+});
+
+}
+
+save();
+closeModal();
+render();
+openClient(c.id);
+
+}
+
+function editRepayment(id){
+
+addRepayment(id);
+
+}
+
+function deleteRepayment(id){
+
+const c=currentClient();
+const r=c.repayments.find(x=>x.id===id);
+
+confirmModal(
+"מחיקת החזר",
+`למחוק את ההחזר של ${money(r.amount)} מתאריך ${r.date}?`,
+"מחק",
+()=>{
+
+c.repayments=c.repayments.filter(x=>x.id!==id);
+
+save();
+render();
+
+openClient(c.id);
+
+}
+);
+
+}
+
+function deleteClient(id){
+
+const c=agent().clients.find(x=>x.id===id);
+
+confirmModal(
+"מחיקת לקוח",
+`האם אתה בטוח שברצונך למחוק את <b>${esc(c.name)}</b>?<br><br>
+כל ההלוואה והיסטוריית ההחזרים שלו יימחקו.`,
+"מחק לקוח",
+()=>{
+
+agent().clients=
+agent().clients.filter(x=>x.id!==id);
+
+selectedClient=null;
+
+save();
+render();
+
+}
+);
+
+}
+
+function confirmModal(title,text,ok,fn){
+
+showModal(`
+
+<h2>${title}</h2>
+
+<div class="warning">
+${text}
+</div>
+
+<div class="row" style="margin-top:18px">
+
+<button
+class="danger-solid"
+id="confirmOk">
+${ok}
+</button>
+
+<button
+class="gray"
+onclick="closeModal()">
+ביטול
+</button>
+
+</div>
+
+`);
+
+$("confirmOk").onclick=()=>{
+fn();
+closeModal();
 };
-$('showBackupBtn').onclick=()=>{
- let html='';
- db.forEach((a,i)=>{
-  let total=a.clients.reduce((s,c)=>s+c.amount,0);
-  html+=`<div class="backup-item"><b>${i+1}. ${esc(a.name)}</b><br>לקוחות: ${a.clients.length} | סך הלוואות: ${money(total)}<br>`;
-  a.clients.forEach(c=>html+=`• ${esc(c.name)} — ${money(c.amount)} — ${c.months} חודשים — ${esc(c.status)}<br>`);
-  html+='</div>';
- });
- $('backupView').innerHTML=html||'אין נתונים';$('backupBox').classList.remove('hidden');$('backupBox').scrollIntoView({behavior:'smooth'});
+
+}
+
+$("agentSelect").onchange=()=>{
+selectedClient=null;
+render();
 };
-$('restoreBtn').onclick=()=>$('restoreFile').click();
-$('restoreFile').onchange=e=>{
- const f=e.target.files[0];if(!f)return;
- const r=new FileReader();
- r.onload=()=>{
-  try{
-   const x=JSON.parse(r.result);
-   if(!Array.isArray(x.agents)||!x.agents.length)throw Error();
-   db=x.agents;active=0;save();render();$('message').textContent='כל התיקים שוחזרו בהצלחה.';
-  }catch(err){$('message').textContent='קובץ הגיבוי אינו תקין.'}
- };
- r.readAsText(f);
+
+$("saveAgent").onclick=()=>{
+
+const a=agent();
+
+a.name=$("agentName").value.trim()||"סוכן ללא שם";
+a.monthlyFee=Math.max(0,Number($("monthlyFee").value));
+a.agentShare=Math.max(0,Number($("agentShare").value));
+
+save();
+init();
+
 };
-load();render();
+
+$("monthlyFee").onchange=()=>{
+
+agent().monthlyFee=
+Math.max(0,Number($("monthlyFee").value));
+
+save();
+render();
+
+};
+
+$("agentShare").onchange=()=>{
+
+agent().agentShare=
+Math.max(0,Number($("agentShare").value));
+
+save();
+render();
+
+};
+
+$("portfolioSummary").onclick=showPortfolioSummary;
+
+$("newAgent").onclick=()=>{
+
+const a={
+id:db.nextAgent++,
+name:"סוכן חדש",
+monthlyFee:5,
+agentShare:20,
+clients:[]
+};
+
+db.agents.push(a);
+
+save();
+init();
+
+$("agentSelect").value=a.id;
+
+render();
+
+};
+
+$("deleteAgent").onclick=()=>{
+
+const a=agent();
+
+if(!a)return;
+
+confirmModal(
+"מחיקת תיק סוכן",
+`אתה עומד למחוק את כל התיק של <b>${esc(a.name)}</b>.<br><br>
+כל הלקוחות, ההלוואות וההחזרים יימחקו לצמיתות.<br><br>
+<b>הפעולה אינה ניתנת לביטול.</b>`,
+"מחק את התיק",
+()=>{
+
+db.agents=
+db.agents.filter(x=>x.id!==a.id);
+
+if(!db.agents.length){
+
+db.agents.push({
+
+id:db.nextAgent++,
+name:"סוכן חדש",
+monthlyFee:5,
+agentShare:20,
+clients:[]
+
+});
+
+}
+
+save();
+init();
+
+}
+);
+
+};
+
+$("addClient").onclick=()=>{
+
+const name=$("clientName").value.trim();
+
+const amount=
+Math.max(0,Number($("loanAmount").value));
+
+const months=
+Math.max(1,Number($("loanMonths").value));
+
+if(!name||!amount){
+
+alert("יש להזין שם לקוח וסכום הלוואה.");
+return;
+
+}
+
+const c={
+
+id:db.nextClient++,
+name,
+amount,
+months,
+status:"פעיל",
+repayments:[]
+
+};
+
+agent().clients.push(c);
+
+selectedClient=c.id;
+
+save();
+
+$("clientName").value="";
+
+render();
+
+openClient(c.id);
+
+};
+
+$("search").oninput=render;
+
+$("statusFilter").onchange=render;
+
+$("reportBtn").onclick=()=>{
+
+const a=agent();
+
+const balance=a.clients.reduce(
+(s,c)=>s+Math.max(
+0,
+c.amount-c.repayments.reduce((x,r)=>x+r.amount,0)
+),
+0
+);
+
+const monthly=balance*a.monthlyFee/100;
+const yearly=monthly*12;
+
+showModal(`
+
+<h2>
+דוח תיק – ${esc(a.name)}
+</h2>
+
+<p>
+לקוחות:
+<b>${a.clients.length}</b>
+</p>
+
+<p>
+סך יתרות ההלוואות:
+<b>${money(balance)}</b>
+</p>
+
+<p>
+עמלה חודשית:
+<b>${money(monthly)}</b>
+</p>
+
+<p>
+עמלה שנתית:
+<b>${money(yearly)}</b>
+</p>
+
+<p>
+חלק הסוכן חודשי:
+<b>${money(monthly*a.agentShare/100)}</b>
+</p>
+
+<p>
+חלק הסוכן שנתי:
+<b>${money(yearly*a.agentShare/100)}</b>
+</p>
+
+<button
+class="primary"
+onclick="closeModal()">
+סגור
+</button>
+
+`);
+
+};
+
+$("download").onclick=()=>{
+
+const blob=new Blob(
+[JSON.stringify(db,null,2)],
+{type:"application/json"}
+);
+
+const a=document.createElement("a");
+
+a.href=URL.createObjectURL(blob);
+
+a.download="loan-portfolios-backup.json";
+
+a.click();
+
+URL.revokeObjectURL(a.href);
+
+};
+
+$("showBackup").onclick=()=>{
+
+showModal(`
+
+<h2>נתוני גיבוי</h2>
+
+<textarea
+style="width:100%;height:300px;border:1px solid #ccc;border-radius:12px;padding:10px;direction:ltr">${esc(JSON.stringify(db,null,2))}</textarea>
+
+<button
+class="primary"
+onclick="closeModal()"
+style="margin-top:12px">
+סגור
+</button>
+
+`);
+
+};
+
+$("restore").onclick=()=>$("file").click();
+
+$("file").onchange=e=>{
+
+const f=e.target.files[0];
+
+if(!f)return;
+
+const r=new FileReader();
+
+r.onload=()=>{
+
+try{
+
+const x=JSON.parse(r.result);
+
+const normalized=normalizeDb(x);
+
+if(!normalized)throw 0;
+
+db=normalized;
+
+save();
+
+init();
+
+alert("השחזור הושלם.");
+
+}catch{
+
+alert("קובץ גיבוי לא תקין.");
+
+}
+
+};
+
+r.readAsText(f);
+
+};
+
+init();
+
 </script>
 </body>
 </html>
