@@ -474,7 +474,8 @@ $("loginBtn").onclick=login;$("passwordInput").onkeydown=e=>{if(e.key==="Enter")
 $("logoutBtn").onclick=()=>{sessionStorage.removeItem("loan_front_unlocked");$("app").classList.add("hidden");$("loginScreen").classList.remove("hidden");$("passwordInput").focus()};
 
 initAgentSelect();render();
-if(sessionStorage.getItem("loan_front_unlocked")==="1"){$("loginScreen").classList.add("hidden");$("app").classList.remove("hidden")}
+// The app stays hidden until the access code is entered successfully.
+// No session auto-unlock: every fresh page load starts with the password screen only.
 </script>
 </body>
 </html>
