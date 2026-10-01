@@ -538,7 +538,7 @@ $("loginBtn").onclick=login;$("showPassword").onclick=togglePassword;$("password
 
 function bytesToBase64Url(bytes){
   let s="";for(const b of new Uint8Array(bytes))s+=String.fromCharCode(b);
-  return btoa(s).replace(/\\+/g,"-").replace(/\\//g,"_").replace(/=+$/g,"");
+  return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
 }
 function base64UrlToBytes(s){
   s=s.replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";
