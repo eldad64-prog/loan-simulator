@@ -1,8 +1,6 @@
-const CACHE_NAME = 'loan-simulator-v1';
+const CACHE_NAME = 'loan-simulator-v2';
 
 const APP_FILES = [
-  './',
-  './index.html',
   './manifest.json',
   './icon.svg'
 ];
@@ -30,9 +28,17 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
+  // Always fetch HTML from the network so GitHub Pages updates appear immediately.
+  if (event.request.mode === 'navigate' ||
+      event.request.destination === 'document' ||
+      event.request.url.endsWith('/index.html')) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      return cached || fetch(event.request);
-    })
+    caches.match(event.request).then(cached => cached || fetch(event.request))
   );
 });
