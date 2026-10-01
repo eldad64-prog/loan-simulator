@@ -166,6 +166,9 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
         <span class="topic-icon">💾</span><span>גיבוי ושחזור</span><small>שמירה ושחזור של כל הנתונים</small>
       </button>
     </div>
+    <div style="display:flex;justify-content:center;margin:4px auto 24px">
+      <button class="btn light" type="button" onclick="closeApp()" style="min-width:150px;border:1px solid #d7dce5">✕ סגור</button>
+    </div>
   </section>
 
   <section class="page" id="agentFilePage">
@@ -529,6 +532,19 @@ $("file").onchange=e=>{
 showPage("dashboard");alert("השחזור הושלם בהצלחה.")}catch(err){alert("קובץ גיבוי לא תקין.")}};
   r.readAsText(f);e.target.value="";
 };
+
+function closeApp(){
+  try{window.close()}catch(e){}
+  setTimeout(()=>{
+    if(!document.hidden){
+      $("app").classList.add("hidden");
+      $("loginScreen").classList.remove("hidden");
+      sessionStorage.removeItem("loan_logged_in");
+      $("passwordInput").value="";
+      $("passwordInput").focus();
+    }
+  },250);
+}
 
 function login(){
   if($("passwordInput").value===ACCESS_CODE){
