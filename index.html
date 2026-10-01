@@ -76,6 +76,23 @@ input:focus,select:focus,textarea:focus{border-color:#80a7ff;box-shadow:0 0 0 3p
 .client-numbers{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
 .number-box{background:#f8f9fb;border-radius:12px;padding:10px}.number-box span{display:block;color:var(--muted);font-size:12px}.number-box b{display:block;font-size:17px;margin-top:4px}
 .client-actions{display:flex;gap:7px;flex-wrap:wrap}
+.agent-accordion{display:grid;gap:7px}
+.agent-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:13px;background:#f8f9fb;color:var(--ink);text-align:right}
+.agent-row:hover{background:#f3f6fb}
+.agent-row .agent-row-name{font-weight:900;font-size:15px}
+.agent-row .agent-row-count{font-size:12px;color:var(--muted)}
+.agent-row .agent-row-balance{font-size:13px;font-weight:800}
+.agent-row .chevron{font-size:16px;color:var(--muted)}
+.agent-clients{margin:-1px 0 3px;padding:7px 8px 8px 8px;border:1px solid #dfe5ef;border-top:0;border-radius:0 0 13px 13px;background:#fff}
+.agent-client-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:9px 6px;border-bottom:1px solid #edf0f4}
+.agent-client-row:last-child{border-bottom:0}
+.agent-client-name{font-weight:800;font-size:14px}
+.agent-client-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.agent-client-balance{font-size:13px;font-weight:800;white-space:nowrap}
+@media(max-width:480px){
+ .agent-row{grid-template-columns:1fr auto;gap:6px}.agent-row .agent-row-balance{grid-column:1}.agent-row .chevron{grid-row:1 / span 2;grid-column:2}
+ .agent-client-row{grid-template-columns:1fr auto}.agent-client-balance{grid-column:2;grid-row:1 / span 2}.agent-client-row .btn{grid-column:1}
+}
 .empty{text-align:center;padding:35px 15px;color:var(--muted);border:1px dashed #cfd6e2;border-radius:16px}
 .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:15px}
 table{width:100%;border-collapse:collapse;min-width:760px;background:#fff}
@@ -235,6 +252,13 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
         <button class="btn light" id="reportBtn">📄 דוח תיק</button>
       </div>
     </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div><h2 class="card-title">לווים לפי סוכן</h2><div class="card-sub">בחר סוכן כדי לפתוח את רשימת הלווים שלו. רק סוכן אחד מוצג פתוח בכל פעם.</div></div>
+      </div>
+      <div id="agentBorrowerList" class="agent-accordion"></div>
+    </div>
   </section>
 
   </section>
@@ -299,7 +323,7 @@ const KEY="loan_portfolios_v3";
 const OLD_KEY="loan_agent_manager_v1";
 const $=id=>document.getElementById(id);
 function togglePassword(){const i=$("passwordInput"),b=$("showPassword");if(!i)return;i.type=i.type==="password"?"text":"password";if(b)b.textContent=i.type==="password"?"👁️":"🙈"}
-let db=null,selectedClient=null;
+let db=null,selectedClient=null,openAgentAccordion=null;
 
 function normalizeDb(x){
   if(!x||!Array.isArray(x.agents)) return null;
@@ -364,7 +388,7 @@ function render(){
   $("sMonthly").textContent=money(monthly);$("sYearly").textContent=money(yearly);
   $("sAgentMonthly").textContent=money(monthly*a.agentShare/100);$("sAgentYearly").textContent=money(yearly*a.agentShare/100);
   $("sActive").textContent=a.clients.filter(c=>getClientBalance(c)>0).length;$("sPaid").textContent=money(paid);
-  renderClients();renderPortfolio();renderFinance();
+  renderClients();renderPortfolio();renderFinance();renderAgentBorrowers();
 }
 function renderClients(){
   const a=agent();if(!a)return;
@@ -382,6 +406,48 @@ function renderClients(){
       '<div class="client-numbers"><div class="number-box"><span>יתרה</span><b>'+money(balance)+'</b></div><div class="number-box"><span>סה״כ הוחזר</span><b>'+money(paid)+'</b></div><div class="number-box"><span>עמלה חודשית</span><b>'+money(m)+'</b></div><div class="number-box"><span>שיעור עמלה</span><b>'+rate+'% '+typeText+'</b></div></div>'+
       '<div class="client-actions"><button class="btn primary small" onclick="openClient('+c.id+')">💰 החזרים ('+c.repayments.length+')</button><button class="btn soft small" onclick="editClient('+c.id+')">✏️ עריכת לקוח</button><button class="btn danger small" onclick="deleteClient('+c.id+')">🗑 מחק</button></div></article>';
   }).join("");
+}
+function renderAgentBorrowers(){
+  const el=$("agentBorrowerList");if(!el)return;
+  if(!db.agents.length){el.innerHTML='<div class="empty">אין סוכנים להצגה</div>';return}
+  let html="";
+  db.agents.forEach(a=>{
+    const isOpen=String(openAgentAccordion)===String(a.id);
+    const balance=a.clients.reduce((s,c)=>s+getClientBalance(c),0);
+    html+='<div>'+
+      '<button type="button" class="agent-row" onclick="toggleAgentBorrowers('+a.id+')">'+
+      '<span><span class="agent-row-name">'+esc(a.name)+'</span><span class="agent-row-count">'+a.clients.length+' לווים</span></span>'+
+      '<span class="agent-row-balance">'+money(balance)+'</span>'+
+      '<span class="chevron">'+(isOpen?"▲":"▼")+'</span></button>';
+    if(isOpen){
+      if(!a.clients.length){
+        html+='<div class="agent-clients"><div class="empty" style="padding:18px 10px">אין לווים בתיק זה</div></div>';
+      }else{
+        html+='<div class="agent-clients">'+a.clients.map(c=>{
+          const bal=getClientBalance(c);
+          const status=bal===0?'סגור':(c.status==="בעייתי"?'בעייתי':'פעיל');
+          return '<div class="agent-client-row">'+
+            '<div><div class="agent-client-name">'+esc(c.name)+'</div><div class="agent-client-meta">'+status+' · הלוואה מקורית '+money(c.amount)+'</div></div>'+
+            '<div class="agent-client-balance">'+money(bal)+'</div>'+
+            '<button type="button" class="btn soft small" onclick="openAgentClient('+a.id+','+c.id+')">פרטים</button>'+
+            '</div>';
+        }).join("")+'</div>';
+      }
+    }
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
+function toggleAgentBorrowers(agentId){
+  openAgentAccordion=String(openAgentAccordion)===String(agentId)?null:agentId;
+  renderAgentBorrowers();
+}
+function openAgentClient(agentId,clientId){
+  $("agentSelect").value=agentId;
+  selectedClient=clientId;
+  showPage("agentFilePage");
+  render();
+  openClient(clientId);
 }
 function renderPortfolio(){
   const totals=db.agents.reduce((z,a)=>{z.clients+=a.clients.length;z.original+=a.clients.reduce((s,c)=>s+c.amount,0);z.paid+=a.clients.reduce((s,c)=>s+c.repayments.reduce((x,r)=>x+r.amount,0),0);z.balance+=a.clients.reduce((s,c)=>s+getClientBalance(c),0);return z},{clients:0,original:0,paid:0,balance:0});
