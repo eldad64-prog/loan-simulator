@@ -410,6 +410,20 @@ function showPage(id){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+document.querySelectorAll(".page:not(#dashboard)").forEach(page=>{
+  if(page.querySelector(".page-back"))return;
+  const wrap=document.createElement("div");
+  wrap.className="page-back";
+  wrap.style.cssText="display:flex;justify-content:flex-start;margin:0 0 14px";
+  const btn=document.createElement("button");
+  btn.type="button";
+  btn.className="btn light small";
+  btn.textContent="← חזרה לדף הראשי";
+  btn.onclick=()=>showPage("dashboard");
+  wrap.appendChild(btn);
+  page.insertBefore(wrap,page.firstChild);
+});
+
 
 $("agentSelect").onchange=()=>{
   selectedClient=null;
