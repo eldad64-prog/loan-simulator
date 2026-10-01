@@ -100,6 +100,14 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
  .loan-form .submit{grid-column:auto}.filterbar{grid-template-columns:1fr}.client-top{display:block}.client-top .status{margin-top:9px}
  .client-actions .btn{flex:1}.loan-summary{grid-template-columns:1fr 1fr}
 }
+
+/* Landing page */
+.landing-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;max-width:760px;margin:8px auto 24px}
+.topic-btn{border:1px solid #e3e8f1;border-radius:24px;background:linear-gradient(145deg,#ffffff,#f3f6fb);padding:24px 18px;min-height:132px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#1d2b45;box-shadow:0 10px 28px rgba(30,60,110,.08);cursor:pointer;transition:transform .18s,box-shadow .18s,border-color .18s}
+.topic-btn:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(30,60,110,.12);border-color:#b9c9e8}
+.topic-btn span:not(.topic-icon){font-size:22px;font-weight:800}.topic-btn small{font-size:14px;color:#68758a}.topic-icon{font-size:34px;line-height:1}
+.topic-main{background:linear-gradient(145deg,#eef5ff,#ffffff);border-color:#c8d8f4}
+@media(max-width:600px){.landing-buttons{grid-template-columns:1fr;gap:13px}.topic-btn{min-height:112px;padding:18px}.topic-btn span:not(.topic-icon){font-size:20px}}
 </style>
 </head>
 <body>
@@ -122,18 +130,17 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
   <header class="topbar">
     <div class="brand">
       <div class="brand-icon">₪</div>
-      <div><strong>ניהול תיקי הלוואות</strong><span>מערכת סוכנים ולקוחות</span></div>
+      <div><strong>הלוואות</strong><span>מערכת ניהול</span></div>
     </div>
     <div class="top-actions">
-      <button class="icon-btn" id="backupTop" title="גיבוי">💾</button>
       <button class="icon-btn" id="logoutBtn" title="יציאה">↪</button>
     </div>
   </header>
 
-  <section class="hero">
-    <div class="hero-badge">✓ הנתונים נשמרים אוטומטית במכשיר</div>
-    <h1>תיקי סוכנים — שליטה מלאה</h1>
-    <p>ניהול הלוואות, לקוחות, החזרים, עמלות וריכוז כספי במקום אחד.</p>
+  <section class="hero" style="text-align:center;padding:34px 22px 30px">
+    <div class="hero-badge">✓ מערכת ניהול הלוואות</div>
+    <h1 style="font-size:clamp(42px,10vw,72px);margin:18px 0 8px">הלוואות</h1>
+    <p style="font-size:20px;margin:0">כל כלי העבודה שלך במקום אחד</p>
   </section>
 
   <nav class="nav" style="display:none">
@@ -144,23 +151,22 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
   </nav>
 
   <section class="page active" id="dashboard">
-    <div class="card" style="margin-top:8px">
-      <div class="card-head">
-        <div><h2 class="card-title">תיקי סוכנים</h2><div class="card-sub">בחר תיק קיים או צור תיק סוכן חדש.</div></div>
-      </div>
-      <div class="field">
-        <label>בחירת סוכן</label>
-        <select id="agentSelect"><option value="">בחר סוכן...</option></select>
-      </div>
-      <div class="agent-tools">
-        <button class="btn primary wide" id="newAgent">＋ הוספת סוכן חדש</button>
-        <button class="btn soft wide" id="portfolioSummary">📊 ריכוז תיקי סוכנים</button>
-        <button class="btn green wide" id="businessFinance">💰 כספים ועמלות</button>
-      </div>
-      <div class="btn-row" style="margin-top:12px">
-        <button class="btn light" id="backupHome">💾 גיבוי נתונים</button>
-        <button class="btn light" id="restoreHome">↩ שחזור מגיבוי</button>
-      </div>
+    <div class="landing-buttons">
+      <button class="topic-btn topic-main" onclick="showPage('agentFilePage')">
+        <span class="topic-icon">📁</span><span>תיקי סוכנים</span><small>ניהול התיקים והסוכנים</small>
+      </button>
+      <button class="topic-btn" onclick="showPage('clientsPage')">
+        <span class="topic-icon">👥</span><span>לקוחות והלוואות</span><small>לקוחות, הלוואות והחזרים</small>
+      </button>
+      <button class="topic-btn" onclick="showPage('portfolioPage')">
+        <span class="topic-icon">📊</span><span>ריכוז תיקים</span><small>תמונה מרוכזת של כל הסוכנים</small>
+      </button>
+      <button class="topic-btn" onclick="showPage('financePage')">
+        <span class="topic-icon">💰</span><span>כספים ועמלות</span><small>הכנסות, עמלות וחלק הסוכן</small>
+      </button>
+      <button class="topic-btn" onclick="document.getElementById('backupSection').scrollIntoView({behavior:'smooth'})">
+        <span class="topic-icon">💾</span><span>גיבוי ושחזור</span><small>שמירה ושחזור של כל הנתונים</small>
+      </button>
     </div>
   </section>
 
