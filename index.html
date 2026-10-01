@@ -123,6 +123,9 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
     </div>
     <div class="login-error" id="loginError">קוד הגישה שגוי</div>
     <button class="btn primary" id="loginBtn" style="width:100%;margin-top:8px">🔐 כניסה למערכת</button>
+    <button class="btn soft hidden" id="biometricLoginBtn" style="width:100%;margin-top:8px">👆 כניסה בטביעת אצבע</button>
+    <button class="btn light hidden" id="enableBiometricBtn" style="width:100%;margin-top:8px">👆 הפעל כניסה בטביעת אצבע</button>
+    <div id="biometricStatus" style="color:#697386;font-size:12px;margin-top:10px;line-height:1.5"></div>
   </div>
 </div>
 
@@ -532,6 +535,62 @@ function login(){
   }else{$("loginError").style.display="block";$("passwordInput").select()}
 }
 $("loginBtn").onclick=login;$("showPassword").onclick=togglePassword;$("passwordInput").onkeydown=e=>{if(e.key==="Enter")login()};
+
+function bytesToBase64Url(bytes){
+  let s="";for(const b of new Uint8Array(bytes))s+=String.fromCharCode(b);
+  return btoa(s).replace(/\\+/g,"-").replace(/\\//g,"_").replace(/=+$/g,"");
+}
+function base64UrlToBytes(s){
+  s=s.replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";
+  const bin=atob(s),out=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);return out;
+}
+function randomBytes(n=32){const b=new Uint8Array(n);crypto.getRandomValues(b);return b}
+function biometricAvailable(){
+  return !!(window.PublicKeyCredential&&navigator.credentials&&window.isSecureContext);
+}
+function refreshBiometricUI(){
+  const has=!!localStorage.getItem("loan_passkey_id");
+  if($("biometricLoginBtn"))$("biometricLoginBtn").classList.toggle("hidden",!has);
+  if($("enableBiometricBtn"))$("enableBiometricBtn").classList.toggle("hidden",has);
+  if($("biometricStatus"))$("biometricStatus").textContent=biometricAvailable()?(has?"כניסה ביומטרית פעילה במכשיר זה.":"אפשר להפעיל כניסה בטביעת אצבע דרך האבטחה של הטלפון."):"כניסה ביומטרית אינה זמינה בדפדפן זה.";
+}
+async function enableBiometric(){
+  if(!biometricAvailable()){alert("הכניסה בטביעת אצבע אינה זמינה בדפדפן הזה.");return}
+  try{
+    const credential=await navigator.credentials.create({publicKey:{
+      challenge:randomBytes(32),
+      rp:{name:"מערכת ניהול הלוואות",id:location.hostname},
+      user:{id:randomBytes(16),name:"Eldad",displayName:"Eldad"},
+      pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],
+      authenticatorSelection:{authenticatorAttachment:"platform",residentKey:"preferred",userVerification:"required"},
+      timeout:60000,
+      attestation:"none"
+    }});
+    if(!credential)throw new Error("no credential");
+    localStorage.setItem("loan_passkey_id",bytesToBase64Url(credential.rawId));
+    refreshBiometricUI();
+    alert("הכניסה בטביעת האצבע הופעלה במכשיר הזה.");
+  }catch(e){alert("לא הופעלה כניסה ביומטרית. אפשר להמשיך עם הסיסמה.")}
+}
+async function biometricLogin(){
+  if(!biometricAvailable()){alert("הכניסה בטביעת אצבע אינה זמינה בדפדפן הזה.");return}
+  try{
+    const id=localStorage.getItem("loan_passkey_id");if(!id)return;
+    const credential=await navigator.credentials.get({publicKey:{
+      challenge:randomBytes(32),
+      rpId:location.hostname,
+      allowCredentials:[{type:"public-key",id:base64UrlToBytes(id)}],
+      userVerification:"required",
+      timeout:60000
+    }});
+    if(!credential)throw new Error("no assertion");
+    sessionStorage.setItem("loan_logged_in","1");localStorage.setItem("loan_login_hint","1");
+    $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");
+  }catch(e){alert("הכניסה הביומטרית בוטלה או נכשלה. אפשר להיכנס עם הסיסמה.")}
+}
+$("enableBiometricBtn").onclick=enableBiometric;
+$("biometricLoginBtn").onclick=biometricLogin;
+refreshBiometricUI();
 $("logoutBtn").onclick=()=>{sessionStorage.removeItem("loan_logged_in");localStorage.removeItem("loan_login_hint");$("app").classList.add("hidden");$("loginScreen").classList.remove("hidden");$("passwordInput").focus()};
 
 initAgentSelect();render();
