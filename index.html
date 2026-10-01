@@ -151,9 +151,9 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
       <div class="agent-grid">
         <div>
           <div class="field"><label>בחירת סוכן</label><select id="agentSelect"></select></div>
-          <div class="field"><label>שם הסוכן</label><input id="agentName" placeholder="שם הסוכן"></div>
+          
           <div class="btn-row">
-            <button class="btn primary" id="saveAgent">✓ שמור שם</button>
+            
             <button class="btn danger" id="deleteAgent">🗑 מחק תיק</button>
           </div>
         </div>
@@ -314,7 +314,7 @@ function initAgentSelect(){
 }
 function refreshAgentFields(){
   const a=agent();if(!a)return;
-  $("agentName").value=a.name;$("monthlyFee").value=a.monthlyFee;$("agentShare").value=a.agentShare;
+  $("monthlyFee").value=a.monthlyFee;$("agentShare").value=a.agentShare;
 }
 function render(){
   const a=agent();if(!a)return;
@@ -375,17 +375,11 @@ function showPage(id){
 document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
 
 $("agentSelect").onchange=()=>{selectedClient=null;render()};
-$("saveAgent").onclick=()=>{
-  const a=agent();if(!a)return;
-  a.name=$("agentName").value.trim()||"סוכן ללא שם";
-  a.monthlyFee=Math.max(0,Number($("monthlyFee").value)||0);a.agentShare=Math.max(0,Number($("agentShare").value)||0);
-  save();initAgentSelect();$("agentSelect").value=a.id;render();
-};
 $("monthlyFee").onchange=()=>{agent().monthlyFee=Math.max(0,Number($("monthlyFee").value)||0);save();render()};
 $("agentShare").onchange=()=>{agent().agentShare=Math.max(0,Number($("agentShare").value)||0);save();render()};
 
 $("newAgent").onclick=()=>{
-  openModal("הוספת סוכן חדש",'<div class="notice blue" style="margin:0 0 14px">התיק ייווצר רק לאחר לחיצה על ״שמור סוכן״.</div><div class="field"><label>שם הסוכן</label><input id="newAgentName" placeholder="לדוגמה: דוד"></div><div class="btn-row"><button class="btn primary" onclick="createAgent()">✓ שמור סוכן</button><button class="btn light" onclick="closeModal()">ביטול</button></div>');
+  openModal("הוספת סוכן חדש",'<div class="notice blue" style="margin:0 0 14px">התיק ייווצר רק לאחר לחיצה על ״שמור סוכן״.</div><div class="field"><label>שם הסוכן</label><input id="newAgentName" placeholder="לדוגמה: דוד"></div><div class="btn-row"><button class="btn primary" onclick="createAgent()">שמור</button><button class="btn light" onclick="closeModal()">ביטול</button></div>');
   setTimeout(()=>$("newAgentName").focus(),50);
 };
 function createAgent(){
