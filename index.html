@@ -64,6 +64,7 @@ th{font-size:16px}
 <button class="primary" id="newAgent">＋ סוכן חדש</button>
 <button class="soft" id="saveAgent">שמור שם</button>
 <button class="primary" id="portfolioSummary">📊 ריכוז תיקי סוכנים</button>
+<button class="primary" id="businessFinance">💰 כספים ועמלות</button>
 <button class="danger" id="deleteAgent">מחק תיק</button>
 </div>
 </section>
@@ -167,7 +168,7 @@ th{font-size:16px}
 <th>סה״כ הוחזר</th>
 <th>יתרה</th>
 <th>סטטוס</th>
-<th>עמלה חודשית</th>
+<th>עמלה</th>
 <th>עמלה שנתית</th>
 <th>פעולות</th>
 </tr>
@@ -244,6 +245,8 @@ name:c.name||"לקוח",
 amount:Math.max(0,Number(c.amount)||0),
 months:Math.max(1,Number(c.months)||1),
 status:c.status||"פעיל",
+feeType:c.feeType||"agent",
+feeRate:(c.feeRate===null||c.feeRate===undefined||c.feeRate==="")?null:Math.max(0,Number(c.feeRate)||0),
 repayments:reps
 };
 
@@ -335,29 +338,95 @@ return String(s??"").replace(/[&<>"']/g,m=>({
 }[m]));
 }
 
-function showPortfolioSummary(){
+function getClientBalance(c){
+return Math.max(0,c.amount-c.repayments.reduce((x,r)=>x+r.amount,0));
+}
 
+function getClientFeeRate(c,a){
+return c.feeRate===null || c.feeRate===undefined ? a.monthlyFee : Number(c.feeRate)||0;
+}
+
+function getClientFeeType(c){
+return c.feeType && c.feeType!=="agent" ? c.feeType : "monthly";
+}
+
+function getClientMonthlyGross(c,a){
+const balance=getClientBalance(c);
+const rate=getClientFeeRate(c,a);
+const type=getClientFeeType(c);
+if(type==="daily") return balance*(rate/100)*30.44;
+return balance*(rate/100);
+}
+
+function getClientAnnualGross(c,a){
+const balance=getClientBalance(c);
+const rate=getClientFeeRate(c,a);
+const type=getClientFeeType(c);
+if(type==="daily") return balance*(rate/100)*365;
+return balance*(rate/100)*12;
+}
+
+function showBusinessFinance(){
 const rows=db.agents.map(a=>{
+const capital=a.clients.reduce((s,c)=>s+getClientBalance(c),0);
+const gross=a.clients.reduce((s,c)=>s+getClientMonthlyGross(c,a),0);
+const netAgent=gross*(a.agentShare/100);
+const netBusiness=gross-netAgent;
+return `
+<tr>
+<td><b>${esc(a.name)}</b></td>
+<td>${money(capital)}</td>
+<td>${money(gross)}</td>
+<td>${money(netBusiness)}</td>
+<td>${money(netAgent)}</td>
+</tr>`;
+}).join("");
 
+const totalCapital=db.agents.reduce((s,a)=>s+a.clients.reduce((x,c)=>x+getClientBalance(c),0),0);
+const totalGross=db.agents.reduce((s,a)=>s+a.clients.reduce((x,c)=>x+getClientMonthlyGross(c,a),0),0);
+const totalAgent=db.agents.reduce((s,a)=>{
+const gross=a.clients.reduce((x,c)=>x+getClientMonthlyGross(c,a),0);
+return s+gross*(a.agentShare/100);
+},0);
+const totalBusiness=totalGross-totalAgent;
+
+showModal(`
+<h2>💰 כספים ועמלות</h2>
+<p class="note">הטבלה מציגה את הכספים והעמלות של כלל הסוכנים. העמלה מוצגת כחישוב חודשי; לקוח המוגדר בעמלה יומית מחושב לפי 30.44 ימים בחודש.</p>
+<div class="table-wrap">
+<table style="min-width:850px">
+<thead><tr>
+<th>סוכן</th>
+<th>הון אצל הסוכן</th>
+<th>עמלה ברוטו</th>
+<th>עמלה נטו – עסק</th>
+<th>עמלה נטו – סוכן</th>
+</tr></thead>
+<tbody>
+${rows}
+<tr style="font-weight:800;background:#eef3ff">
+<td>סה״כ העסק</td>
+<td>${money(totalCapital)}</td>
+<td>${money(totalGross)}</td>
+<td>${money(totalBusiness)}</td>
+<td>${money(totalAgent)}</td>
+</tr>
+</tbody>
+</table>
+</div>
+<button class="primary" onclick="closeModal()" style="margin-top:16px">סגור</button>
+`);
+}
+
+function showPortfolioSummary(){
+const rows=db.agents.map(a=>{
 const original=a.clients.reduce((s,c)=>s+c.amount,0);
-
-const paid=a.clients.reduce(
-(s,c)=>s+c.repayments.reduce((x,r)=>x+r.amount,0),0
-);
-
-const balance=a.clients.reduce(
-(s,c)=>s+Math.max(
-0,
-c.amount-c.repayments.reduce((x,r)=>x+r.amount,0)
-),
-0
-);
-
-const monthly=balance*(a.monthlyFee/100);
-const yearly=monthly*12;
+const paid=a.clients.reduce((s,c)=>s+c.repayments.reduce((x,r)=>x+r.amount,0),0);
+const balance=a.clients.reduce((s,c)=>s+getClientBalance(c),0);
+const monthly=a.clients.reduce((s,c)=>s+getClientMonthlyGross(c,a),0);
+const yearly=a.clients.reduce((s,c)=>s+getClientAnnualGross(c,a),0);
 const agentMonthly=monthly*(a.agentShare/100);
 const agentYearly=yearly*(a.agentShare/100);
-
 return `
 <tr>
 <td><b>${esc(a.name)}</b></td>
@@ -369,88 +438,32 @@ return `
 <td>${money(yearly)}</td>
 <td>${money(agentMonthly)}</td>
 <td>${money(agentYearly)}</td>
-</tr>
-`;
-
+</tr>`;
 }).join("");
 
-const totalOriginal=db.agents.reduce(
-(s,a)=>s+a.clients.reduce((x,c)=>x+c.amount,0),0
-);
-
-const totalPaid=db.agents.reduce(
-(s,a)=>s+a.clients.reduce(
-(x,c)=>x+c.repayments.reduce((z,r)=>z+r.amount,0),0
-),0
-);
-
-const totalBalance=db.agents.reduce(
-(s,a)=>s+a.clients.reduce(
-(x,c)=>x+Math.max(
-0,
-c.amount-c.repayments.reduce((z,r)=>z+r.amount,0)
-),0
-),0
-);
+const totalOriginal=db.agents.reduce((s,a)=>s+a.clients.reduce((x,c)=>x+c.amount,0),0);
+const totalPaid=db.agents.reduce((s,a)=>s+a.clients.reduce((x,c)=>x+c.repayments.reduce((z,r)=>z+r.amount,0),0),0);
+const totalBalance=db.agents.reduce((s,a)=>s+a.clients.reduce((x,c)=>x+getClientBalance(c),0),0);
 
 showModal(`
 <h2>📊 ריכוז תיקי סוכנים</h2>
-
 <div class="loan-grid">
-
-<div class="loan-box">
-<span>סך ההלוואות המקוריות</span>
-<b>${money(totalOriginal)}</b>
+<div class="loan-box"><span>סך ההלוואות המקוריות</span><b>${money(totalOriginal)}</b></div>
+<div class="loan-box"><span>סך כל ההחזרים</span><b>${money(totalPaid)}</b></div>
+<div class="loan-box"><span>סך היתרות</span><b>${money(totalBalance)}</b></div>
+<div class="loan-box"><span>מספר סוכנים</span><b>${db.agents.length}</b></div>
 </div>
-
-<div class="loan-box">
-<span>סך כל ההחזרים</span>
-<b>${money(totalPaid)}</b>
-</div>
-
-<div class="loan-box">
-<span>סך היתרות</span>
-<b>${money(totalBalance)}</b>
-</div>
-
-<div class="loan-box">
-<span>מספר סוכנים</span>
-<b>${db.agents.length}</b>
-</div>
-
-</div>
-
 <div class="table-wrap" style="margin-top:18px">
-
 <table style="min-width:1050px">
-
-<thead>
-<tr>
-<th>סוכן</th>
-<th>לקוחות</th>
-<th>הלוואות מקוריות</th>
-<th>הוחזר</th>
-<th>יתרה</th>
-<th>עמלה חודשית</th>
-<th>עמלה שנתית</th>
-<th>חלק הסוכן חודשי</th>
-<th>חלק הסוכן שנתי</th>
-</tr>
-</thead>
-
-<tbody>
-${rows}
-</tbody>
-
+<thead><tr>
+<th>סוכן</th><th>לקוחות</th><th>הלוואות מקוריות</th><th>הוחזר</th><th>יתרה</th>
+<th>עמלה חודשית</th><th>עמלה שנתית</th><th>חלק הסוכן חודשי</th><th>חלק הסוכן שנתי</th>
+</tr></thead>
+<tbody>${rows}</tbody>
 </table>
-
 </div>
-
-<button class="primary" onclick="closeModal()" style="margin-top:16px">
-סגור
-</button>
+<button class="primary" onclick="closeModal()" style="margin-top:16px">סגור</button>
 `);
-
 }
 
 function init(){
@@ -487,16 +500,9 @@ $("agentName").value=a.name;
 $("monthlyFee").value=a.monthlyFee;
 $("agentShare").value=a.agentShare;
 
-const total=a.clients.reduce((s,c)=>{
-
-const paid=c.repayments.reduce((x,r)=>x+r.amount,0);
-
-return s+Math.max(0,c.amount-paid);
-
-},0);
-
-const monthly=total*(a.monthlyFee/100);
-const yearly=monthly*12;
+const total=a.clients.reduce((s,c)=>s+getClientBalance(c),0);
+const monthly=a.clients.reduce((s,c)=>s+getClientMonthlyGross(c,a),0);
+const yearly=a.clients.reduce((s,c)=>s+getClientAnnualGross(c,a),0);
 
 $("sClients").textContent=a.clients.length;
 $("sLoans").textContent=money(total);
@@ -530,8 +536,11 @@ filter==="all" ||
 $("clientTable").innerHTML=rows.length?rows.map(c=>{
 
 const paid=c.repayments.reduce((s,r)=>s+r.amount,0);
-const balance=Math.max(0,c.amount-paid);
-const m=balance*a.monthlyFee/100;
+const balance=getClientBalance(c);
+const m=getClientMonthlyGross(c,a);
+const feeRate=getClientFeeRate(c,a);
+const feeType=getClientFeeType(c);
+const feeLabel=feeType==="daily" ? "יומית" : "חודשית";
 
 return `
 <tr>
@@ -570,9 +579,9 @@ ${money(paid)} 💰
 
 <td>${esc(c.status|| (balance===0?"הסתיים":"פעיל"))}</td>
 
-<td>${money(m)}</td>
+<td>${money(m)}<br><span class="note">${feeRate}% ${feeLabel}</span></td>
 
-<td>${money(m*12)}</td>
+<td>${money(getClientAnnualGross(c,a))}</td>
 
 <td>
 
@@ -782,6 +791,16 @@ showModal(`
 <label>תקופה (חודשים)</label>
 <input id="eMonths" type="number" min="1" value="${c.months}">
 
+<label>עמלת הלקוח</label>
+<select id="eFeeType">
+<option value="agent" ${c.feeType==="agent"||c.feeType==null?"selected":""}>לפי עמלת הסוכן</option>
+<option value="monthly" ${c.feeType==="monthly"?"selected":""}>חודשית</option>
+<option value="daily" ${c.feeType==="daily"?"selected":""}>יומית</option>
+</select>
+
+<label>אחוז עמלה</label>
+<input id="eFeeRate" type="number" min="0" step="0.1" value="${c.feeRate??""}" placeholder="ריק = לפי עמלת הסוכן">
+
 <label>סטטוס</label>
 
 <select id="eStatus">
@@ -828,6 +847,9 @@ c.name=$("eName").value.trim()||"לקוח";
 c.amount=Math.max(0,Number($("eAmount").value));
 c.months=Math.max(1,Number($("eMonths").value));
 c.status=$("eStatus").value;
+c.feeType=$("eFeeType").value;
+if(getClientBalance(c)===0) c.status="הסתיים";
+c.feeRate=$("eFeeRate").value==="" ? null : Math.max(0,Number($("eFeeRate").value)||0);
 
 save();
 closeModal();
@@ -1065,6 +1087,7 @@ render();
 };
 
 $("portfolioSummary").onclick=showPortfolioSummary;
+$("businessFinance").onclick=showBusinessFinance;
 
 $("newAgent").onclick=()=>{
 
@@ -1150,6 +1173,8 @@ name,
 amount,
 months,
 status:"פעיל",
+feeType:"agent",
+feeRate:null,
 repayments:[]
 
 };
@@ -1176,16 +1201,9 @@ $("reportBtn").onclick=()=>{
 
 const a=agent();
 
-const balance=a.clients.reduce(
-(s,c)=>s+Math.max(
-0,
-c.amount-c.repayments.reduce((x,r)=>x+r.amount,0)
-),
-0
-);
-
-const monthly=balance*a.monthlyFee/100;
-const yearly=monthly*12;
+const balance=a.clients.reduce((s,c)=>s+getClientBalance(c),0);
+const monthly=a.clients.reduce((s,c)=>s+getClientMonthlyGross(c,a),0);
+const yearly=a.clients.reduce((s,c)=>s+getClientAnnualGross(c,a),0);
 
 showModal(`
 
