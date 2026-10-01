@@ -136,14 +136,35 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
     <p>ניהול הלוואות, לקוחות, החזרים, עמלות וריכוז כספי במקום אחד.</p>
   </section>
 
-  <nav class="nav">
-    <button class="active" data-page="dashboard">🏠 ראשי</button>
+  <nav class="nav" style="display:none">
+    <button data-page="dashboard">🏠 ראשי</button>
     <button data-page="clientsPage">👥 לקוחות</button>
     <button data-page="portfolioPage">📊 ריכוז תיקים</button>
     <button data-page="financePage">💰 כספים ועמלות</button>
   </nav>
 
   <section class="page active" id="dashboard">
+    <div class="card" style="margin-top:8px">
+      <div class="card-head">
+        <div><h2 class="card-title">תיקי סוכנים</h2><div class="card-sub">בחר תיק קיים או צור תיק סוכן חדש.</div></div>
+      </div>
+      <div class="field">
+        <label>בחירת סוכן</label>
+        <select id="agentSelect"><option value="">בחר סוכן...</option></select>
+      </div>
+      <div class="agent-tools">
+        <button class="btn primary wide" id="newAgent">＋ הוספת סוכן חדש</button>
+        <button class="btn soft wide" id="portfolioSummary">📊 ריכוז תיקי סוכנים</button>
+        <button class="btn green wide" id="businessFinance">💰 כספים ועמלות</button>
+      </div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn light" id="backupHome">💾 גיבוי נתונים</button>
+        <button class="btn light" id="restoreHome">↩ שחזור מגיבוי</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="agentFilePage">
     <div class="card">
       <div class="card-head">
         <div><h2 class="card-title">תיק סוכן</h2><div class="card-sub">בחר סוכן או צור תיק חדש. סוכן חדש נוצר רק לאחר שמירת השם.</div></div>
@@ -202,6 +223,8 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
         <button class="btn light" id="reportBtn">📄 דוח תיק</button>
       </div>
     </div>
+  </section>
+
   </section>
 
   <section class="page" id="clientsPage">
@@ -307,10 +330,8 @@ function closeModal(){$("modalBg").style.display="none"}
 $("modalBg").onclick=e=>{if(e.target===$("modalBg"))closeModal()};
 
 function initAgentSelect(){
-  $("agentSelect").innerHTML=db.agents.map(a=>'<option value="'+a.id+'">'+esc(a.name)+'</option>').join("");
-  if(!db.agents.length)return;
-  const a=agent();
-  if(!a)$("agentSelect").value=db.agents[0].id;
+  $("agentSelect").innerHTML='<option value="">בחר סוכן...</option>'+db.agents.map(a=>'<option value="'+a.id+'">'+esc(a.name)+'</option>').join("");
+  $("agentSelect").value="";
 }
 function refreshAgentFields(){
   const a=agent();if(!a)return;
@@ -374,7 +395,15 @@ function showPage(id){
 }
 document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
 
-$("agentSelect").onchange=()=>{selectedClient=null;render()};
+$("agentSelect").onchange=()=>{
+  selectedClient=null;
+  if($("agentSelect").value){
+    showPage("agentFilePage");
+    render();
+  }else{
+    showPage("dashboard");
+  }
+};
 $("monthlyFee").onchange=()=>{agent().monthlyFee=Math.max(0,Number($("monthlyFee").value)||0);save();render()};
 $("agentShare").onchange=()=>{agent().agentShare=Math.max(0,Number($("agentShare").value)||0);save();render()};
 
@@ -384,7 +413,7 @@ $("newAgent").onclick=()=>{
 };
 function createAgent(){
   const name=$("newAgentName").value.trim();if(!name){alert("יש להזין שם סוכן.");return}
-  const a={id:db.nextAgent++,name,monthlyFee:5,agentShare:20,clients:[]};db.agents.push(a);save();initAgentSelect();$("agentSelect").value=a.id;closeModal();render();showPage("dashboard");
+  const a={id:db.nextAgent++,name,monthlyFee:5,agentShare:20,clients:[]};db.agents.push(a);save();initAgentSelect();$("agentSelect").value=a.id;closeModal();showPage("agentFilePage");render();
 }
 $("deleteAgent").onclick=()=>{
   const a=agent();if(!a)return;
@@ -393,7 +422,7 @@ $("deleteAgent").onclick=()=>{
 function confirmDeleteAgent(){
   const a=agent();db.agents=db.agents.filter(x=>x.id!==a.id);
   if(!db.agents.length)db.agents.push({id:db.nextAgent++,name:"סוכן 1",monthlyFee:5,agentShare:20,clients:[]});
-  save();initAgentSelect();closeModal();render();
+  save();initAgentSelect();closeModal();showPage("dashboard");
 }
 
 $("addClient").onclick=()=>{
@@ -405,6 +434,8 @@ $("addClient").onclick=()=>{
 $("search").oninput=renderClients;$("statusFilter").onchange=renderClients;
 $("goClients").onclick=()=>showPage("clientsPage");$("goAddClient").onclick=()=>{showPage("clientsPage");setTimeout(()=>$("clientName").focus(),250)};
 $("portfolioSummary").onclick=()=>showPage("portfolioPage");$("businessFinance").onclick=()=>showPage("financePage");
+$("backupHome").onclick=()=>$("download").click();
+$("restoreHome").onclick=()=>$("restore").click();
 
 function openClient(id){
   selectedClient=id;const c=currentClient();if(!c)return;
@@ -461,7 +492,8 @@ $("showBackup").onclick=()=>openModal("נתוני גיבוי",'<textarea readonl
 $("restore").onclick=()=>$("file").click();
 $("file").onchange=e=>{
   const f=e.target.files[0];if(!f)return;const r=new FileReader();
-  r.onload=()=>{try{const x=normalizeDb(JSON.parse(r.result));if(!x)throw 0;db=x;save();initAgentSelect();render();alert("השחזור הושלם בהצלחה.")}catch(err){alert("קובץ גיבוי לא תקין.")}};
+  r.onload=()=>{try{const x=normalizeDb(JSON.parse(r.result));if(!x)throw 0;db=x;save();initAgentSelect();
+showPage("dashboard");alert("השחזור הושלם בהצלחה.")}catch(err){alert("קובץ גיבוי לא תקין.")}};
   r.readAsText(f);e.target.value="";
 };
 
