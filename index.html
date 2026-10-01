@@ -119,7 +119,7 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
     <p>הזן את קוד הגישה כדי לפתוח את המערכת.</p>
     <div class="field">
       <label>קוד גישה</label>
-      <div class="password-wrap"><input id="passwordInput" type="password" inputmode="text" lang="en" dir="ltr" autocomplete="current-password" autocapitalize="off" spellcheck="false" placeholder="הזן קוד גישה"><button type="button" class="show-password" id="showPassword" aria-label="הצג סיסמה">👁️</button></div>
+      <div class="password-wrap"><input id="passwordInput" type="password" inputmode="email" lang="en-US" dir="ltr" autocomplete="current-password" autocapitalize="off" spellcheck="false" placeholder="הזן קוד גישה"><button type="button" class="show-password" id="showPassword" aria-label="הצג סיסמה">👁️</button></div>
     </div>
     <div class="login-error" id="loginError">קוד הגישה שגוי</div>
     <button class="btn primary" id="loginBtn" style="width:100%;margin-top:8px">🔐 כניסה למערכת</button>
@@ -170,7 +170,6 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
     </div>
   </section>
 
-  <div class="page-back" style="margin-bottom:12px"><button class="btn light small" onclick="showPage('dashboard')">← חזרה לראשי</button></div>
   <section class="page" id="agentFilePage">
     <div class="card">
       <div class="card-head">
@@ -234,7 +233,6 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
 
   </section>
 
-  <div class="page-back" style="margin-bottom:12px"><button class="btn light small" onclick="showPage('dashboard')">← חזרה לראשי</button></div>
   <section class="page" id="clientsPage">
     <div class="card" id="addClientCard">
       <div class="card-head"><div><h2 class="card-title">הוספת לקוח והלוואה</h2><div class="card-sub">לאחר יצירת הלקוח ניתן להוסיף, לערוך ולמחוק החזרים.</div></div></div>
@@ -259,7 +257,6 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
     </div>
   </section>
 
-  <div class="page-back" style="margin-bottom:12px"><button class="btn light small" onclick="showPage('dashboard')">← חזרה לראשי</button></div>
   <section class="page" id="portfolioPage">
     <div class="card">
       <div class="card-head"><div><h2 class="card-title">ריכוז תיקי סוכנים</h2><div class="card-sub">תמונה מרוכזת של כל הסוכנים, ההלוואות, ההחזרים והעמלות.</div></div></div>
@@ -267,7 +264,6 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
     </div>
   </section>
 
-  <div class="page-back" style="margin-bottom:12px"><button class="btn light small" onclick="showPage('dashboard')">← חזרה לראשי</button></div>
   <section class="page" id="financePage">
     <div class="card">
       <div class="card-head"><div><h2 class="card-title">כספים ועמלות</h2><div class="card-sub">הכנסה מהעמלות, חלק העסק וחלק הסוכן לפי תיק.</div></div></div>
@@ -275,7 +271,6 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
     </div>
   </section>
 
-  <div class="page-back" style="margin-bottom:12px"><button class="btn light small" onclick="showPage('dashboard')">← חזרה לראשי</button></div>
   <section class="page" id="backupPage">
     <div class="card">
       <div class="card-head"><div><h2 class="card-title">גיבוי ושחזור</h2><div class="card-sub">כאן שומרים עותק של כל המערכת או משחזרים נתונים מגיבוי קיים.</div></div></div>
@@ -522,20 +517,22 @@ showPage("dashboard");alert("השחזור הושלם בהצלחה.")}catch(err){
 
 function login(){
   if($("passwordInput").value===ACCESS_CODE){
-    sessionStorage.setItem("loan_logged_in","1");
+    sessionStorage.setItem("loan_logged_in","1");localStorage.setItem("loan_login_hint","1");
     $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");$("loginError").style.display="none";$("passwordInput").value="";
   }else{$("loginError").style.display="block";$("passwordInput").select()}
 }
 $("loginBtn").onclick=login;$("showPassword").onclick=togglePassword;$("passwordInput").onkeydown=e=>{if(e.key==="Enter")login()};
-$("logoutBtn").onclick=()=>{sessionStorage.removeItem("loan_logged_in");$("app").classList.add("hidden");$("loginScreen").classList.remove("hidden");$("passwordInput").focus()};
+$("logoutBtn").onclick=()=>{sessionStorage.removeItem("loan_logged_in");localStorage.removeItem("loan_login_hint");$("app").classList.add("hidden");$("loginScreen").classList.remove("hidden");$("passwordInput").focus()};
 
 initAgentSelect();render();
-if(sessionStorage.getItem("loan_logged_in")==="1"){
+if(sessionStorage.getItem("loan_logged_in")==="1"||localStorage.getItem("loan_login_hint")==="1"){
+  sessionStorage.setItem("loan_logged_in","1");
   $("app").classList.remove("hidden");
   $("loginScreen").classList.add("hidden");
 }else{
   $("app").classList.add("hidden");
   $("loginScreen").classList.remove("hidden");
+  setTimeout(()=>$("passwordInput").focus(),120);
 }
 </script>
 </body>
