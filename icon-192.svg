@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#19b8ff"/><stop offset=".42" stop-color="#1261d8"/><stop offset="1" stop-color="#061d63"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff08a"/><stop offset=".35" stop-color="#ffd23f"/><stop offset="1" stop-color="#e99a00"/></linearGradient>
+ <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#dbe8ff"/></linearGradient>
+ <filter id="shadow"><feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#00133d" flood-opacity=".45"/></filter>
+ <filter id="soft"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#00133d" flood-opacity=".35"/></filter>
+</defs>
+<rect x="5" y="5" width="502" height="502" rx="92" fill="url(#bg)"/>
+<rect x="10" y="10" width="492" height="492" rx="87" fill="none" stroke="#48dcff" stroke-width="7" opacity=".9"/>
+<g filter="url(#shadow)">
+ <rect x="78" y="91" width="205" height="265" rx="18" fill="#123f9c" transform="rotate(-6 180 223)"/>
+ <rect x="92" y="80" width="205" height="265" rx="18" fill="url(#paper)" transform="rotate(-6 195 213)"/>
+ <rect x="161" y="67" width="72" height="35" rx="10" fill="url(#gold)" transform="rotate(-6 197 84)"/>
+ <g transform="rotate(-6 195 213)">
+  <rect x="116" y="132" width="35" height="35" rx="7" fill="#31a852"/>
+  <path d="M125 149l9 9 16-19" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="166" y="140" width="88" height="8" rx="4" fill="#3180dd"/>
+  <rect x="166" y="158" width="66" height="7" rx="3.5" fill="#65a8ef"/>
+  <rect x="116" y="196" width="35" height="35" rx="7" fill="#31a852"/>
+  <path d="M125 213l9 9 16-19" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="166" y="204" width="88" height="8" rx="4" fill="#3180dd"/>
+  <rect x="166" y="222" width="66" height="7" rx="3.5" fill="#65a8ef"/>
+  <rect x="116" y="260" width="35" height="35" rx="7" fill="#31a852"/>
+  <path d="M125 277l9 9 16-19" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="166" y="268" width="88" height="8" rx="4" fill="#3180dd"/>
+ </g>
+</g>
+<g filter="url(#soft)">
+ <rect x="300" y="190" width="122" height="194" rx="20" fill="#172b50" transform="rotate(8 361 287)"/>
+ <rect x="319" y="211" width="84" height="42" rx="8" fill="#6edbff" transform="rotate(8 361 232)"/>
+ <g transform="rotate(8 361 300)">
+  <rect x="324" y="270" width="29" height="29" rx="6" fill="#2775d8"/><text x="338" y="292" text-anchor="middle" font-family="Arial" font-size="24" font-weight="900" fill="#fff">%</text>
+  <rect x="363" y="276" width="29" height="29" rx="6" fill="#2775d8"/><text x="377" y="298" text-anchor="middle" font-family="Arial" font-size="23" font-weight="900" fill="#fff">+</text>
+  <rect x="324" y="314" width="29" height="29" rx="6" fill="#2775d8"/><text x="338" y="336" text-anchor="middle" font-family="Arial" font-size="24" font-weight="900" fill="#fff">=</text>
+ </g>
+</g>
+<g filter="url(#soft)">
+ <rect x="282" y="317" width="48" height="92" rx="10" fill="url(#gold)"/>
+ <rect x="337" y="289" width="48" height="120" rx="10" fill="url(#gold)"/>
+ <rect x="392" y="254" width="48" height="155" rx="10" fill="url(#gold)"/>
+ <path d="M274 244c38-29 78-45 139-70" fill="none" stroke="#ffd23f" stroke-width="15" stroke-linecap="round"/>
+ <path d="M403 161l28 8-12 28" fill="none" stroke="#ffd23f" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g filter="url(#soft)">
+ <ellipse cx="331" cy="397" rx="62" ry="20" fill="#b86b00"/>
+ <rect x="269" y="376" width="124" height="22" rx="8" fill="url(#gold)"/>
+ <ellipse cx="331" cy="376" rx="62" ry="20" fill="#ffe56b"/>
+ <ellipse cx="331" cy="376" rx="48" ry="14" fill="#f5b51b"/>
+ <text x="331" y="389" text-anchor="middle" font-family="Arial" font-size="25" font-weight="900" fill="#fff7bd">฿</text>
+</g>
+<g transform="rotate(-18 196 403)" filter="url(#soft)">
+ <rect x="65" y="388" width="230" height="27" rx="13" fill="#0c1932"/>
+ <rect x="82" y="391" width="174" height="5" rx="2.5" fill="#314a71"/>
+ <path d="M290 388l55 13-55 13z" fill="url(#gold)"/>
+ <rect x="78" y="388" width="22" height="27" rx="10" fill="url(#gold)"/>
+</g>
+</svg>
