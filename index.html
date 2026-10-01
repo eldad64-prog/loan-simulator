@@ -156,10 +156,10 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
       <button class="topic-btn" onclick="showPage('clientsPage')">
         <span class="topic-icon">👥</span><span>לקוחות והלוואות</span><small>לקוחות, הלוואות והחזרים</small>
       </button>
-      <button class="topic-btn" onclick="showPage('portfolioPage')">
+      <button class="topic-btn" id="openPortfolioHome" type="button" onclick="showPage('portfolioPage')">
         <span class="topic-icon">📊</span><span>ריכוז תיקים</span><small>תמונה מרוכזת של כל הסוכנים</small>
       </button>
-      <button class="topic-btn" onclick="showPage('financePage')">
+      <button class="topic-btn" id="openFinanceHome" type="button" onclick="showPage('financePage')">
         <span class="topic-icon">💰</span><span>כספים ועמלות</span><small>הכנסות, עמלות וחלק הסוכן</small>
       </button>
       <button class="topic-btn" onclick="showPage('backupPage')">
@@ -409,6 +409,8 @@ function showPage(id){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+$("openPortfolioHome").onclick=()=>showPage("portfolioPage");
+$("openFinanceHome").onclick=()=>showPage("financePage");
 document.querySelectorAll(".page:not(#dashboard)").forEach(page=>{
   if(page.querySelector(".page-back"))return;
   const wrap=document.createElement("div");
@@ -530,7 +532,7 @@ showPage("dashboard");alert("השחזור הושלם בהצלחה.")}catch(err){
 
 function login(){
   if($("passwordInput").value===ACCESS_CODE){
-    sessionStorage.setItem("loan_logged_in","1");localStorage.setItem("loan_login_hint","1");
+    sessionStorage.setItem("loan_logged_in","1");
     $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");$("loginError").style.display="none";$("passwordInput").value="";
   }else{$("loginError").style.display="block";$("passwordInput").select()}
 }
@@ -584,17 +586,17 @@ async function biometricLogin(){
       timeout:60000
     }});
     if(!credential)throw new Error("no assertion");
-    sessionStorage.setItem("loan_logged_in","1");localStorage.setItem("loan_login_hint","1");
+    sessionStorage.setItem("loan_logged_in","1");
     $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");
   }catch(e){alert("הכניסה הביומטרית בוטלה או נכשלה. אפשר להיכנס עם הסיסמה.")}
 }
 $("enableBiometricBtn").onclick=enableBiometric;
 $("biometricLoginBtn").onclick=biometricLogin;
 refreshBiometricUI();
-if($("logoutBtn"))$("logoutBtn").onclick=()=>{sessionStorage.removeItem("loan_logged_in");localStorage.removeItem("loan_login_hint");$("app").classList.add("hidden");$("loginScreen").classList.remove("hidden");$("passwordInput").focus()};
+if($("logoutBtn"))$("logoutBtn").onclick=()=>{sessionStorage.removeItem("loan_logged_in");$("app").classList.add("hidden");$("loginScreen").classList.remove("hidden");$("passwordInput").focus()};
 
 initAgentSelect();render();
-if(sessionStorage.getItem("loan_logged_in")==="1"||localStorage.getItem("loan_login_hint")==="1"){
+if(sessionStorage.getItem("loan_logged_in")==="1"){
   sessionStorage.setItem("loan_logged_in","1");
   $("app").classList.remove("hidden");
   $("loginScreen").classList.add("hidden");
