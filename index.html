@@ -85,7 +85,7 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
 .login-screen{position:fixed;inset:0;z-index:5000;background:linear-gradient(145deg,#f4f7ff,#e9effa);display:flex;align-items:center;justify-content:center;padding:20px}
 .login-box{width:min(430px,100%);background:#fff;border:1px solid #dce3ef;border-radius:28px;padding:28px;box-shadow:0 25px 70px #1e31501a;text-align:center}
 .login-logo{width:68px;height:68px;border-radius:21px;margin:0 auto 15px;background:linear-gradient(145deg,#2f6df0,#1d4ed8);color:#fff;display:grid;place-items:center;font-size:34px;font-weight:900}
-.login-box h1{margin:0;font-size:28px}.login-box p{color:var(--muted);line-height:1.5}.login-box .field{text-align:right;margin-top:22px}
+.login-box h1{margin:0;font-size:28px}.login-box p{color:var(--muted);line-height:1.5}.login-box .field{text-align:right;margin-top:22px}.password-wrap{position:relative}.password-wrap input{padding-left:52px}.show-password{position:absolute;left:8px;top:6px;width:40px;height:40px;border-radius:10px;background:#f1f4f8;color:#334155;font-size:18px}
 .login-error{display:none;background:var(--redSoft);color:#a52331;border:1px solid #f4c7cc;border-radius:12px;padding:10px;margin:10px 0;font-weight:700}
 .hidden{display:none!important}
 @media(max-width:800px){
@@ -115,11 +115,11 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
 <div class="login-screen" id="loginScreen">
   <div class="login-box">
     <div class="login-logo">₪</div>
-    <h1>ניהול תיקי הלוואות</h1>
+    <h1>הלוואות</h1>
     <p>הזן את קוד הגישה כדי לפתוח את המערכת.</p>
     <div class="field">
       <label>קוד גישה</label>
-      <input id="passwordInput" type="password" autocomplete="current-password" placeholder="הזן קוד גישה">
+      <div class="password-wrap"><input id="passwordInput" type="password" autocomplete="current-password" placeholder="הזן קוד גישה"><button type="button" class="show-password" id="showPassword" aria-label="הצג סיסמה">👁️</button></div>
     </div>
     <div class="login-error" id="loginError">קוד הגישה שגוי</div>
     <button class="btn primary" id="loginBtn" style="width:100%;margin-top:8px">🔐 כניסה למערכת</button>
@@ -289,6 +289,7 @@ const ACCESS_CODE="Eldad1964";
 const KEY="loan_portfolios_v3";
 const OLD_KEY="loan_agent_manager_v1";
 const $=id=>document.getElementById(id);
+function togglePassword(){const i=$("passwordInput"),b=$("showPassword");if(!i)return;i.type=i.type==="password"?"text":"password";if(b)b.textContent=i.type==="password"?"👁️":"🙈"}
 let db=null,selectedClient=null;
 
 function normalizeDb(x){
@@ -508,7 +509,7 @@ function login(){
     $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");$("loginError").style.display="none";$("passwordInput").value="";
   }else{$("loginError").style.display="block";$("passwordInput").select()}
 }
-$("loginBtn").onclick=login;$("passwordInput").onkeydown=e=>{if(e.key==="Enter")login()};
+$("loginBtn").onclick=login;$("showPassword").onclick=togglePassword;$("passwordInput").onkeydown=e=>{if(e.key==="Enter")login()};
 $("logoutBtn").onclick=()=>{$("app").classList.add("hidden");$("loginScreen").classList.remove("hidden");$("passwordInput").focus()};
 
 initAgentSelect();render();
