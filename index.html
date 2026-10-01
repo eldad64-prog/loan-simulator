@@ -405,6 +405,7 @@ function showPage(id){
   const page=$(id);if(!page)return;
   page.classList.add("active");
   const b=document.querySelector('.nav button[data-page="'+id+'"]');if(b)b.classList.add("active");
+  if($("logoutBtn"))$("logoutBtn").style.display=id==="dashboard"?"block":"none";
   if(id==="agentFilePage")render();
   if(id==="clientsPage")renderClients();
   window.scrollTo({top:0,behavior:"smooth"});
