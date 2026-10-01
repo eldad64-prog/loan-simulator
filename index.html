@@ -467,15 +467,16 @@ $("file").onchange=e=>{
 
 function login(){
   if($("passwordInput").value===ACCESS_CODE){
-    sessionStorage.setItem("loan_front_unlocked","1");$("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");$("loginError").style.display="none";$("passwordInput").value="";
+    $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");$("loginError").style.display="none";$("passwordInput").value="";
   }else{$("loginError").style.display="block";$("passwordInput").select()}
 }
 $("loginBtn").onclick=login;$("passwordInput").onkeydown=e=>{if(e.key==="Enter")login()};
-$("logoutBtn").onclick=()=>{sessionStorage.removeItem("loan_front_unlocked");$("app").classList.add("hidden");$("loginScreen").classList.remove("hidden");$("passwordInput").focus()};
+$("logoutBtn").onclick=()=>{$("app").classList.add("hidden");$("loginScreen").classList.remove("hidden");$("passwordInput").focus()};
 
 initAgentSelect();render();
-// The app stays hidden until the access code is entered successfully.
-// No session auto-unlock: every fresh page load starts with the password screen only.
+// Force password screen on every page load. The app cannot appear before successful login.
+$("app").classList.add("hidden");
+$("loginScreen").classList.remove("hidden");
 </script>
 </body>
 </html>
