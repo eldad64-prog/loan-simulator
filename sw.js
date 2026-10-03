@@ -1,4 +1,4 @@
-const CACHE_NAME = "loan-simulator-runtime-v3";
+const CACHE_NAME = "loan-simulator-runtime-v4";
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js";
 
 self.addEventListener("install", event => {
@@ -24,7 +24,7 @@ async function injectCloudSync(response) {
 
   const injection =
     '<script src="' + SUPABASE_CDN + '"></script>' +
-    '<script src="./supabase-sync.js"></script>';
+    '<script src="./supabase-sync.js?v=anon-fix-20261003"></script>';
 
   const html = text.replace(/<\/body>/i, injection + "</body>");
   const headers = new Headers(response.headers);
