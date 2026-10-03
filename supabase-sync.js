@@ -124,6 +124,26 @@
     const email = document.getElementById("cloudEmail").value.trim();
     if (!email || !email.includes("@")) { alert("יש להזין כתובת אימייל תקינה."); return; }
     localStorage.setItem("loan_cloud_email", email);
+    try {
+      const probe = await fetch(SUPABASE_URL + "/auth/v1/settings", {
+        method: "GET",
+        headers: { apikey: SUPABASE_PUBLISHABLE_KEY }
+      });
+      if (!probe.ok) {
+        const body = await probe.text();
+        console.error("Supabase API probe failed:", probe.status, body);
+        alert("בדיקת Supabase נכשלה: HTTP " + probe.status + "\n" + body);
+        btn.disabled = false;
+        btn.textContent = "שלח קישור כניסה";
+        return;
+      }
+    } catch (probeError) {
+      console.error("Supabase API probe network error:", probeError);
+      alert("בדיקת Supabase נכשלה בגלל חיבור רשת: " + probeError.message);
+      btn.disabled = false;
+      btn.textContent = "שלח קישור כניסה";
+      return;
+    }
     const btn = document.getElementById("cloudSendLink");
     btn.disabled = true;
     btn.textContent = "שולח...";
