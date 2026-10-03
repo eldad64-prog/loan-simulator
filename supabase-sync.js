@@ -1,6 +1,6 @@
 (() => {
   const SUPABASE_URL = "https://ayqzwlvgxupbxhvrnrke.supabase.co";
-  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_nNJXeUG4WyMpSXZEIKFDA_B_nY1gew";
+  const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5cXp3bHZneHVwYnhodnJucmtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMTQxNzksImV4cCI6MjEwNjU5MDE3OX0.jtWagMsm0w4DVQ9ZGO43y9myP3yOcUpN3au-gpuvdQg";
   const DATA_KEY = "loan_portfolios_v3";
   const TABLE = "loan_portfolios";
   const BACKUP_TABLE = "loan_portfolio_backups";
