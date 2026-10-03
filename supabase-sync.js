@@ -24,6 +24,25 @@
       Array.isArray(data.agents[0].clients) &&
       data.agents[0].clients.length === 0);
 
+  const normalizedHash = value => {
+    try {
+      const normalized = typeof value === "string"
+        ? JSON.parse(value)
+        : value;
+      return hash(normalizeForHash(normalized));
+    } catch {
+      return hash(value);
+    }
+  };
+
+  const normalizeForHash = value => {
+    if (!value || typeof value !== "object") return value;
+    if (Array.isArray(value)) return value.map(normalizeForHash);
+    const out = {};
+    Object.keys(value).sort().forEach(k => { out[k] = normalizeForHash(value[k]); });
+    return out;
+  };
+
   const hash = value => {
     const s = typeof value === "string" ? value : JSON.stringify(value || null);
     let h = 2166136261;
@@ -198,7 +217,7 @@
     if (b.error) throw b.error;
 
     lastLocal = hash(raw);
-    localStorage.setItem(LAST_CLOUD_HASH_KEY, lastLocal);
+    localStorage.setItem(LAST_CLOUD_HASH_KEY, normalizedHash(data));
     setStatus("☁️ נשמר בענן", "ok");
     return true;
   }
@@ -207,7 +226,7 @@
     if (!row?.data) throw new Error("לא נמצאו נתונים תקינים בענן.");
     localStorage.setItem(DATA_KEY, JSON.stringify(row.data));
     lastLocal = hash(JSON.stringify(row.data));
-    localStorage.setItem(LAST_CLOUD_HASH_KEY, lastLocal);
+    localStorage.setItem(LAST_CLOUD_HASH_KEY, normalizedHash(row.data));
     setStatus("☁️ הנתונים נטענו מהענן", "ok");
     setTimeout(() => location.reload(), 250);
     return true;
@@ -223,8 +242,8 @@
 
     const cloud = await fetchCloudRow(TABLE, user.id);
     const local = parseLocal();
-    const localHash = hash(JSON.stringify(local || null));
-    const cloudHash = cloud?.data ? hash(JSON.stringify(cloud.data)) : null;
+    const localHash = normalizedHash(local || null);
+    const cloudHash = cloud?.data ? normalizedHash(cloud.data) : null;
     const lastCloudHash = localStorage.getItem(LAST_CLOUD_HASH_KEY);
 
     if (!cloud) {
