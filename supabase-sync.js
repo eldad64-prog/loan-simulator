@@ -4,6 +4,7 @@
   const DATA_KEY = "loan_portfolios_v3";
   const TABLE = "loan_portfolios";
   const BACKUP_TABLE = "loan_portfolio_backups";
+  const LAST_CLOUD_HASH_KEY = "loan_cloud_last_hash_v1";
   const SITE_URL = "https://eldad64-prog.github.io/loan-simulator/";
 
   let client = null;
@@ -197,6 +198,7 @@
     if (b.error) throw b.error;
 
     lastLocal = hash(raw);
+    localStorage.setItem(LAST_CLOUD_HASH_KEY, lastLocal);
     setStatus("☁️ נשמר בענן", "ok");
     return true;
   }
@@ -205,6 +207,7 @@
     if (!row?.data) throw new Error("לא נמצאו נתונים תקינים בענן.");
     localStorage.setItem(DATA_KEY, JSON.stringify(row.data));
     lastLocal = hash(JSON.stringify(row.data));
+    localStorage.setItem(LAST_CLOUD_HASH_KEY, lastLocal);
     setStatus("☁️ הנתונים נטענו מהענן", "ok");
     setTimeout(() => location.reload(), 250);
     return true;
@@ -220,6 +223,9 @@
 
     const cloud = await fetchCloudRow(TABLE, user.id);
     const local = parseLocal();
+    const localHash = hash(JSON.stringify(local || null));
+    const cloudHash = cloud?.data ? hash(JSON.stringify(cloud.data)) : null;
+    const lastCloudHash = localStorage.getItem(LAST_CLOUD_HASH_KEY);
 
     if (!cloud) {
       if (localIsEmpty(local)) {
@@ -237,10 +243,15 @@
       return;
     }
 
-    const same = hash(JSON.stringify(local)) === hash(JSON.stringify(cloud.data));
-    if (same) {
-      lastLocal = hash(JSON.stringify(local));
+    if (localHash === cloudHash) {
+      lastLocal = localHash;
+      localStorage.setItem(LAST_CLOUD_HASH_KEY, cloudHash);
       setStatus("☁️ מסונכרן", "ok");
+      return;
+    }
+
+    if (lastCloudHash && localHash === lastCloudHash) {
+      await pullCloud(cloud);
       return;
     }
 
@@ -314,6 +325,11 @@
       if (h !== lastLocal) scheduleSync();
     }, 1500);
     window.addEventListener("online", scheduleSync);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        setTimeout(() => initialSync().catch(() => {}), 250);
+      }
+    });
     window.addEventListener("beforeunload", () => {
       if (!client) return;
       const raw = getLocalRaw();
