@@ -86,7 +86,7 @@
     modal.innerHTML = `
       <div class="box">
         <h2 id="cloudModalTitle">☁️ שמירה מרכזית בענן</h2>
-        <p id="cloudModalText">התחבר עם כתובת האימייל שלך. לאחר החיבור הנתונים יישמרו ב-Supabase ויהיו זמינים גם במכשיר אחר.</p>
+        <p id="cloudModalText">התחבר עם אותה כתובת אימייל שבה השתמשת במערכת. לאחר החיבור הנתונים ייטענו מהענן ויהיו זמינים גם במכשיר אחר.</p>
         <div id="cloudAuthArea">
           <input id="cloudEmail" type="email" dir="ltr" autocomplete="email" placeholder="כתובת אימייל">
           <div class="row">
@@ -124,6 +124,9 @@
     const email = document.getElementById("cloudEmail").value.trim();
     if (!email || !email.includes("@")) { alert("יש להזין כתובת אימייל תקינה."); return; }
     localStorage.setItem("loan_cloud_email", email);
+    const btn = document.getElementById("cloudSendLink");
+    btn.disabled = true;
+    btn.textContent = "בודק חיבור...";
     try {
       const probe = await fetch(SUPABASE_URL + "/auth/v1/settings", {
         method: "GET",
@@ -144,8 +147,6 @@
       btn.textContent = "שלח קישור כניסה";
       return;
     }
-    const btn = document.getElementById("cloudSendLink");
-    btn.disabled = true;
     btn.textContent = "שולח...";
     const { error } = await client.auth.signInWithOtp({
       email,
@@ -201,7 +202,7 @@
   }
 
   async function pullCloud(row) {
-    if (!row?.data) return false;
+    if (!row?.data) throw new Error("לא נמצאו נתונים תקינים בענן.");
     localStorage.setItem(DATA_KEY, JSON.stringify(row.data));
     lastLocal = hash(JSON.stringify(row.data));
     setStatus("☁️ הנתונים נטענו מהענן", "ok");
@@ -263,8 +264,17 @@
         <button class="light" id="confCancel">ביטול</button>
       </div>`;
     document.getElementById("useCloud").onclick = async () => {
-      closeCloudModal();
-      await pullCloud(cloud);
+      const btn = document.getElementById("useCloud");
+      btn.disabled = true;
+      btn.textContent = "טוען מהענן...";
+      try {
+        await pullCloud(cloud);
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = "☁️ השתמש בנתוני הענן";
+        setStatus("☁️ טעינת הענן נכשלה", "error");
+        alert("טעינת הנתונים מהענן נכשלה: " + (e?.message || e));
+      }
     };
     document.getElementById("useDevice").onclick = async () => {
       closeCloudModal();
@@ -345,7 +355,11 @@
         console.error("Cloud sync error:", e);
       }
     } else {
-      setStatus("☁️ לא מחובר", "idle");
+      setStatus("☁️ נדרשת כניסה לענן", "warn");
+      // במכשיר חדש אין סשן מקומי. פותחים את חיבור הענן כדי לאפשר
+      // כניסה באמצעות אותו אימייל וקבלת נתוני הענן, במקום להסתמך על
+      // localStorage של המכשיר.
+      setTimeout(() => openCloudModal(), 350);
     }
     startWatcher();
   }
