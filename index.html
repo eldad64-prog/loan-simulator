@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" type="image/svg+xml" href="./icon-192.svg">
-<title>ניהול תיקי הלוואות</title>
+<title>ידידים</title>
 <style>
 :root{
   --blue:#2563eb;--blue2:#1d4ed8;--blueSoft:#eaf1ff;
@@ -133,10 +133,40 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
 .topic-btn span:not(.topic-icon){font-size:18px;font-weight:900}.topic-icon{font-size:30px;line-height:1}.landing-buttons .topic-btn small{display:none}
 .topic-main{background:linear-gradient(145deg,rgba(239,246,255,.95),rgba(255,255,255,.86));border-color:#bcd2f5}
 @media(max-width:800px){.landing-buttons{grid-template-columns:repeat(2,minmax(0,1fr));max-width:560px}.topic-btn{min-height:100px}} @media(max-width:480px){.landing-buttons{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.topic-btn{min-height:92px;padding:14px 8px}.topic-btn span:not(.topic-icon){font-size:16px}.topic-icon{font-size:27px}}
+
+/* Discreet two-stage entry */
+.landing-screen,.second-gate{position:fixed;inset:0;z-index:6000;background:#f4f0e8;display:flex;align-items:center;justify-content:center;padding:22px}
+.landing-card{width:min(650px,100%);overflow:hidden;border:1px solid #ded9ce;border-radius:28px;background:#f4f0e8;box-shadow:0 18px 55px rgba(30,40,30,.12);text-align:center}
+.landing-photo{display:block;width:100%;height:clamp(220px,42vh,360px);object-fit:cover}
+.landing-title{font-size:36px;font-weight:500;letter-spacing:1px;color:#394a3e;margin:22px 0}
+.landing-enter{background:#e8e4da;border:1px solid #d8d2c4;color:#59594f;border-radius:17px;padding:13px 30px;font-size:19px;font-weight:500;margin:0 0 28px;box-shadow:none}
+.landing-enter:active{background:#dcd7ca}
+.second-gate{z-index:5500;background:linear-gradient(145deg,#f4f7ff,#e9effa)}
+.gate-card{width:min(390px,100%);padding:28px;background:#fff;border:1px solid #dce3ef;border-radius:26px;text-align:center;box-shadow:0 25px 70px #1e31501a}
+.gate-card h2{font-size:25px;margin:0 0 12px;color:#34463a}
+.gate-card p{color:#697386;line-height:1.5}
+.gate-button{border:1px solid #ded9ce;background:#f2efe8;color:#55564f;border-radius:15px;padding:13px 22px;margin-top:10px}
+@media(max-width:480px){.landing-screen{padding:18px}.landing-card{border-radius:24px}.landing-title{font-size:32px;margin:19px 0}.landing-enter{margin-bottom:24px}}
+
 </style>
 </head>
 <body>
 
+<div class="landing-screen" id="landingScreen">
+  <div class="landing-card">
+    <img class="landing-photo" alt="" src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=85">
+    <div class="landing-title">ידידים</div>
+    <button class="landing-enter" id="landingEnter" type="button">כניסה</button>
+  </div>
+</div>
+<div class="second-gate hidden" id="secondGate">
+  <div class="gate-card">
+    <h2>ידידים</h2>
+    <p>אימות נוסף נדרש להמשך.</p>
+    <button class="gate-button" id="secondBiometricBtn" type="button">אימות בטביעת אצבע</button>
+    <p id="secondGateStatus" aria-live="polite"></p>
+  </div>
+</div>
 <div class="login-screen" id="loginScreen">
   <div class="login-box">
     <div class="login-logo">₪</div>
@@ -665,6 +695,7 @@ async function enableBiometric(){
     alert("הכניסה בטביעת האצבע הופעלה במכשיר הזה.");
   }catch(e){alert("לא הופעלה כניסה ביומטרית. אפשר להמשיך עם הסיסמה.")}
 }
+let biometricStage = 0;
 async function biometricLogin(){
   if(!biometricAvailable()){alert("הכניסה בטביעת אצבע אינה זמינה בדפדפן הזה.");return}
   try{
@@ -677,12 +708,39 @@ async function biometricLogin(){
       timeout:60000
     }});
     if(!credential)throw new Error("no assertion");
+    if(biometricStage===1){
+      biometricStage=2;
+      $("landingScreen").classList.add("hidden");
+      $("secondGate").classList.remove("hidden");
+      $("secondGateStatus").textContent="";
+      return;
+    }
     sessionStorage.setItem("loan_logged_in","1");
-    $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");
-  }catch(e){alert("הכניסה הביומטרית בוטלה או נכשלה. אפשר להיכנס עם הסיסמה.")}
+    $("secondGate").classList.add("hidden");
+    $("loginScreen").classList.add("hidden");
+    $("landingScreen").classList.add("hidden");
+    $("app").classList.remove("hidden");
+  }catch(e){
+    const msg="האימות הביומטרי בוטל או נכשל. נסה שוב.";
+    if($("secondGateStatus") && biometricStage===2){$("secondGateStatus").textContent=msg}
+    else{alert(msg)}
+  }
 }
 $("enableBiometricBtn").onclick=enableBiometric;
 $("biometricLoginBtn").onclick=biometricLogin;
+$("landingEnter").onclick=()=>{
+  if(!localStorage.getItem("loan_passkey_id")){
+    $("landingScreen").classList.add("hidden");
+    $("loginScreen").classList.remove("hidden");
+    $("loginError").textContent="יש להגדיר כניסה ביומטרית פעם אחת באמצעות קוד הגישה.";
+    $("loginError").style.display="block";
+    refreshBiometricUI();
+    return;
+  }
+  biometricStage=1;
+  biometricLogin();
+};
+$("secondBiometricBtn").onclick=()=>{biometricStage=2;biometricLogin()};
 refreshBiometricUI();
 if($("logoutBtn"))$("logoutBtn").onclick=()=>{sessionStorage.removeItem("loan_logged_in");$("app").classList.add("hidden");$("loginScreen").classList.remove("hidden");$("passwordInput").focus()};
 
@@ -694,15 +752,11 @@ if("serviceWorker" in navigator){
   });
 }
 initAgentSelect();render();
-if(sessionStorage.getItem("loan_logged_in")==="1"){
-  sessionStorage.setItem("loan_logged_in","1");
-  $("app").classList.remove("hidden");
-  $("loginScreen").classList.add("hidden");
-}else{
-  $("app").classList.add("hidden");
-  $("loginScreen").classList.remove("hidden");
-  setTimeout(()=>$("passwordInput").focus(),120);
-}
+sessionStorage.removeItem("loan_logged_in");
+$("app").classList.add("hidden");
+$("loginScreen").classList.add("hidden");
+$("secondGate").classList.add("hidden");
+$("landingScreen").classList.remove("hidden");
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
 <script src="./supabase-sync.js?v=cloud-fix-20261003-6"></script>
