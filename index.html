@@ -137,10 +137,16 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
 /* Discreet two-stage entry */
 .landing-screen,.second-gate{position:fixed;inset:0;z-index:6000;background:#f4f0e8;display:flex;align-items:center;justify-content:center;padding:22px}
 .landing-card{width:min(650px,100%);overflow:hidden;border:1px solid #ded9ce;border-radius:28px;background:#f4f0e8;box-shadow:0 18px 55px rgba(30,40,30,.12);text-align:center}
-.landing-photo{display:block;width:100%;height:clamp(220px,42vh,360px);object-fit:cover}
+.landing-photo-wrap{position:relative;width:100%}
+.landing-photo{display:block;width:100%;height:clamp(220px,62vh,720px);object-fit:cover}
 .landing-title{font-size:36px;font-weight:500;letter-spacing:1px;color:#394a3e;margin:22px 0}
 .landing-enter{background:#e8e4da;border:1px solid #d8d2c4;color:#59594f;border-radius:17px;padding:13px 30px;font-size:19px;font-weight:500;margin:0 0 28px;box-shadow:none}
 .landing-enter:active{background:#dcd7ca}
+.secret-spot{position:absolute;z-index:2;width:24%;height:22%;padding:0;margin:0;border:0;border-radius:50%;background:transparent;opacity:0;cursor:pointer;touch-action:manipulation}
+.secret-spot:focus{outline:none}
+.spot-one{left:7%;top:8%}.spot-two{left:38%;top:37%}.spot-three{right:7%;bottom:7%}
+.landing-card{width:min(650px,100%);max-height:94vh;overflow:auto}
+@media(max-width:480px){.landing-screen{padding:10px}.landing-card{border-radius:24px}.landing-title{font-size:32px;margin:19px 0}.landing-enter{margin-bottom:24px}.landing-photo{height:72vh;max-height:700px}}
 .second-gate{z-index:5500;background:linear-gradient(145deg,#f4f7ff,#e9effa)}
 .gate-card{width:min(390px,100%);padding:28px;background:#fff;border:1px solid #dce3ef;border-radius:26px;text-align:center;box-shadow:0 25px 70px #1e31501a}
 .gate-card h2{font-size:25px;margin:0 0 12px;color:#34463a}
@@ -154,9 +160,14 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
 
 <div class="landing-screen" id="landingScreen">
   <div class="landing-card">
-    <img class="landing-photo" alt="" src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=85">
+    <div class="landing-photo-wrap">
+      <img class="landing-photo" alt="" src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1400&q=85">
+      <button class="secret-spot spot-one" type="button" aria-label=" " tabindex="-1"></button>
+      <button class="secret-spot spot-two" type="button" aria-label=" " tabindex="-1"></button>
+      <button class="secret-spot spot-three" type="button" aria-label=" " tabindex="-1"></button>
+    </div>
     <div class="landing-title">ידידים</div>
-    <button class="landing-enter" id="landingEnter" type="button">כניסה</button>
+    <button class="landing-enter hidden" id="landingEnter" type="button" tabindex="-1">כניסה</button>
   </div>
 </div>
 <div class="second-gate hidden" id="secondGate">
@@ -728,6 +739,22 @@ async function biometricLogin(){
 }
 $("enableBiometricBtn").onclick=enableBiometric;
 $("biometricLoginBtn").onclick=biometricLogin;
+let secretTapStage=0;
+let secretTapReset=null;
+function resetSecretTaps(){secretTapStage=0;if(secretTapReset){clearTimeout(secretTapReset);secretTapReset=null;}}
+function secretTap(step){
+  if(step===1){resetSecretTaps();secretTapStage=1;secretTapReset=setTimeout(resetSecretTaps,7000);return;}
+  if((step===2 && secretTapStage===1)||(step===3 && secretTapStage===2)){
+    secretTapStage=step;
+    if(step===3){
+      resetSecretTaps();
+      $("landingEnter").click();
+    }
+  }else{resetSecretTaps();}
+}
+document.querySelector(".spot-one").addEventListener("click",()=>secretTap(1));
+document.querySelector(".spot-two").addEventListener("click",()=>secretTap(2));
+document.querySelector(".spot-three").addEventListener("click",()=>secretTap(3));
 $("landingEnter").onclick=()=>{
   if(!localStorage.getItem("loan_passkey_id")){
     $("landingScreen").classList.add("hidden");
