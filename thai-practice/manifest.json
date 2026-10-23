@@ -1,0 +1,16 @@
+{
+  "id": "./",
+  "name": "התאית שלי — תרגול דיבור",
+  "short_name": "התאית שלי",
+  "description": "תרגול דיבור תאית עם תעתיק ותרגום לעברית",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f7f6",
+  "theme_color": "#123d38",
+  "icons": [
+    {"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
