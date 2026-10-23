@@ -1,0 +1,9 @@
+{
+  "id":"./",
+  "name":"האנגלית שלי — לומדים ומדברים",
+  "short_name":"האנגלית שלי",
+  "description":"לימוד אנגלית עם תרגום לעברית, שמע ומבחנים",
+  "lang":"he","dir":"rtl","start_url":"./index.html","scope":"./","display":"standalone",
+  "background_color":"#f5f8fb","theme_color":"#183b64",
+  "icons":[{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
