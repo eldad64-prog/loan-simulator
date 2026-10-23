@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#123d38">
+<meta name="description" content="תרגול דיבור תאית עם תעתיק ותרגום לעברית">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<title>התאית שלי — תרגול דיבור</title>
+<style>
+:root{--green:#123d38;--teal:#237b6d;--mint:#e8f5f0;--bg:#f5f7f6;--ink:#18312e;--muted:#667774;--line:#dce5e1;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Noto Sans Hebrew",sans-serif;line-height:1.5}button,input{font:inherit}button{cursor:pointer}.app{max-width:760px;margin:auto;padding:0 14px 34px}.hero{margin:0 -14px 18px;background:var(--green);color:white;padding:24px 20px 22px;border-radius:0 0 24px 24px}.eyebrow{font-size:.82rem;color:#bfe5d9;letter-spacing:.04em}.hero h1{margin:5px 0;font-size:1.8rem}.hero p{margin:0;color:#e0ece8}.topline{display:flex;justify-content:space-between;align-items:center;gap:12px}.install{display:none;border:1px solid #8abeb0;background:#24574f;color:white;border-radius:12px;padding:8px 12px;font-size:.9rem}.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:18px 0}.tab{border:1px solid var(--line);border-radius:12px;padding:11px 5px;background:white;color:var(--ink);font-weight:700}.tab.active{background:var(--mint);border-color:var(--teal);color:#155c50}.panel{background:white;border:1px solid var(--line);border-radius:20px;padding:18px;margin:12px 0;box-shadow:0 3px 12px #163d3810}.muted{color:var(--muted);font-size:.92rem}.categories{display:flex;gap:8px;overflow:auto;padding:2px 0 8px}.chip{white-space:nowrap;border:1px solid var(--line);border-radius:999px;padding:8px 12px;background:white}.chip.active{background:var(--green);color:white;border-color:var(--green)}.thai{font-size:2.2rem;line-height:1.45;text-align:center;margin:16px 0 4px;direction:ltr}.phonetic{font-size:1.35rem;font-weight:700;text-align:center;margin:4px 0 12px}.meaning{text-align:center;font-size:1.25rem;font-weight:700;margin:10px 0}.tip{text-align:center;color:var(--muted);font-size:.9rem}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.btn{border:0;border-radius:12px;padding:12px 10px;background:var(--green);color:white;font-weight:700}.btn.secondary{background:#edf2f0;color:var(--ink)}.btn.outline{background:white;border:1px solid var(--line);color:var(--ink)}.btn:disabled{opacity:.4}.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.progress{height:8px;background:#e8eeeb;border-radius:20px;overflow:hidden;margin-top:8px}.progress span{display:block;height:100%;background:var(--teal);width:0;transition:width .2s}.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:var(--mint);border-radius:13px;padding:12px;text-align:center}.stat strong{display:block;font-size:1.4rem}.hidden{display:none!important}.answer{display:grid;gap:8px;margin-top:12px}.choice{background:white;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:right}.choice.correct{border-color:#268477;background:#e7f6ef}.choice.wrong{border-color:#c45c53;background:#fff0ef}.search{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px;background:white}.small{font-size:.84rem}.foot{text-align:center;color:var(--muted);font-size:.82rem;padding:12px}h2{font-size:1.15rem;margin:0 0 12px}h3{margin:0}@media(min-width:600px){.hero{margin-top:16px;border-radius:24px}.app{padding-left:20px;padding-right:20px}.hero{margin-left:0;margin-right:0}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="hero">
+<div class="topline"><div><div class="eyebrow">THAI SPEAKING · עברית</div><h1>התאית שלי 🇹🇭</h1></div><button class="install" id="installBtn">התקן אפליקציה</button></div>
+<p>מתרגלים לדבר תאית — משפט אחד בכל פעם.</p>
+</header>
+<div class="statgrid">
+<div class="stat"><strong id="learnedCount">0</strong><span class="small">משפטים שידעתי</span></div>
+<div class="stat"><strong id="totalCount">0</strong><span class="small">משפטים במאגר</span></div>
+<div class="stat"><strong id="quizBest">0</strong><span class="small">שיא במבחן</span></div>
+</div>
+<nav class="tabs" aria-label="מצבי תרגול">
+<button class="tab active" data-view="cards">כרטיסי לימוד</button>
+<button class="tab" data-view="quiz">מבחן קצר</button>
+<button class="tab" data-view="library">כל המשפטים</button>
+</nav>
+<section id="cardsView">
+<div class="categories" id="categories"></div>
+<div class="panel">
+<div class="row"><span class="muted" id="cardCategory">שיחה יומיומית</span><span class="muted" id="cardPosition">1 / 10</span></div>
+<div class="thai" id="thaiText" lang="th">สวัสดีครับ</div>
+<div class="phonetic" id="phoneticText">סוואט די קראפ</div>
+<div class="tip" id="pronunciationTip">נסה לומר את המשפט בקול</div>
+<div class="meaning hidden" id="meaningText"></div>
+<div class="actions">
+<button class="btn secondary" id="revealBtn">הצג תרגום</button>
+<button class="btn" id="speakBtn">🔊 שמע בתאית</button>
+</div>
+<div class="actions">
+<button class="btn outline" id="prevBtn">הקודם</button>
+<button class="btn outline" id="nextBtn">הבא</button>
+</div>
+<button class="btn" style="width:100%;margin-top:10px" id="knownBtn">✓ אני יודע את המשפט</button>
+</div>
+<div class="panel"><div class="row"><h2>ההתקדמות שלי</h2><span class="muted" id="progressLabel">0%</span></div><div class="progress"><span id="progressBar"></span></div><p class="muted">ההתקדמות נשמרת בדפדפן במכשיר הזה.</p></div>
+</section>
+<section id="quizView" class="hidden">
+<div class="panel"><div class="row"><h2>מה פירוש המשפט?</h2><span class="muted" id="quizPosition">שאלה 1</span></div><div class="thai" id="quizThai"></div><div class="answer" id="quizChoices"></div><p id="quizFeedback" aria-live="polite"></p><button class="btn hidden" id="quizNext" style="width:100%">לשאלה הבאה</button><button class="btn secondary" id="quizRestart" style="width:100%;margin-top:8px">התחל מבחן חדש</button></div>
+</section>
+<section id="libraryView" class="hidden">
+<div class="panel"><h2>חיפוש משפטים</h2><input class="search" id="searchInput" placeholder="חפש בעברית או בתאית…"><div id="libraryList"></div></div>
+</section>
+<div class="foot">טיפ: אמור כל משפט בקול שלוש פעמים. בתאית יש טונים, ולכן ההקראה עוזרת אך אינה תחליף לשיחה עם דובר מקומי.</div>
+</div>
+<script>
+const lessons=[
+{id:"daily",name:"יומיומי",items:[
+["สวัสดีครับ","סוואט די קראפ","שלום (גבר אומר)","סיומת מנומסת לגבר: קראפ"],
+["สบายดีไหมครับ","סบาย די מאי קראפ","מה שלומך?",""],
+["สบายดีครับ","סบาย די קראפ","שלומי טוב",""],
+["ขอบคุณครับ","קופ קון קראפ","תודה",""],
+["ไม่เป็นไร","מאי פן ראי","אין בעיה / לא נורא",""],
+["เท่าไหร่ครับ","טאו ראי קראפ","כמה זה עולה?",""],
+["ไม่เข้าใจครับ","מאי קאו ג'אי קראפ","אני לא מבין",""],
+["พูดช้าๆ ได้ไหมครับ","פוט צ'ה צ'ה דאי מאי קראפ","אפשר לדבר לאט?",""],
+["เอาอันนี้ครับ","או אן ני קראפ","אני רוצה את זה",""],
+["แล้วเจอกันครับ","לאו ג'ר קאן קראפ","נתראה",""]
+]},
+{id:"food",name:"מסעדות וקניות",items:[
+["ขอน้ำหน่อยครับ","קו נאם נוי קראפ","אפשר מים בבקשה?",""],
+["ไม่เผ็ดครับ","מאי פט קראפ","לא חריף",""],
+["อร่อยมากครับ","ארוי מאק קראפ","טעים מאוד",""],
+["คิดเงินด้วยครับ","קיט נג'ן דואי קראפ","חשבון בבקשה",""],
+["ลดราคาได้ไหมครับ","לוט ראקה דאי מאי קראפ","אפשר הנחה?",""],
+["ไม่ใส่น้ำตาลครับ","מאי סאי נאם טאן קראפ","בלי סוכר בבקשה",""],
+["ห้องน้ำอยู่ที่ไหนครับ","הונג נאם יו תי נאי קראפ","איפה השירותים?",""],
+["เอากลับบ้านครับ","או קלאפ באן קראפ","לקחת הביתה",""],
+["ไม่เอาถุงครับ","מאי או תונג קראפ","לא צריך שקית",""],
+["จ่ายด้วยบัตรได้ไหมครับ","ג'אי דואי באט דאי מאי קראפ","אפשר לשלם בכרטיס?",""]
+]},
+{id:"people",name:"היכרות ושיחה",items:[
+["คุณชื่ออะไรครับ","קון צ'ו אראי קראפ","איך קוראים לך?",""],
+["ผมชื่อ...","פום צ'ו...","קוראים לי...",""],
+["คุณมาจากไหนครับ","קון מא צ'אק נאי קראפ","מאיפה אתה?",""],
+["ผมมาจากอิสราเอล","פום מא צ'אק ישראל","אני מישראל",""],
+["พูดภาษาอังกฤษได้ไหมครับ","פוט פא-סה אנ-קריט דאי מאי קראפ","אתה מדבר אנגלית?",""],
+["วันนี้เป็นอย่างไรบ้าง","וואן ני פן יאנג ראי באנג","איך עבר עליך היום?",""],
+["ดีใจที่ได้เจอคุณ","די ג'אי תי דאי ג'ר קון","שמח לפגוש אותך",""],
+["ฝันดีครับ","פאן די קראפ","לילה טוב",""],
+["ผมไม่เข้าใจ","פום מאי קאו ג'אי","אני לא מבין",""],
+["ช่วยหน่อยได้ไหมครับ","צ'ואי נוי דאי מאי קראפ","אפשר לעזור לי בבקשה?",""]
+]},
+{id:"getting",name:"התמצאות ותחבורה",items:[
+["ไปที่นี่ครับ","פאי תי ני קראפ","למקום הזה בבקשה",""],
+["อยู่ไกลไหมครับ","יו קלַאי מאי קראפ","זה רחוק?",""],
+["จอดตรงนี้ครับ","ג'וט טרונג ני קראפ","תעצור כאן בבקשה",""],
+["เลี้ยวซ้ายครับ","ליאו סאי קראפ","פנה שמאלה",""],
+["เลี้ยวขวาครับ","ליאו קוואה קראפ","פנה ימינה",""],
+["ตรงไปครับ","טרונג פאי קראפ","סע ישר",""],
+["ผมหลงทางครับ","פום לונג תאנג קראפ","הלכתי לאיבוד",""],
+["ช่วยเรียกแท็กซี่ให้หน่อยครับ","צ'ואי ריאק טקסי היי נוי קראפ","אפשר להזמין לי מונית?",""]
+]}
+];
+const all=lessons.flatMap(l=>l.items.map((a,i)=>({id:l.id+"-"+i,cat:l.id,catName:l.name,th:a[0],phon:a[1],he:a[2],tip:a[3]})));
+const $=id=>document.getElementById(id);
+let cat="daily",idx=0,view="cards",quizList=[],quizIdx=0,quizScore=0,answered=false;
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}};
+let known=load("thai-practice-known",[]),best=load("thai-practice-best",0);
+function save(){localStorage.setItem("thai-practice-known",JSON.stringify(known));localStorage.setItem("thai-practice-best",String(best))}
+function currentItems(){return all.filter(x=>x.cat===cat)}
+function renderCats(){$("categories").innerHTML=lessons.map(l=>'<button class="chip '+(l.id===cat?'active':'')+'" data-cat="'+l.id+'">'+l.name+'</button>').join("");document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{cat=b.dataset.cat;idx=0;renderCats();renderCard()})}
+function renderStats(){$("learnedCount").textContent=known.length;$("totalCount").textContent=all.length;$("quizBest").textContent=best;$("progressLabel").textContent=Math.round(known.length/all.length*100)+"%";$("progressBar").style.width=(known.length/all.length*100)+"%"}
+function renderCard(){const a=currentItems()[idx%currentItems().length];$("cardCategory").textContent=a.catName;$("cardPosition").textContent=(idx+1)+" / "+currentItems().length;$("thaiText").textContent=a.th;$("phoneticText").textContent=a.phon;$("pronunciationTip").textContent=a.tip||"נסה לומר את המשפט בקול";$("meaningText").textContent=a.he;$("meaningText").classList.add("hidden");$("revealBtn").textContent="הצג תרגום";$("knownBtn").textContent=known.includes(a.id)?"✓ כבר סימנתי שאני יודע":"✓ אני יודע את המשפט";$("prevBtn").disabled=currentItems().length<2}
+function speakThai(t){if(!("speechSynthesis"in window)){alert("הקראה אינה נתמכת בדפדפן הזה.");return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="th-TH";u.rate=.82;const voices=speechSynthesis.getVoices();const v=voices.find(v=>v.lang.toLowerCase().startsWith("th"));if(v)u.voice=v;speechSynthesis.speak(u)}
+$("revealBtn").onclick=()=>{$("meaningText").classList.toggle("hidden");$("revealBtn").textContent=$("meaningText").classList.contains("hidden")?"הצג תרגום":"הסתר תרגום"};
+$("speakBtn").onclick=()=>speakThai(currentItems()[idx%currentItems().length].th);
+$("prevBtn").onclick=()=>{idx=(idx-1+currentItems().length)%currentItems().length;renderCard()};
+$("nextBtn").onclick=()=>{idx=(idx+1)%currentItems().length;renderCard()};
+$("knownBtn").onclick=()=>{const a=currentItems()[idx%currentItems().length];if(!known.includes(a.id))known.push(a.id);save();renderStats();renderCard();idx=(idx+1)%currentItems().length;renderCard()};
+document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{view=b.dataset.view;document.querySelectorAll("[data-view]").forEach(x=>x.classList.toggle("active",x===b));["cards","quiz","library"].forEach(v=>$(v+"View").classList.toggle("hidden",v!==view));if(view==="library")renderLibrary();if(view==="quiz"&&!quizList.length)startQuiz()});
+function startQuiz(){quizList=[...all].sort(()=>Math.random()-.5).slice(0,10);quizIdx=0;quizScore=0;answered=false;renderQuiz()}
+function renderQuiz(){const a=quizList[quizIdx];if(!a){$("quizThai").textContent="סיימת!";$("quizChoices").innerHTML='<p>הניקוד שלך: <strong>'+quizScore+' מתוך 10</strong></p>';$("quizFeedback").textContent="";$("quizNext").classList.add("hidden");best=Math.max(best,quizScore);save();renderStats();return}$("quizPosition").textContent="שאלה "+(quizIdx+1)+" מתוך "+quizList.length;$("quizThai").textContent=a.th;$("quizChoices").innerHTML="";$("quizFeedback").textContent="";$("quizNext").classList.add("hidden");answered=false;const opts=[a,...all.filter(x=>x.id!==a.id).sort(()=>Math.random()-.5).slice(0,3)].sort(()=>Math.random()-.5);opts.forEach(o=>{const b=document.createElement("button");b.className="choice";b.textContent=o.he;b.onclick=()=>{if(answered)return;answered=true;if(o.id===a.id){quizScore++;b.classList.add("correct");$("quizFeedback").textContent="נכון מאוד!";}else{b.classList.add("wrong");$("quizFeedback").textContent="התשובה הנכונה: "+a.he;[...$("quizChoices").children].forEach(c=>{if(c.textContent===a.he)c.classList.add("correct")})}$("quizNext").classList.remove("hidden")};$("quizChoices").appendChild(b)})}
+$("quizNext").onclick=()=>{quizIdx++;renderQuiz()};$("quizRestart").onclick=startQuiz;
+function renderLibrary(){const q=$("searchInput").value.trim().toLowerCase();const list=all.filter(a=>(a.he+" "+a.phon+" "+a.th+" "+a.catName).toLowerCase().includes(q));$("libraryList").innerHTML=list.map(a=>'<div class="panel" style="margin:10px 0;padding:12px"><div class="thai" style="font-size:1.5rem">'+a.th+'</div><div class="phonetic">'+a.phon+'</div><div class="meaning">'+a.he+'</div><div class="row"><span class="muted">'+a.catName+'</span><button class="btn secondary" data-say="'+a.id+'">🔊 שמע</button></div></div>').join("")||'<p class="muted">לא נמצאו משפטים.</p>';document.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>{const a=all.find(x=>x.id===b.dataset.say);speakThai(a.th)})}
+$("searchInput").addEventListener("input",renderLibrary);
+renderCats();renderCard();renderStats();
+let installPrompt=null;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;$("installBtn").style.display="inline-block"});$("installBtn").onclick=async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").style.display="none"};
+if("serviceWorker"in navigator && location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
+</script>
+</body>
+</html>
