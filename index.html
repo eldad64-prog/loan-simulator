@@ -204,7 +204,7 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
   </header>
 
   <section class="hero" style="text-align:center;padding:28px 18px 24px;background:rgba(255,255,255,.76);backdrop-filter:blur(14px)">
-    <h1 style="font-size:clamp(42px,10vw,72px);margin:0">הלוואות</h1>
+    <h1 style="font-size:clamp(42px,10vw,72px);margin:0">דף ניהול שלי</h1>
   </section>
 
   <nav class="nav" style="display:none">
@@ -215,6 +215,23 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
   </nav>
 
   <section class="page active" id="dashboard">
+    <div class="landing-buttons">
+      <button class="topic-btn topic-main" onclick="showPage('loansMenuPage')">
+        <span class="topic-icon">💼</span><span>הלוואות</span><small>לקוחות, סוכנים, כספים וגיבוי</small>
+      </button>
+      <button class="topic-btn" onclick="showPage('potentialPage')">
+        <span class="topic-icon">👤</span><span>לקוחות פוטנציאלים</span><small>בקשות מהשאלון וניהול</small>
+      </button>
+    </div>
+    <div style="display:flex;justify-content:center;margin:4px auto 24px">
+      <button class="btn light" type="button" onclick="closeApp()" style="min-width:150px;border:1px solid #d7dce5">✕ סגור</button>
+    </div>
+  </section>
+
+  <section class="page" id="loansMenuPage">
+    <div style="display:flex;justify-content:flex-start;margin:0 0 10px">
+      <button class="btn light" type="button" onclick="showPage('dashboard')">→ חזרה לדף הניהול</button>
+    </div>
     <div class="landing-buttons">
       <button class="topic-btn topic-main" onclick="showPage('agentFilePage')">
         <span class="topic-icon">📁</span><span>תיקי סוכנים</span><small>ניהול התיקים והסוכנים</small>
@@ -234,6 +251,21 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
     </div>
     <div style="display:flex;justify-content:center;margin:4px auto 24px">
       <button class="btn light" type="button" onclick="closeApp()" style="min-width:150px;border:1px solid #d7dce5">✕ סגור</button>
+    </div>
+  </section>
+
+  <section class="page" id="potentialPage">
+    <div style="display:flex;justify-content:flex-start;margin:0 0 10px">
+      <button class="btn light" type="button" onclick="showPage('dashboard')">→ חזרה לדף הניהול</button>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><h2 class="card-title">לקוחות פוטנציאליים</h2><div class="card-sub">בקשות שהגיעו מהשאלון באתר ההלוואות.</div></div></div>
+      <div class="btn-row">
+        <button class="btn primary" type="button" onclick="document.getElementById('sendQuestionnaire').click()">📨 שלח שאלון ללקוח פוטנציאל</button>
+        <button class="btn soft" type="button" id="refreshPotential">🔄 רענן בקשות</button>
+      </div>
+      <div id="potentialMsg" class="card-sub" style="margin-top:10px"></div>
+      <div id="potentialList" style="margin-top:12px"></div>
     </div>
   </section>
 
@@ -791,6 +823,67 @@ $("app").classList.add("hidden");
 $("loginScreen").classList.add("hidden");
 $("secondGate").classList.add("hidden");
 $("landingScreen").classList.remove("hidden");
+
+/* ===== לקוחות פוטנציאליים: בקשות מהשאלון (אותו פרויקט Supabase) ===== */
+(function(){
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const L = {
+    income:['עד 10,000 בא׳ט','10,000–20,000','20,000–35,000','35,000–50,000','מעל 50,000'],
+    debts:['אין חובות','עד 50,000','50,000–150,000','150,000–300,000','מעל 300,000'],
+    obligations:['אין החזרים','עד 5,000','5,000–10,000','10,000–20,000','מעל 20,000']
+  };
+  function client(){ return window.loanCloud && window.loanCloud.client; }
+  function msg(t){ const el=document.getElementById('potentialMsg'); if(el) el.textContent=t; }
+
+  async function loadPotential(){
+    const c = client();
+    const list = document.getElementById('potentialList');
+    if (!c) { msg('יש להתחבר לענן קודם (כפתור ☁️ בדף).'); return; }
+    msg('טוען...');
+    const { data: { session } } = await c.auth.getSession();
+    if (!session) { msg('לא מחובר לענן. התחבר בכפתור ☁️ ונסה שוב.'); list.innerHTML=''; return; }
+    const { data, error } = await c.from('loan_answers').select('user_id, answers, submitted_at').order('submitted_at', { ascending: false });
+    if (error) { msg('שגיאה: ' + error.message); return; }
+    if (!data || !data.length) { msg('אין בקשות ממתינות.'); list.innerHTML=''; return; }
+    msg('');
+    list.innerHTML = data.map(r => {
+      const a = r.answers || {};
+      const name = a.name || 'ללא שם';
+      const summary = a.summaryHtml || '';
+      return `<div class="card" style="margin:10px 0">
+        <b>${esc(name)}</b> · <span class="card-sub">${new Date(r.submitted_at).toLocaleString('he-IL')}</span>
+        ${a.income!==undefined ? `<div class="card-sub">הכנסה: ${esc(L.income[+a.income]||'')} · החזרים: ${esc(L.obligations[+a.obligations]||'')} · חובות: ${esc(L.debts[+a.debts]||'')}</div>` : ''}
+        <details style="margin-top:6px"><summary>הצג סיכום</summary><div style="margin-top:8px">${summary}</div></details>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn primary" data-pot-ok="${r.user_id}" data-pot-name="${esc(name)}">אשר</button>
+          <button class="btn light" data-pot-no="${r.user_id}" data-pot-name="${esc(name)}">דחה</button>
+        </div>
+      </div>`;
+    }).join('');
+    list.querySelectorAll('[data-pot-ok],[data-pot-no]').forEach(b => b.addEventListener('click', () => decide(b)));
+  }
+
+  async function decide(btn){
+    const c = client(); if (!c) return;
+    const ok = btn.hasAttribute('data-pot-ok');
+    const userId = btn.dataset.potOk || btn.dataset.potNo;
+    const { error: e1 } = await c.from('loan_decisions').insert({ user_id: userId, full_name: btn.dataset.potName, decision: ok ? 'approved' : 'rejected' });
+    if (e1) { msg('שגיאה ברישום: ' + e1.message); return; }
+    const { error: e2 } = await c.from('loan_answers').delete().eq('user_id', userId);
+    if (e2) { msg('שגיאה במחיקה: ' + e2.message); return; }
+    msg('נשמרה ההחלטה והתשובות נמחקו.');
+    loadPotential();
+  }
+
+  document.addEventListener('click', e => {
+    if (e.target && e.target.id === 'refreshPotential') loadPotential();
+  });
+  const origShow = window.showPage;
+  window.showPage = function(id){
+    if (typeof origShow === 'function') origShow(id);
+    if (id === 'potentialPage') loadPotential();
+  };
+})();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
 <script src="./supabase-sync.js?v=cloud-fix-20261003-6"></script>
