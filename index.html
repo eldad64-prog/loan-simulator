@@ -953,9 +953,9 @@ $("landingScreen").classList.remove("hidden");
     const c = client();
     const box = document.getElementById('waitingList');
     if (!box) return;
-    if (!c) { box.textContent = 'התחבר לענן (☁️) כדי לראות.'; return; }
+    if (!c) { setTimeout(loadWaiting, 3000); box.textContent = 'התחבר לענן (☁️) כדי לראות.'; return; }
     const { data: { session } } = await c.auth.getSession();
-    if (!session) { box.textContent = 'לא מחובר לענן.'; return; }
+    if (!session) { setTimeout(loadWaiting, 3000); box.textContent = 'לא מחובר לענן.'; return; }
     const [p1, p2, p3] = await Promise.all([
       c.from('loan_profiles').select('id, full_name, created_at').order('created_at', { ascending: false }),
       c.from('loan_answers').select('user_id'),
@@ -1015,6 +1015,14 @@ $("landingScreen").classList.remove("hidden");
     if (id === 'dashboard') loadWaiting();
   };
   loadWaiting();
+  // רענון אוטומטי: כל 30 שניות, וגם כשחוזרים לאפליקציה
+  function refreshAll(){
+    loadWaiting();
+    const pp = document.getElementById('potentialPage');
+    if (pp && pp.classList.contains('active')) loadPotential();
+  }
+  setInterval(refreshAll, 30000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshAll(); });
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
