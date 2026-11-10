@@ -530,7 +530,7 @@ function refreshAgentFields(){
   $("monthlyFee").value=a.monthlyFee;$("agentShare").value=a.agentShare;
   $("agentBudget").value=a.budget??"";
   const m=monthKey(), fs=feeSettingFor(a,m);
-  $("feeMode").value=fs.mode;$("feeBase").value=fs.base;$("feeAdd").value=fs.addToBudget?"yes":"no";
+  $("feeMode").value=fs.mode;$("feeBase").value=fs.base;$("feeAdd").value=fs.addToBudget?"yes":"no";$("feeAdd").disabled=fs.mode==="accumulate";
   $("feeNow").textContent="הגדרה פעילה לחודש "+m+": "+(fs.mode==="accumulate"?"צבירה":"החזרה מיידית")+" · "+(fs.base==="fullFee"?"כל העמלה":"חלק הסוכנת")+" · "+(fs.addToBudget?"מוסיפה לקופה":"קופה נשארת");
   const log=(a.monthLog||[]).slice(-6).reverse();
   $("monthLogBox").innerHTML=log.length?log.map(x=>'<div>'+esc(x.month)+' · '+money(x.amount)+' · '+(x.mode==="accumulate"?(x.addedToBudget?"נוסף לקופה":"נשאר אצל הסוכנת"):"הוחזר אליי")+'</div>').join(""):"<div>עדיין לא נסגרו חודשים</div>";
@@ -541,7 +541,8 @@ function feeSettingFor(a,m){
   let until=null,monthOnly=null;
   list.forEach(e=>{ if(e.scope==="month"){ if(e.from===m) monthOnly=e; } else until=e; });
   const base=until||{mode:"return",base:"agentShare",addToBudget:false};
-  return monthOnly||base;
+  const r=monthOnly||base;
+  return Object.assign({},r,{addToBudget:r.mode==="accumulate"});
 }
 function agentMonthBase(a,s){
   const g=a.clients.reduce((x,c)=>x+getClientMonthlyGross(c,a),0);
@@ -730,6 +731,7 @@ $("agentSelect").onchange=()=>{
 $("monthlyFee").onchange=()=>{agent().monthlyFee=Math.max(0,Number($("monthlyFee").value)||0);save();render()};
 $("agentShare").onchange=()=>{agent().agentShare=Math.max(0,Number($("agentShare").value)||0);save();render()};
 $("agentBudget").onchange=()=>{agent().budget=Math.max(0,Number($("agentBudget").value)||0);save();render()};
+$("feeMode").onchange=()=>{const acc=$("feeMode").value==="accumulate";$("feeAdd").value=acc?"yes":"no";$("feeAdd").disabled=acc;};
 $("saveFeeSetting").onclick=()=>{
   const a=agent();if(!a)return;
   a.feeSettings=a.feeSettings||[];
