@@ -668,7 +668,7 @@ function showReport(){
 }
 $("reportBtn").onclick=showReport;
 $("sendQuestionnaire").onclick=()=>{
-  const link="https://eldad64-prog.github.io/loan-app/";
+  const link="https://eldad64-prog.github.io/loan-app/?new=1";
   const msg="สวัสดีค่ะ/ครับ 🙏\nเราเปิดแบบสอบถามสำหรับคำขอสินเชื่อของคุณ\nกรุณาเข้าที่ลิงก์นี้ สมัครด้วยอีเมลและรหัสผ่าน แล้วกรอกแบบสอบถามได้เลย\n"+link;
   window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");
 };
