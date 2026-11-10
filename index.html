@@ -680,8 +680,16 @@ function showReport(){
   openModal("דוח תיק — "+esc(a.name),'<div class="loan-summary"><div class="summary-box"><span>לקוחות</span><b>'+a.clients.length+'</b></div><div class="summary-box"><span>יתרות</span><b>'+money(balance)+'</b></div><div class="summary-box"><span>עמלה חודשית</span><b>'+money(monthly)+'</b></div><div class="summary-box"><span>עמלה שנתית</span><b>'+money(yearly)+'</b></div><div class="summary-box"><span>חלק סוכן חודשי</span><b>'+money(monthly*a.agentShare/100)+'</b></div><div class="summary-box"><span>חלק סוכן שנתי</span><b>'+money(yearly*a.agentShare/100)+'</b></div></div>');
 }
 $("reportBtn").onclick=showReport;
-$("sendQuestionnaire").onclick=()=>{
-  const link="https://eldad64-prog.github.io/loan-app/?new=1";
+$("sendQuestionnaire").onclick=async ()=>{
+  // שורה בטבלה נוצרת כבר בשליחה, ומתמלאת כשהלקוחה מסיימת את השאלון
+  const name=(prompt("שם הלקוח הפוטנציאלי (ייכנס לרשימה):")||"").trim();
+  if(!name) return;
+  const code=Math.random().toString(36).slice(2,10);
+  const cl=window.loanCloud&&window.loanCloud.client;
+  if(!cl){ alert("יש להתחבר לענן (☁️) לפני שליחה."); return; }
+  const {error:invErr}=await cl.from("loan_invites").insert({code,name});
+  if(invErr){ alert("שגיאה ברישום: "+invErr.message); return; }
+  const link="https://eldad64-prog.github.io/loan-app/?new=1&ref="+code;
   const msg="สวัสดีค่ะ/ครับ 🙏\nเราเปิดแบบสอบถามสำหรับคำขอสินเชื่อของคุณ\nกรุณาเข้าที่ลิงก์นี้ กรอกชื่อและเลขบัตรประชาชน แล้วกรอกแบบสอบถามได้เลย\n"+link;
   const old=document.getElementById("questionnaireSheet"); if(old) old.remove();
   const box=document.createElement("div");
@@ -883,9 +891,13 @@ $("landingScreen").classList.remove("hidden");
     if (!session) { msg('לא מחובר לענן. התחבר בכפתור ☁️ ונסה שוב.'); list.innerHTML=''; return; }
     const { data, error } = await c.from('loan_answers').select('user_id, answers, submitted_at').order('submitted_at', { ascending: false });
     if (error) { msg('שגיאה: ' + error.message); return; }
-    if (!data || !data.length) { msg('אין בקשות ממתינות.'); list.innerHTML=''; return; }
+    const { data: invites, error: ie } = await c.from('loan_invites').select('code, name, sent_at').order('sent_at', { ascending: false });
+    if (ie) { msg('שגיאה: ' + ie.message); return; }
+    const answeredCodes = new Set((data || []).map(r => (r.answers || {}).invite).filter(Boolean));
+    const pendingInv = (invites || []).filter(i => !answeredCodes.has(i.code));
+    if (!(data || []).length && !pendingInv.length) { msg('אין בקשות ממתינות.'); list.innerHTML=''; return; }
     msg('');
-    const rowsHtml = data.map(r => {
+    const rowsHtml = (data || []).map(r => {
       const a = r.answers || {};
       const name = a.name || 'ללא שם';
       const summary = a.summaryHtml || '';
@@ -905,12 +917,20 @@ $("landingScreen").classList.remove("hidden");
         </td>
       </tr>`;
     }).join('');
+    const invRows = pendingInv.map(i => `<tr>
+        <td>${esc(i.name)}</td>
+        <td>${new Date(i.sent_at).toLocaleString('he-IL',{dateStyle:'short',timeStyle:'short'})}</td>
+        <td>—</td><td>—</td>
+        <td>📨 נשלח, ממתין לשאלון</td>
+        <td><button class="btn light" style="padding:6px 10px;color:#c0392b" data-inv-del="${esc(i.code)}" data-pot-name="${esc(i.name)}">🗑 מחק</button></td>
+      </tr>`).join('');
     list.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px">
       <thead><tr style="text-align:right;border-bottom:2px solid #e1e6f0">
         <th style="padding:8px">שם</th><th style="padding:8px">הוגש</th><th style="padding:8px">הכנסה</th><th style="padding:8px">החזרים</th><th style="padding:8px">סטטוס</th><th style="padding:8px">פעולות</th>
-      </tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
+      </tr></thead><tbody>${rowsHtml}${invRows}</tbody></table></div>`;
     list.querySelectorAll('[data-pot-ok],[data-pot-no]').forEach(b => b.addEventListener('click', () => decide(b)));
     list.querySelectorAll('[data-pot-del]').forEach(b => b.addEventListener('click', () => removeRequest(b)));
+    list.querySelectorAll('[data-inv-del]').forEach(b => b.addEventListener('click', () => removeInvite(b)));
   }
 
   // לקוחות שנרשמו (יש להם שם) ועוד לא שלחו שאלון
@@ -933,6 +953,16 @@ $("landingScreen").classList.remove("hidden");
     if (!waiting.length) { box.textContent = 'אין לקוחות שממתינים למילוי שאלון.'; return; }
     box.innerHTML = '<ul style="margin:0;padding-inline-start:20px">' + waiting.map(p =>
       `<li>${esc(p.full_name)} — נרשם ${new Date(p.created_at).toLocaleDateString('he-IL')}</li>`).join('') + '</ul>';
+  }
+
+  // מחיקת שורה של לקוחה שנשלח לה שאלון ועוד לא מילאה
+  async function removeInvite(btn){
+    if (!confirm('למחוק את השורה של ' + btn.dataset.potName + '?')) return;
+    const c = client(); if (!c) return;
+    const { error } = await c.from('loan_invites').delete().eq('code', btn.dataset.invDel);
+    if (error) { msg('שגיאה במחיקה: ' + error.message); return; }
+    msg('השורה נמחקה.');
+    loadPotential();
   }
 
   // מחיקת בקשה שלא אושרה: מוחק את התשובות ורושם שהבקשה הוסרה
