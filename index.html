@@ -422,6 +422,7 @@ https://eldad64-prog.github.io/loan-app/?new=1</textarea>
     </div>
     <div class="card">
       <div class="card-head"><div><h2 class="card-title" id="agentClientsTitle">לקוחות הסוכן</h2><div class="card-sub" id="agentClientsSub"></div></div></div>
+      <button class="btn primary" type="button" id="agentAddClient" style="width:100%;margin-bottom:12px">＋ הוספת לקוח</button>
       <div id="agentClientsList"></div>
     </div>
   </section>
@@ -528,6 +529,7 @@ function render(){
   $("sAgentMonthly").textContent=money(monthly*a.agentShare/100);$("sAgentYearly").textContent=money(yearly*a.agentShare/100);
   $("sActive").textContent=a.clients.filter(c=>getClientBalance(c)>0).length;$("sPaid").textContent=money(paid);
   renderClients();renderPortfolio();renderFinance();renderAgentBorrowers();
+  if($("agentClientsPage").classList.contains("active"))renderAgentPage();
 }
 function renderClients(){
   const a=agent();if(!a)return;
@@ -593,6 +595,11 @@ function openAgentPage(agentId){
   agentPageId=agentId;
   showPage("agentClientsPage");
 }
+function agentDeleteClient(clientId){
+  if(!agentPageId)return;
+  $("agentSelect").value=agentPageId;
+  deleteClient(clientId);
+}
 function renderAgentPage(){
   const a=db.agents.find(x=>String(x.id)===String(agentPageId));
   if(!a){showPage("clientsPage");return}
@@ -608,7 +615,7 @@ function renderAgentPage(){
     return '<div class="agent-client-row">'+
       '<div><div class="agent-client-name">'+esc(r.c.name)+'</div><div class="agent-client-meta">'+status+' · עמלה '+money(r.g)+' בחודש · סוכנת '+money(r.ag)+' · שלך '+money(r.biz)+'</div></div>'+
       '<div class="agent-client-balance">'+money(r.bal)+'</div>'+
-      '<button type="button" class="btn soft small" onclick="openAgentClient('+a.id+','+r.c.id+')">פרטים</button>'+
+      '<div class="btn-row"><button type="button" class="btn soft small" onclick="openAgentClient('+a.id+','+r.c.id+')">פרטים</button><button type="button" class="btn danger small" onclick="agentDeleteClient('+r.c.id+')">🗑 מחק</button></div>'+
       '</div>';
   }).join("")+'</div>';
 }
@@ -717,6 +724,7 @@ $("addClient").onclick=()=>{
   a.clients.push(c);selectedClient=c.id;save();$("clientName").value="";render();openClient(c.id);
 };
 $("search").oninput=renderClients;$("statusFilter").onchange=renderClients;
+$("agentAddClient").onclick=()=>{ if(!agentPageId)return; $("agentSelect").value=agentPageId; showPage("clientsPage"); setTimeout(()=>$("clientName").focus(),250); };
 $("goClients").onclick=()=>showPage("clientsPage");$("goAddClient").onclick=()=>{showPage("clientsPage");setTimeout(()=>$("clientName").focus(),250)};
 $("portfolioSummary").onclick=()=>showPage("portfolioPage");$("businessFinance").onclick=()=>showPage("financePage");
 $("backupHome")?.addEventListener("click",()=>$("download").click());
