@@ -900,6 +900,7 @@ $("landingScreen").classList.remove("hidden");
           <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
             <button class="btn primary" style="padding:6px 10px" data-pot-ok="${r.user_id}" data-pot-name="${esc(name)}">אשר</button>
             <button class="btn light" style="padding:6px 10px" data-pot-no="${r.user_id}" data-pot-name="${esc(name)}">דחה</button>
+            <button class="btn light" style="padding:6px 10px;color:#c0392b" data-pot-del="${r.user_id}" data-pot-name="${esc(name)}">🗑 מחק</button>
           </div>
         </td>
       </tr>`;
@@ -909,6 +910,7 @@ $("landingScreen").classList.remove("hidden");
         <th style="padding:8px">שם</th><th style="padding:8px">הוגש</th><th style="padding:8px">הכנסה</th><th style="padding:8px">החזרים</th><th style="padding:8px">סטטוס</th><th style="padding:8px">פעולות</th>
       </tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
     list.querySelectorAll('[data-pot-ok],[data-pot-no]').forEach(b => b.addEventListener('click', () => decide(b)));
+    list.querySelectorAll('[data-pot-del]').forEach(b => b.addEventListener('click', () => removeRequest(b)));
   }
 
   // לקוחות שנרשמו (יש להם שם) ועוד לא שלחו שאלון
@@ -931,6 +933,19 @@ $("landingScreen").classList.remove("hidden");
     if (!waiting.length) { box.textContent = 'אין לקוחות שממתינים למילוי שאלון.'; return; }
     box.innerHTML = '<ul style="margin:0;padding-inline-start:20px">' + waiting.map(p =>
       `<li>${esc(p.full_name)} — נרשם ${new Date(p.created_at).toLocaleDateString('he-IL')}</li>`).join('') + '</ul>';
+  }
+
+  // מחיקת בקשה שלא אושרה: מוחק את התשובות ורושם שהבקשה הוסרה
+  async function removeRequest(btn){
+    if (!confirm('למחוק את הבקשה של ' + btn.dataset.potName + '? התשובות יימחקו.')) return;
+    const c = client(); if (!c) return;
+    const userId = btn.dataset.potDel;
+    const { error: e1 } = await c.from('loan_decisions').insert({ user_id: userId, full_name: btn.dataset.potName, decision: 'expired' });
+    if (e1) { msg('שגיאה ברישום: ' + e1.message); return; }
+    const { error: e2 } = await c.from('loan_answers').delete().eq('user_id', userId);
+    if (e2) { msg('שגיאה במחיקה: ' + e2.message); return; }
+    msg('הבקשה נמחקה.');
+    loadPotential();
   }
 
   async function decide(btn){
