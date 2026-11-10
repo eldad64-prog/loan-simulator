@@ -266,11 +266,12 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
       </div>
       <div style="margin-top:12px">
         <div class="card-sub" style="margin-bottom:6px">ההודעה ללקוח (אפשר להעתיק ולהדביק):</div>
-        <textarea id="questionnaireText" readonly style="width:100%;min-height:130px;padding:10px;border-radius:10px;border:1px solid #d7dce5;font-size:15px;box-sizing:border-box;direction:rtl">สวัสดีค่ะ/ครับ 🙏
+        <textarea id="questionnaireText" readonly style="width:100%;min-height:240px;padding:14px;border-radius:12px;border:2px solid #3b6fd8;font-size:22px;line-height:1.7;box-sizing:border-box;direction:rtl;background:#fff;color:#1c2433">สวัสดีค่ะ/ครับ 🙏
 เราเปิดแบบสอบถามสำหรับคำขอสินเชื่อของคุณ
 กรุณาเข้าที่ลิงก์นี้ สมัครด้วยอีเมลและรหัสผ่าน แล้วกรอกแบบสอบถามได้เลย
 https://eldad64-prog.github.io/loan-app/?new=1</textarea>
-        <button class="btn soft" type="button" id="copyQuestionnaireText" style="margin-top:8px">📋 העתק הודעה</button>
+        <button class="btn primary" type="button" id="copyQuestionnaireText" style="margin-top:10px;width:100%;font-size:20px;padding:16px">📋 העתק הודעה</button>
+        <button class="btn soft" type="button" id="copyQuestionnaireLink" style="margin-top:10px;width:100%;font-size:20px;padding:16px">🔗 העתק קישור לשאלון בלבד</button>
       </div>
       <div id="potentialMsg" class="card-sub" style="margin-top:10px"></div>
       <div id="potentialList" style="margin-top:12px"></div>
@@ -857,6 +858,11 @@ $("landingScreen").classList.remove("hidden");
   };
   function client(){ return window.loanCloud && window.loanCloud.client; }
   document.addEventListener('click', async e => {
+    if (e.target && e.target.id === 'copyQuestionnaireLink') {
+      try { await navigator.clipboard.writeText('https://eldad64-prog.github.io/loan-app/?new=1'); msg('הקישור הועתק.'); }
+      catch (err) { msg('העתקה לא הצליחה. הקישור: https://eldad64-prog.github.io/loan-app/?new=1'); }
+      return;
+    }
     if (!e.target || e.target.id !== 'copyQuestionnaireText') return;
     const t = document.getElementById('questionnaireText');
     try { await navigator.clipboard.writeText(t.value); msg('ההודעה הועתקה.'); }
@@ -875,20 +881,29 @@ $("landingScreen").classList.remove("hidden");
     if (error) { msg('שגיאה: ' + error.message); return; }
     if (!data || !data.length) { msg('אין בקשות ממתינות.'); list.innerHTML=''; return; }
     msg('');
-    list.innerHTML = data.map(r => {
+    const rowsHtml = data.map(r => {
       const a = r.answers || {};
       const name = a.name || 'ללא שם';
       const summary = a.summaryHtml || '';
-      return `<div class="card" style="margin:10px 0">
-        <b>${esc(name)}</b> · <span class="card-sub">${new Date(r.submitted_at).toLocaleString('he-IL')}</span>
-        ${a.income!==undefined ? `<div class="card-sub">הכנסה: ${esc(L.income[+a.income]||'')} · החזרים: ${esc(L.obligations[+a.obligations]||'')} · חובות: ${esc(L.debts[+a.debts]||'')}</div>` : ''}
-        <details style="margin-top:6px"><summary>הצג סיכום</summary><div style="margin-top:8px">${summary}</div></details>
-        <div class="btn-row" style="margin-top:8px">
-          <button class="btn primary" data-pot-ok="${r.user_id}" data-pot-name="${esc(name)}">אשר</button>
-          <button class="btn light" data-pot-no="${r.user_id}" data-pot-name="${esc(name)}">דחה</button>
-        </div>
-      </div>`;
+      return `<tr>
+        <td>${esc(name)}</td>
+        <td>${new Date(r.submitted_at).toLocaleString('he-IL',{dateStyle:'short',timeStyle:'short'})}</td>
+        <td>${a.income!==undefined ? esc(L.income[+a.income]||'') : '—'}</td>
+        <td>${a.obligations!==undefined ? esc(L.obligations[+a.obligations]||'') : '—'}</td>
+        <td>⏳ ממתין</td>
+        <td>
+          <details><summary>פרטים</summary><div style="margin-top:8px;font-size:14px">${summary}</div></details>
+          <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn primary" style="padding:6px 10px" data-pot-ok="${r.user_id}" data-pot-name="${esc(name)}">אשר</button>
+            <button class="btn light" style="padding:6px 10px" data-pot-no="${r.user_id}" data-pot-name="${esc(name)}">דחה</button>
+          </div>
+        </td>
+      </tr>`;
     }).join('');
+    list.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px">
+      <thead><tr style="text-align:right;border-bottom:2px solid #e1e6f0">
+        <th style="padding:8px">שם</th><th style="padding:8px">הוגש</th><th style="padding:8px">הכנסה</th><th style="padding:8px">החזרים</th><th style="padding:8px">סטטוס</th><th style="padding:8px">פעולות</th>
+      </tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
     list.querySelectorAll('[data-pot-ok],[data-pot-no]').forEach(b => b.addEventListener('click', () => decide(b)));
   }
 
