@@ -268,7 +268,7 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
         <div class="card-sub" style="margin-bottom:6px">ההודעה ללקוח (אפשר להעתיק ולהדביק):</div>
         <textarea id="questionnaireText" readonly style="width:100%;min-height:240px;padding:14px;border-radius:12px;border:2px solid #3b6fd8;font-size:22px;line-height:1.7;box-sizing:border-box;direction:rtl;background:#fff;color:#1c2433">สวัสดีค่ะ/ครับ 🙏
 เราเปิดแบบสอบถามสำหรับคำขอสินเชื่อของคุณ
-กรุณาเข้าที่ลิงก์นี้ สมัครด้วยอีเมลและรหัสผ่าน แล้วกรอกแบบสอบถามได้เลย
+กรุณาเข้าที่ลิงก์นี้ กรอกชื่อและเลขบัตรประชาชน แล้วกรอกแบบสอบถามได้เลย
 https://eldad64-prog.github.io/loan-app/?new=1</textarea>
         <button class="btn primary" type="button" id="copyQuestionnaireText" style="margin-top:10px;width:100%;font-size:20px;padding:16px">📋 העתק הודעה</button>
         <button class="btn soft" type="button" id="copyQuestionnaireLink" style="margin-top:10px;width:100%;font-size:20px;padding:16px">🔗 העתק קישור לשאלון בלבד</button>
@@ -678,7 +678,7 @@ function showReport(){
 $("reportBtn").onclick=showReport;
 $("sendQuestionnaire").onclick=()=>{
   const link="https://eldad64-prog.github.io/loan-app/?new=1";
-  const msg="สวัสดีค่ะ/ครับ 🙏\nเราเปิดแบบสอบถามสำหรับคำขอสินเชื่อของคุณ\nกรุณาเข้าที่ลิงก์นี้ สมัครด้วยอีเมลและรหัสผ่าน แล้วกรอกแบบสอบถามได้เลย\n"+link;
+  const msg="สวัสดีค่ะ/ครับ 🙏\nเราเปิดแบบสอบถามสำหรับคำขอสินเชื่อของคุณ\nกรุณาเข้าที่ลิงก์นี้ กรอกชื่อและเลขบัตรประชาชน แล้วกรอกแบบสอบถามได้เลย\n"+link;
   const old=document.getElementById("questionnaireSheet"); if(old) old.remove();
   const box=document.createElement("div");
   box.id="questionnaireSheet";
