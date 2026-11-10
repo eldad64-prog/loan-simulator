@@ -670,7 +670,22 @@ $("reportBtn").onclick=showReport;
 $("sendQuestionnaire").onclick=()=>{
   const link="https://eldad64-prog.github.io/loan-app/?new=1";
   const msg="สวัสดีค่ะ/ครับ 🙏\nเราเปิดแบบสอบถามสำหรับคำขอสินเชื่อของคุณ\nกรุณาเข้าที่ลิงก์นี้ สมัครด้วยอีเมลและรหัสผ่าน แล้วกรอกแบบสอบถามได้เลย\n"+link;
-  window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");
+  const old=document.getElementById("questionnaireSheet"); if(old) old.remove();
+  const box=document.createElement("div");
+  box.id="questionnaireSheet";
+  box.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:18px;z-index:9999";
+  box.innerHTML='<div style="background:#fff;color:#1c2433;border-radius:18px;padding:22px;max-width:360px;width:100%;text-align:center;font-family:inherit">'+
+    '<h3 style="margin:0 0 8px">שליחת שאלון ללקוח</h3>'+
+    '<p style="margin:0 0 16px;font-size:15px">בחר איך לשלוח:</p>'+
+    '<button id="qWa" style="width:100%;padding:14px;margin-bottom:10px;border:0;border-radius:12px;background:#25d366;color:#fff;font-size:16px">שלח בוואטסאפ</button>'+
+    '<button id="qMail" style="width:100%;padding:14px;margin-bottom:10px;border:0;border-radius:12px;background:#3b6fd8;color:#fff;font-size:16px">שלח במייל</button>'+
+    '<button id="qClose" style="width:100%;padding:10px;border:1px solid #d7dce5;border-radius:12px;background:#fff;color:#1c2433;font-size:15px">ביטול</button>'+
+    '</div>';
+  document.body.appendChild(box);
+  box.querySelector("#qWa").onclick=()=>{ window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank"); box.remove(); };
+  box.querySelector("#qMail").onclick=()=>{ window.open("https://mail.google.com/mail/?view=cm&fs=1&su="+encodeURIComponent("คำขอสินเชื่อ - แบบสอบถาม")+"&body="+encodeURIComponent(msg),"_blank"); box.remove(); };
+  box.querySelector("#qClose").onclick=()=>box.remove();
+  box.onclick=e=>{ if(e.target===box) box.remove(); };
 };
 
 $("download").onclick=()=>{
