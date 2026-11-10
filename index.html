@@ -264,6 +264,14 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
         <button class="btn primary" type="button" onclick="document.getElementById('sendQuestionnaire').click()">📨 שלח שאלון ללקוח פוטנציאל</button>
         <button class="btn soft" type="button" id="refreshPotential">🔄 רענן בקשות</button>
       </div>
+      <div style="margin-top:12px">
+        <div class="card-sub" style="margin-bottom:6px">ההודעה ללקוח (אפשר להעתיק ולהדביק):</div>
+        <textarea id="questionnaireText" readonly style="width:100%;min-height:130px;padding:10px;border-radius:10px;border:1px solid #d7dce5;font-size:15px;box-sizing:border-box;direction:rtl">สวัสดีค่ะ/ครับ 🙏
+เราเปิดแบบสอบถามสำหรับคำขอสินเชื่อของคุณ
+กรุณาเข้าที่ลิงก์นี้ สมัครด้วยอีเมลและรหัสผ่าน แล้วกรอกแบบสอบถามได้เลย
+https://eldad64-prog.github.io/loan-app/?new=1</textarea>
+        <button class="btn soft" type="button" id="copyQuestionnaireText" style="margin-top:8px">📋 העתק הודעה</button>
+      </div>
       <div id="potentialMsg" class="card-sub" style="margin-top:10px"></div>
       <div id="potentialList" style="margin-top:12px"></div>
     </div>
@@ -848,6 +856,12 @@ $("landingScreen").classList.remove("hidden");
     obligations:['אין החזרים','עד 5,000','5,000–10,000','10,000–20,000','מעל 20,000']
   };
   function client(){ return window.loanCloud && window.loanCloud.client; }
+  document.addEventListener('click', async e => {
+    if (!e.target || e.target.id !== 'copyQuestionnaireText') return;
+    const t = document.getElementById('questionnaireText');
+    try { await navigator.clipboard.writeText(t.value); msg('ההודעה הועתקה.'); }
+    catch (err) { t.focus(); t.select(); msg('סמן את הטקסט והעתק ידנית.'); }
+  });
   function msg(t){ const el=document.getElementById('potentialMsg'); if(el) el.textContent=t; }
 
   async function loadPotential(){
