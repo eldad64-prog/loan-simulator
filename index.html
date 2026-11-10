@@ -154,6 +154,8 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
 .gate-button{border:1px solid #ded9ce;background:#f2efe8;color:#55564f;border-radius:15px;padding:13px 22px;margin-top:10px}
 @media(max-width:480px){.landing-screen{padding:18px}.landing-card{border-radius:24px}.landing-title{font-size:32px;margin:19px 0}.landing-enter{margin-bottom:24px}}
 
+.agent-buttons{display:grid;gap:10px}
+.agent-buttons .agent-row{padding:16px 16px;border-radius:16px;font-size:16px}
 /* Agent file page - visual polish (agent view) */
 #agentFilePage .card{padding:22px}
 #agentFilePage .card-head{padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:18px}
@@ -259,7 +261,7 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
       <button class="btn light" type="button" onclick="showPage('dashboard')">→ חזרה לדף הניהול</button>
     </div>
     <div class="landing-buttons">
-      <button class="topic-btn topic-main" onclick="showPage('agentFilePage')">
+      <button class="topic-btn topic-main" onclick="showPage('agentListPage')">
         <span class="topic-icon">📁</span><span>תיקי סוכנים</span><small>ניהול התיקים והסוכנים</small>
       </button>
       <button class="topic-btn" onclick="showPage('clientsPage')">
@@ -398,9 +400,20 @@ https://eldad64-prog.github.io/loan-app/?new=1</textarea>
     </div>
   </section>
 
+  <section class="page" id="agentListPage">
+    <div style="display:flex;justify-content:flex-start;margin:0 0 10px">
+      <button class="btn light" type="button" onclick="showPage('loansMenuPage')">→ חזרה לתפריט הלוואות</button>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><h2 class="card-title">תיקי סוכנים</h2><div class="card-sub">לחיצה על סוכן פותחת את רשימת הלקוחות שלו.</div></div></div>
+      <div id="agentButtonsList" class="agent-buttons"></div>
+      <button class="btn soft" type="button" onclick="showPage('agentFilePage')" style="width:100%;margin-top:12px">📁 הוספה ועריכה של סוכן</button>
+    </div>
+  </section>
+
   <section class="page" id="agentClientsPage">
     <div style="display:flex;justify-content:flex-start;margin:0 0 10px">
-      <button class="btn light" type="button" onclick="showPage('clientsPage')">→ חזרה לרשימת הסוכנים</button>
+      <button class="btn light" type="button" onclick="showPage('agentListPage')">→ חזרה לרשימת הסוכנים</button>
     </div>
     <div class="card">
       <div class="card-head"><div><h2 class="card-title" id="agentClientsTitle">לקוחות הסוכן</h2><div class="card-sub" id="agentClientsSub"></div></div></div>
@@ -560,6 +573,17 @@ function renderAgentBorrowers(){
   el.innerHTML=html;
 }
 let agentPageId=null;
+function renderAgentList(){
+  const el=$("agentButtonsList");if(!el)return;
+  if(!db.agents.length){el.innerHTML='<div class="empty">אין סוכנים עדיין</div>';return}
+  el.innerHTML=db.agents.map(a=>{
+    const balance=a.clients.reduce((s,c)=>s+getClientBalance(c),0);
+    return '<button type="button" class="agent-row" onclick="openAgentPage('+a.id+')">'+
+      '<span><span class="agent-row-name">'+esc(a.name)+'</span><span class="agent-row-count">'+a.clients.length+' לווים</span></span>'+
+      '<span class="agent-row-balance">'+money(balance)+'</span>'+
+      '<span class="chevron">‹</span></button>';
+  }).join("");
+}
 function openAgentPage(agentId){
   agentPageId=agentId;
   showPage("agentClientsPage");
@@ -623,6 +647,7 @@ function showPage(id){
   if($("logoutBtn"))$("logoutBtn").style.display=id==="dashboard"?"block":"none";
   if(id==="agentFilePage")render();
   if(id==="clientsPage")renderClients();
+  if(id==="agentListPage")renderAgentList();
   if(id==="agentClientsPage")renderAgentPage();
   if(id==="portfolioPage")renderPortfolio();
   if(id==="financePage")renderFinance();
