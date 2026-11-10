@@ -919,12 +919,14 @@ $("landingScreen").classList.remove("hidden");
     if (!c) { box.textContent = 'התחבר לענן (☁️) כדי לראות.'; return; }
     const { data: { session } } = await c.auth.getSession();
     if (!session) { box.textContent = 'לא מחובר לענן.'; return; }
-    const [p1, p2] = await Promise.all([
+    const [p1, p2, p3] = await Promise.all([
       c.from('loan_profiles').select('id, full_name, created_at').order('created_at', { ascending: false }),
-      c.from('loan_answers').select('user_id')
+      c.from('loan_answers').select('user_id'),
+      c.from('loan_decisions').select('user_id')
     ]);
-    if (p1.error || p2.error) { box.textContent = 'שגיאה: ' + ((p1.error || p2.error).message); return; }
-    const done = new Set((p2.data || []).map(x => x.user_id));
+    if (p1.error || p2.error || p3.error) { box.textContent = 'שגיאה: ' + ((p1.error || p2.error || p3.error).message); return; }
+    // מי ששלח שאלון או כבר הוחלט לגביו לא נחשב ממתין
+    const done = new Set([...(p2.data || []), ...(p3.data || [])].map(x => x.user_id));
     const waiting = (p1.data || []).filter(p => !done.has(p.id) && p.full_name);
     if (!waiting.length) { box.textContent = 'אין לקוחות שממתינים למילוי שאלון.'; return; }
     box.innerHTML = '<ul style="margin:0;padding-inline-start:20px">' + waiting.map(p =>
