@@ -341,7 +341,7 @@ https://eldad64-prog.github.io/loan-app/?new=1</textarea>
       <div class="loan-form">
         <div class="field"><label>עמלה חודשית כללית (%)</label><input id="monthlyFee" type="number" min="0" step="0.1"></div>
         <div class="field"><label>עמלת הסוכן מתוך העמלה (%)</label><input id="agentShare" type="number" min="0" step="0.1"></div>
-        <div></div>
+        <div class="field"><label>קופה לסוכנת (₪)</label><input id="agentBudget" type="number" min="0" step="1"></div>
         <div></div>
       </div>
     </div>
@@ -516,7 +516,10 @@ function initAgentSelect(){
 function refreshAgentFields(){
   const a=agent();if(!a)return;
   $("monthlyFee").value=a.monthlyFee;$("agentShare").value=a.agentShare;
+  $("agentBudget").value=a.budget??"";
 }
+function agentUsedBudget(a){return a.clients.reduce((s,c)=>s+(Number(c.amount)||0),0)}
+function agentRemainingBudget(a){return (Number(a.budget)||0)-agentUsedBudget(a)}
 function render(){
   const a=agent();if(!a)return;
   refreshAgentFields();
@@ -610,7 +613,8 @@ function renderAgentPage(){
   const rows=a.clients.map(c=>{const bal=getClientBalance(c),g=getClientMonthlyGross(c,a),ag=g*a.agentShare/100;return {c,bal,g,ag,biz:g-ag}});
   const tot=rows.reduce((t,r)=>({bal:t.bal+r.bal,g:t.g+r.g,ag:t.ag+r.ag,biz:t.biz+r.biz}),{bal:0,g:0,ag:0,biz:0});
   const totalBox='<div class="agent-totals"><div><span>יתרות</span><b>'+money(tot.bal)+'</b></div><div><span>עמלה חודשית</span><b>'+money(tot.g)+'</b></div><div><span>חלק הסוכנת</span><b>'+money(tot.ag)+'</b></div><div><span>חלק שלך</span><b>'+money(tot.biz)+'</b></div></div>';
-  el.innerHTML=totalBox+'<div class="agent-clients">'+rows.map(r=>{
+  const budgetBox=a.budget>0?'<div class="agent-totals" style="margin-top:0"><div><span>קופה</span><b>'+money(Number(a.budget))+'</b></div><div><span>נשאר בקופה</span><b>'+money(agentRemainingBudget(a))+'</b></div></div>':'';
+  el.innerHTML=budgetBox+totalBox+'<div class="agent-clients">'+rows.map(r=>{
     const status=r.bal===0?'סגור':(r.c.status==="בעייתי"?'בעייתי':'פעיל');
     return '<div class="agent-client-row">'+
       '<div><div class="agent-client-name">'+esc(r.c.name)+'</div><div class="agent-client-meta">'+status+' · עמלה '+money(r.g)+' בחודש · סוכנת '+money(r.ag)+' · שלך '+money(r.biz)+'</div></div>'+
@@ -696,6 +700,7 @@ $("agentSelect").onchange=()=>{
 };
 $("monthlyFee").onchange=()=>{agent().monthlyFee=Math.max(0,Number($("monthlyFee").value)||0);save();render()};
 $("agentShare").onchange=()=>{agent().agentShare=Math.max(0,Number($("agentShare").value)||0);save();render()};
+$("agentBudget").onchange=()=>{agent().budget=Math.max(0,Number($("agentBudget").value)||0);save();render()};
 
 $("newAgent").onclick=()=>{
   openModal("הוספת סוכן חדש",'<div class="notice blue" style="margin:0 0 14px">התיק ייווצר רק לאחר לחיצה על ״שמור סוכן״.</div><div class="field"><label>שם הסוכן</label><input id="newAgentName" placeholder="לדוגמה: דוד"></div><div class="btn-row"><button class="btn primary" onclick="createAgent()">שמור</button><button class="btn light" onclick="closeModal()">ביטול</button></div>');
@@ -719,8 +724,9 @@ $("addClient").onclick=()=>{
   if(!$("agentSelect").value&&db.agents.length)$("agentSelect").value=db.agents[0].id;
   const name=$("clientName").value.trim(),amount=Math.max(0,Number($("loanAmount").value)||0),months=Math.max(1,Number($("loanMonths").value)||1);
   if(!name||!amount){alert("יש להזין שם לקוח וסכום הלוואה.");return}
-  const c={id:db.nextClient++,name,amount,months,status:"פעיל",feeType:"agent",feeRate:null,repayments:[]};
   const a=agent();if(!a){alert("יש לבחור סוכן לפני הוספת לקוח.");return}
+  if(Number(a.budget)>0&&amount>agentRemainingBudget(a)){alert("אין מספיק קופה לסוכנת. נשאר: "+money(agentRemainingBudget(a)));return}
+  const c={id:db.nextClient++,name,amount,months,status:"פעיל",feeType:"agent",feeRate:null,repayments:[]};
   a.clients.push(c);selectedClient=c.id;save();$("clientName").value="";render();openClient(c.id);
 };
 $("search").oninput=renderClients;$("statusFilter").onchange=renderClients;
