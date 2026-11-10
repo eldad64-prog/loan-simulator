@@ -155,6 +155,11 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
 @media(max-width:480px){.landing-screen{padding:18px}.landing-card{border-radius:24px}.landing-title{font-size:32px;margin:19px 0}.landing-enter{margin-bottom:24px}}
 
 .agent-buttons{display:grid;gap:10px}
+.agent-totals{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.agent-totals div{background:#f8f9fb;border:1px solid var(--line);border-radius:12px;padding:10px}
+.agent-totals span{display:block;font-size:12px;color:var(--muted)}
+.agent-totals b{display:block;font-size:17px;margin-top:4px}
+@media(min-width:800px){.agent-totals{grid-template-columns:repeat(4,1fr)}}
 .agent-buttons .agent-row{padding:16px 16px;border-radius:16px;font-size:16px}
 /* Agent file page - visual polish (agent view) */
 #agentFilePage .card{padding:22px}
@@ -595,13 +600,15 @@ function renderAgentPage(){
   $("agentClientsSub").textContent=a.clients.length+" לווים";
   const el=$("agentClientsList");
   if(!a.clients.length){el.innerHTML='<div class="empty" style="padding:18px 10px">אין לווים בתיק זה</div>';return}
-  el.innerHTML='<div class="agent-clients">'+a.clients.map(c=>{
-    const bal=getClientBalance(c);
-    const status=bal===0?'סגור':(c.status==="בעייתי"?'בעייתי':'פעיל');
+  const rows=a.clients.map(c=>{const bal=getClientBalance(c),g=getClientMonthlyGross(c,a),ag=g*a.agentShare/100;return {c,bal,g,ag,biz:g-ag}});
+  const tot=rows.reduce((t,r)=>({bal:t.bal+r.bal,g:t.g+r.g,ag:t.ag+r.ag,biz:t.biz+r.biz}),{bal:0,g:0,ag:0,biz:0});
+  const totalBox='<div class="agent-totals"><div><span>יתרות</span><b>'+money(tot.bal)+'</b></div><div><span>עמלה חודשית</span><b>'+money(tot.g)+'</b></div><div><span>חלק הסוכנת</span><b>'+money(tot.ag)+'</b></div><div><span>חלק שלך</span><b>'+money(tot.biz)+'</b></div></div>';
+  el.innerHTML=totalBox+'<div class="agent-clients">'+rows.map(r=>{
+    const status=r.bal===0?'סגור':(r.c.status==="בעייתי"?'בעייתי':'פעיל');
     return '<div class="agent-client-row">'+
-      '<div><div class="agent-client-name">'+esc(c.name)+'</div><div class="agent-client-meta">'+status+' · הלוואה מקורית '+money(c.amount)+'</div></div>'+
-      '<div class="agent-client-balance">'+money(bal)+'</div>'+
-      '<button type="button" class="btn soft small" onclick="openAgentClient('+a.id+','+c.id+')">פרטים</button>'+
+      '<div><div class="agent-client-name">'+esc(r.c.name)+'</div><div class="agent-client-meta">'+status+' · עמלה '+money(r.g)+' בחודש · סוכנת '+money(r.ag)+' · שלך '+money(r.biz)+'</div></div>'+
+      '<div class="agent-client-balance">'+money(r.bal)+'</div>'+
+      '<button type="button" class="btn soft small" onclick="openAgentClient('+a.id+','+r.c.id+')">פרטים</button>'+
       '</div>';
   }).join("")+'</div>';
 }
