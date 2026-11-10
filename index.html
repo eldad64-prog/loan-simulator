@@ -294,6 +294,7 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
         <button class="btn primary" id="goAddClient">＋ הוספת לקוח והלוואה</button>
         <button class="btn soft" id="goClients">👥 ניהול לקוחות והחזרים</button>
         <button class="btn light" id="reportBtn">📄 דוח תיק</button>
+        <button class="btn primary" id="sendQuestionnaire">📨 שלח שאלון ללקוח פוטנציאל</button>
       </div>
     </div>
 
@@ -634,6 +635,11 @@ function showReport(){
   openModal("דוח תיק — "+esc(a.name),'<div class="loan-summary"><div class="summary-box"><span>לקוחות</span><b>'+a.clients.length+'</b></div><div class="summary-box"><span>יתרות</span><b>'+money(balance)+'</b></div><div class="summary-box"><span>עמלה חודשית</span><b>'+money(monthly)+'</b></div><div class="summary-box"><span>עמלה שנתית</span><b>'+money(yearly)+'</b></div><div class="summary-box"><span>חלק סוכן חודשי</span><b>'+money(monthly*a.agentShare/100)+'</b></div><div class="summary-box"><span>חלק סוכן שנתי</span><b>'+money(yearly*a.agentShare/100)+'</b></div></div>');
 }
 $("reportBtn").onclick=showReport;
+$("sendQuestionnaire").onclick=()=>{
+  const link="https://eldad64-prog.github.io/loan-app/";
+  const msg="สวัสดีค่ะ/ครับ 🙏\nเราเปิดแบบสอบถามสำหรับคำขอสินเชื่อของคุณ\nกรุณาเข้าที่ลิงก์นี้ สมัครด้วยอีเมลและรหัสผ่าน แล้วกรอกแบบสอบถามได้เลย\n"+link;
+  window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");
+};
 
 $("download").onclick=()=>{
   const blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");
