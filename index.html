@@ -154,6 +154,28 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
 .gate-button{border:1px solid #ded9ce;background:#f2efe8;color:#55564f;border-radius:15px;padding:13px 22px;margin-top:10px}
 @media(max-width:480px){.landing-screen{padding:18px}.landing-card{border-radius:24px}.landing-title{font-size:32px;margin:19px 0}.landing-enter{margin-bottom:24px}}
 
+/* Agent file page - visual polish (agent view) */
+#agentFilePage .card{padding:22px}
+#agentFilePage .card-head{padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:18px}
+#agentFilePage .card-title{font-size:22px}
+#agentFilePage .agent-grid{gap:18px}
+#agentFilePage select{min-height:54px;font-weight:700;font-size:17px;background-color:#fff}
+#agentFilePage .btn-row{gap:10px}
+#agentFilePage .btn-row .btn{flex:1 1 180px}
+#agentFilePage .btn.primary{box-shadow:0 8px 18px #2563eb26}
+#agentFilePage .agent-tools .btn{min-height:54px;font-size:16px}
+#agentFilePage .kpi{position:relative;overflow:hidden;padding:16px 18px;border-radius:18px}
+#agentFilePage .kpi::before{content:"";position:absolute;top:0;bottom:0;right:0;width:4px;background:var(--blue)}
+#agentFilePage .kpi.green::before{background:var(--green)}
+#agentFilePage .kpi .value{font-size:26px;font-variant-numeric:tabular-nums}
+#agentFilePage .kpi .klabel{font-size:14px}
+#agentFilePage .loan-form{grid-template-columns:1fr 1fr}
+@media(max-width:480px){
+ #agentFilePage .card{padding:16px}
+ #agentFilePage .kpi .value{font-size:22px}
+ #agentFilePage .btn-row .btn{flex:1 1 100%}
+ #agentFilePage .loan-form{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
