@@ -703,7 +703,16 @@ $("sendQuestionnaire").onclick=async ()=>{
     '<button id="qClose" style="width:100%;padding:10px;border:1px solid #d7dce5;border-radius:12px;background:#fff;color:#1c2433;font-size:15px">ביטול</button>'+
     '</div>';
   document.body.appendChild(box);
-  box.querySelector("#qWa").onclick=()=>{ window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank"); box.remove(); };
+  box.querySelector("#qWa").onclick=()=>{
+    // באנדרואיד: פותח ישירות את וואטסאפ עסקי (com.whatsapp.w4b); אם לא מותקן - נופל לוואטסאפ רגיל
+    const isAndroid=/android/i.test(navigator.userAgent);
+    const enc=encodeURIComponent(msg);
+    const url=isAndroid
+      ? "intent://send?text="+enc+"#Intent;scheme=whatsapp;package=com.whatsapp.w4b;S.browser_fallback_url="+encodeURIComponent("https://wa.me/?text="+enc)+";end"
+      : "https://wa.me/?text="+enc;
+    window.open(url,"_blank");
+    box.remove();
+  };
   box.querySelector("#qMail").onclick=()=>{ window.open("https://mail.google.com/mail/?view=cm&fs=1&su="+encodeURIComponent("คำขอสินเชื่อ - แบบสอบถาม")+"&body="+encodeURIComponent(msg),"_blank"); box.remove(); };
   box.querySelector("#qClose").onclick=()=>box.remove();
   box.onclick=e=>{ if(e.target===box) box.remove(); };
