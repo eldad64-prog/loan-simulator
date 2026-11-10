@@ -215,6 +215,10 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
   </nav>
 
   <section class="page active" id="dashboard">
+    <div class="card" style="margin:0 0 16px">
+      <div class="card-head"><div><h2 class="card-title">⏳ ממתינים למילוי שאלון</h2><div class="card-sub">לקוחות שנרשמו ועוד לא שלחו את השאלון.</div></div></div>
+      <div id="waitingList" style="margin-top:8px">טוען...</div>
+    </div>
     <div class="landing-buttons">
       <button class="topic-btn topic-main" onclick="showPage('loansMenuPage')">
         <span class="topic-icon">💼</span><span>הלוואות</span><small>לקוחות, סוכנים, כספים וגיבוי</small>
@@ -907,6 +911,26 @@ $("landingScreen").classList.remove("hidden");
     list.querySelectorAll('[data-pot-ok],[data-pot-no]').forEach(b => b.addEventListener('click', () => decide(b)));
   }
 
+  // לקוחות שנרשמו (יש להם שם) ועוד לא שלחו שאלון
+  async function loadWaiting(){
+    const c = client();
+    const box = document.getElementById('waitingList');
+    if (!box) return;
+    if (!c) { box.textContent = 'התחבר לענן (☁️) כדי לראות.'; return; }
+    const { data: { session } } = await c.auth.getSession();
+    if (!session) { box.textContent = 'לא מחובר לענן.'; return; }
+    const [p1, p2] = await Promise.all([
+      c.from('loan_profiles').select('id, full_name, created_at').order('created_at', { ascending: false }),
+      c.from('loan_answers').select('user_id')
+    ]);
+    if (p1.error || p2.error) { box.textContent = 'שגיאה: ' + ((p1.error || p2.error).message); return; }
+    const done = new Set((p2.data || []).map(x => x.user_id));
+    const waiting = (p1.data || []).filter(p => !done.has(p.id) && p.full_name);
+    if (!waiting.length) { box.textContent = 'אין לקוחות שממתינים למילוי שאלון.'; return; }
+    box.innerHTML = '<ul style="margin:0;padding-inline-start:20px">' + waiting.map(p =>
+      `<li>${esc(p.full_name)} — נרשם ${new Date(p.created_at).toLocaleDateString('he-IL')}</li>`).join('') + '</ul>';
+  }
+
   async function decide(btn){
     const c = client(); if (!c) return;
     const ok = btn.hasAttribute('data-pot-ok');
@@ -926,7 +950,9 @@ $("landingScreen").classList.remove("hidden");
   window.showPage = function(id){
     if (typeof origShow === 'function') origShow(id);
     if (id === 'potentialPage') loadPotential();
+    if (id === 'dashboard') loadWaiting();
   };
+  loadWaiting();
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
