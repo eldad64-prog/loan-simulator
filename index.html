@@ -871,15 +871,30 @@ $("landingScreen").classList.remove("hidden");
   function client(){ return window.loanCloud && window.loanCloud.client; }
   document.addEventListener('click', async e => {
     if (e.target && e.target.id === 'copyQuestionnaireLink') {
-      try { await navigator.clipboard.writeText('https://eldad64-prog.github.io/loan-app/?new=1'); msg('הקישור הועתק.'); }
-      catch (err) { msg('העתקה לא הצליחה. הקישור: https://eldad64-prog.github.io/loan-app/?new=1'); }
+      const link = await newInviteLink(); if (!link) return;
+      try { await navigator.clipboard.writeText(link); msg('הקישור הועתק.'); }
+      catch (err) { msg('העתקה לא הצליחה. הקישור: ' + link); }
       return;
     }
     if (!e.target || e.target.id !== 'copyQuestionnaireText') return;
+    const link = await newInviteLink(); if (!link) return;
     const t = document.getElementById('questionnaireText');
+    t.value = t.value.replace(/https:\/\/eldad64-prog\.github\.io\/loan-app\/\?new=1\S*/, link);
     try { await navigator.clipboard.writeText(t.value); msg('ההודעה הועתקה.'); }
     catch (err) { t.focus(); t.select(); msg('סמן את הטקסט והעתק ידנית.'); }
   });
+  // שואל שם, יוצר שורה ומחזיר קישור לשאלון עם הקוד שלה
+  async function newInviteLink(){
+    const name = (prompt('שם הלקוח הפוטנציאלי (ייכנס לרשימה):') || '').trim();
+    if (!name) return null;
+    const c = client();
+    if (!c) { msg('יש להתחבר לענן (☁️) קודם.'); return null; }
+    const code = Math.random().toString(36).slice(2, 10);
+    const { error } = await c.from('loan_invites').insert({ code, name });
+    if (error) { msg('שגיאה ברישום: ' + error.message); return null; }
+    loadPotential();
+    return 'https://eldad64-prog.github.io/loan-app/?new=1&ref=' + code;
+  }
   function msg(t){ const el=document.getElementById('potentialMsg'); if(el) el.textContent=t; }
 
   async function loadPotential(){
