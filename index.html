@@ -392,9 +392,19 @@ https://eldad64-prog.github.io/loan-app/?new=1</textarea>
 
     <div class="card">
       <div class="card-head">
-        <div><h2 class="card-title">לווים לפי סוכן</h2><div class="card-sub">בחר סוכן כדי לפתוח את רשימת הלווים שלו. רק סוכן אחד מוצג פתוח בכל פעם.</div></div>
+        <div><h2 class="card-title">לווים לפי סוכן</h2><div class="card-sub">לחיצה על סוכן פותחת דף נפרד עם רשימת הלווים שלו.</div></div>
       </div>
       <div id="agentBorrowerList" class="agent-accordion"></div>
+    </div>
+  </section>
+
+  <section class="page" id="agentClientsPage">
+    <div style="display:flex;justify-content:flex-start;margin:0 0 10px">
+      <button class="btn light" type="button" onclick="showPage('clientsPage')">→ חזרה לרשימת הסוכנים</button>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><h2 class="card-title" id="agentClientsTitle">לקוחות הסוכן</h2><div class="card-sub" id="agentClientsSub"></div></div></div>
+      <div id="agentClientsList"></div>
     </div>
   </section>
 
@@ -526,7 +536,7 @@ function renderAgentBorrowers(){
     const isOpen=String(openAgentAccordion)===String(a.id);
     const balance=a.clients.reduce((s,c)=>s+getClientBalance(c),0);
     html+='<div>'+
-      '<button type="button" class="agent-row" onclick="toggleAgentBorrowers('+a.id+')">'+
+      '<button type="button" class="agent-row" onclick="openAgentPage('+a.id+')">'+
       '<span><span class="agent-row-name">'+esc(a.name)+'</span><span class="agent-row-count">'+a.clients.length+' לווים</span></span>'+
       '<span class="agent-row-balance">'+money(balance)+'</span>'+
       '<span class="chevron">'+(isOpen?"▲":"▼")+'</span></button>';
@@ -548,6 +558,28 @@ function renderAgentBorrowers(){
     html+='</div>';
   });
   el.innerHTML=html;
+}
+let agentPageId=null;
+function openAgentPage(agentId){
+  agentPageId=agentId;
+  showPage("agentClientsPage");
+}
+function renderAgentPage(){
+  const a=db.agents.find(x=>String(x.id)===String(agentPageId));
+  if(!a){showPage("clientsPage");return}
+  $("agentClientsTitle").textContent="לקוחות של "+a.name;
+  $("agentClientsSub").textContent=a.clients.length+" לווים";
+  const el=$("agentClientsList");
+  if(!a.clients.length){el.innerHTML='<div class="empty" style="padding:18px 10px">אין לווים בתיק זה</div>';return}
+  el.innerHTML='<div class="agent-clients">'+a.clients.map(c=>{
+    const bal=getClientBalance(c);
+    const status=bal===0?'סגור':(c.status==="בעייתי"?'בעייתי':'פעיל');
+    return '<div class="agent-client-row">'+
+      '<div><div class="agent-client-name">'+esc(c.name)+'</div><div class="agent-client-meta">'+status+' · הלוואה מקורית '+money(c.amount)+'</div></div>'+
+      '<div class="agent-client-balance">'+money(bal)+'</div>'+
+      '<button type="button" class="btn soft small" onclick="openAgentClient('+a.id+','+c.id+')">פרטים</button>'+
+      '</div>';
+  }).join("")+'</div>';
 }
 function toggleAgentBorrowers(agentId){
   openAgentAccordion=String(openAgentAccordion)===String(agentId)?null:agentId;
@@ -591,6 +623,7 @@ function showPage(id){
   if($("logoutBtn"))$("logoutBtn").style.display=id==="dashboard"?"block":"none";
   if(id==="agentFilePage")render();
   if(id==="clientsPage")renderClients();
+  if(id==="agentClientsPage")renderAgentPage();
   if(id==="portfolioPage")renderPortfolio();
   if(id==="financePage")renderFinance();
   window.scrollTo({top:0,behavior:"smooth"});
