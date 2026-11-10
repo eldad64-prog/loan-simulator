@@ -347,6 +347,18 @@ https://eldad64-prog.github.io/loan-app/?new=1</textarea>
     </div>
 
     <div class="card">
+      <div class="card-head"><div><h2 class="card-title">עמלה וקופה בסוף חודש</h2><div class="card-sub" id="feeNow"></div></div></div>
+      <div class="loan-form">
+        <div class="field"><label>אופן העמלה</label><select id="feeMode"><option value="return">החזרה מיידית אליי</option><option value="accumulate">צבירה אצל הסוכנת</option></select></div>
+        <div class="field"><label>מה נצבר</label><select id="feeBase"><option value="agentShare">חלק הסוכנת בלבד</option><option value="fullFee">כל העמלה</option></select></div>
+        <div class="field"><label>להוסיף לקופה בסוף החודש</label><select id="feeAdd"><option value="no">לא - הקופה נשארת</option><option value="yes">כן - להוסיף את הצבור</option></select></div>
+        <div class="field"><label>תוקף השינוי</label><select id="feeScope"><option value="until_next">מהחודש הזה עד השינוי הבא</option><option value="month">לחודש הזה בלבד</option></select></div>
+      </div>
+      <div class="btn-row" style="margin-top:12px"><button class="btn primary" type="button" id="saveFeeSetting">שמור הגדרה</button><button class="btn soft" type="button" id="closeMonthBtn">סגירת חודש</button></div>
+      <div id="monthLogBox" class="card-sub" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card">
       <div class="card-head"><div><h2 class="card-title">תמונת מצב</h2><div class="card-sub">החישובים מבוססים על יתרות ההלוואות לאחר ההחזרים.</div></div></div>
       <div class="kpis">
         <div class="kpi blue"><div class="klabel">לקוחות</div><div class="value" id="sClients">0</div></div>
@@ -517,6 +529,23 @@ function refreshAgentFields(){
   const a=agent();if(!a)return;
   $("monthlyFee").value=a.monthlyFee;$("agentShare").value=a.agentShare;
   $("agentBudget").value=a.budget??"";
+  const m=monthKey(), fs=feeSettingFor(a,m);
+  $("feeMode").value=fs.mode;$("feeBase").value=fs.base;$("feeAdd").value=fs.addToBudget?"yes":"no";
+  $("feeNow").textContent="הגדרה פעילה לחודש "+m+": "+(fs.mode==="accumulate"?"צבירה":"החזרה מיידית")+" · "+(fs.base==="fullFee"?"כל העמלה":"חלק הסוכנת")+" · "+(fs.addToBudget?"מוסיפה לקופה":"קופה נשארת");
+  const log=(a.monthLog||[]).slice(-6).reverse();
+  $("monthLogBox").innerHTML=log.length?log.map(x=>'<div>'+esc(x.month)+' · '+money(x.amount)+' · '+(x.mode==="accumulate"?(x.addedToBudget?"נוסף לקופה":"נשאר אצל הסוכנת"):"הוחזר אליי")+'</div>').join(""):"<div>עדיין לא נסגרו חודשים</div>";
+}
+function monthKey(d=new Date()){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")}
+function feeSettingFor(a,m){
+  const list=(a.feeSettings||[]).filter(e=>e.from<=m).slice().sort((x,y)=>x.from<y.from?-1:x.from>y.from?1:0);
+  let until=null,monthOnly=null;
+  list.forEach(e=>{ if(e.scope==="month"){ if(e.from===m) monthOnly=e; } else until=e; });
+  const base=until||{mode:"return",base:"agentShare",addToBudget:false};
+  return monthOnly||base;
+}
+function agentMonthBase(a,s){
+  const g=a.clients.reduce((x,c)=>x+getClientMonthlyGross(c,a),0);
+  return s.base==="fullFee"?g:g*(Number(a.agentShare)||0)/100;
 }
 function agentUsedBudget(a){return a.clients.reduce((s,c)=>s+(Number(c.amount)||0),0)}
 function agentRemainingBudget(a){return (Number(a.budget)||0)-agentUsedBudget(a)}
@@ -701,6 +730,26 @@ $("agentSelect").onchange=()=>{
 $("monthlyFee").onchange=()=>{agent().monthlyFee=Math.max(0,Number($("monthlyFee").value)||0);save();render()};
 $("agentShare").onchange=()=>{agent().agentShare=Math.max(0,Number($("agentShare").value)||0);save();render()};
 $("agentBudget").onchange=()=>{agent().budget=Math.max(0,Number($("agentBudget").value)||0);save();render()};
+$("saveFeeSetting").onclick=()=>{
+  const a=agent();if(!a)return;
+  a.feeSettings=a.feeSettings||[];
+  a.feeSettings.push({from:monthKey(),scope:$("feeScope").value,mode:$("feeMode").value,base:$("feeBase").value,addToBudget:$("feeAdd").value==="yes"});
+  save();render();alert("ההגדרה נשמרה.");
+};
+$("closeMonthBtn").onclick=()=>{
+  const a=agent();if(!a)return;
+  const m=monthKey();
+  a.monthLog=a.monthLog||[];
+  if(a.monthLog.some(x=>x.month===m)){alert("החודש "+m+" כבר נסגר.");return}
+  const s=feeSettingFor(a,m);
+  const amount=Math.round(agentMonthBase(a,s)*100)/100;
+  const addedToBudget=s.mode==="accumulate"&&s.addToBudget;
+  const what=s.mode==="accumulate"?(addedToBudget?"יתווסף לקופה":"יישאר אצל הסוכנת, הקופה לא תשתנה"):"יוחזר אליך";
+  if(!confirm("לסגור את חודש "+m+"?\nסכום: "+money(amount)+"\n"+what))return;
+  if(addedToBudget)a.budget=(Number(a.budget)||0)+amount;
+  a.monthLog.push({month:m,amount,mode:s.mode,base:s.base,addedToBudget});
+  save();render();
+};
 
 $("newAgent").onclick=()=>{
   openModal("הוספת סוכן חדש",'<div class="notice blue" style="margin:0 0 14px">התיק ייווצר רק לאחר לחיצה על ״שמור סוכן״.</div><div class="field"><label>שם הסוכן</label><input id="newAgentName" placeholder="לדוגמה: דוד"></div><div class="btn-row"><button class="btn primary" onclick="createAgent()">שמור</button><button class="btn light" onclick="closeModal()">ביטול</button></div>');
