@@ -6,42 +6,48 @@
 <meta name="theme-color" content="#3b6fd8">
 <title>ידידים - סוכן</title>
 <style>
-  :root{--bg:#f4f7fc;--card:#fff;--text:#1c2433;--muted:#5d6878;--blue:#3b6fd8;--line:#e3e9f4;--red:#c63b3b;--green:#2e8b57;--shadow:0 8px 24px rgba(28,36,51,.08)}
-  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#121826;--card:#1d2636;--text:#eef2fa;--muted:#a7b2c6;--blue:#6f96ea;--line:#2c3850;--red:#e56b6b;--green:#5fbf86;--shadow:none}}
-  :root[data-theme="dark"]{--bg:#121826;--card:#1d2636;--text:#eef2fa;--muted:#a7b2c6;--blue:#6f96ea;--line:#2c3850;--red:#e56b6b;--green:#5fbf86;--shadow:none}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;font-size:17px}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;font-size:17px;color:#2a1d4a;min-height:100vh;
+    background:linear-gradient(180deg,#f5f0ff 0%,#fff1f7 50%,#effdf7 100%)}
   .wrap{max-width:640px;margin:0 auto;padding:16px 16px 40px}
-  .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-  .top a{color:var(--blue);text-decoration:none;font-size:15px}
-  h1{font-size:24px;margin:4px 0 2px}
-  .muted{color:var(--muted);font-size:14px}
-  .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
-  .card h2{font-size:18px;margin:0 0 10px}
+  .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .top a{color:#7c3aed;text-decoration:none;font-weight:700;font-size:15px;background:#fff;padding:8px 14px;border-radius:999px;box-shadow:0 3px 10px rgba(124,58,237,.15)}
+  .hero{background:linear-gradient(135deg,#7c3aed,#db2777 60%,#f97316);color:#fff;border-radius:26px;padding:20px 22px;margin-bottom:14px;box-shadow:0 12px 26px rgba(219,39,119,.25)}
+  .hero h1{margin:0 0 4px;font-size:26px}
+  .hero p{margin:0;opacity:.95}
+  .card{background:#fff;border-radius:22px;padding:16px;margin-bottom:14px;box-shadow:0 8px 20px rgba(42,29,74,.08)}
+  .card h2{font-size:19px;margin:0 0 12px;color:#4c1d95}
   .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .kpi{border:1px solid var(--line);border-radius:12px;padding:12px}
-  .kpi span{display:block;color:var(--muted);font-size:13px}
-  .kpi b{font-size:20px}
+  .kpi{border-radius:18px;padding:14px;color:#fff;font-weight:700}
+  .kpi span{display:block;font-size:13px;opacity:.95;font-weight:600}
+  .kpi b{font-size:21px}
+  .k1{background:linear-gradient(135deg,#22c55e,#16a34a)}
+  .k2{background:linear-gradient(135deg,#3b82f6,#06b6d4)}
+  .k3{background:linear-gradient(135deg,#f59e0b,#f97316)}
+  .k4{background:linear-gradient(135deg,#ec4899,#a855f7)}
   .form{display:grid;gap:10px}
-  label{display:block;font-size:14px;color:var(--muted);margin-bottom:4px}
-  input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit;font-size:18px}
-  button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:13px 16px;font-size:17px;font-weight:700}
-  .primary{background:var(--blue);color:#fff;width:100%}
-  .danger{background:transparent;color:var(--red);border:1px solid var(--red);padding:8px 12px;font-size:14px}
-  .row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
-  .row:last-child{border-bottom:0}
-  .name{font-weight:700}
-  .meta{color:var(--muted);font-size:13px;margin-top:3px}
-  .bal{font-weight:700;white-space:nowrap}
-  .notice{background:var(--bg);border-radius:12px;padding:12px;color:var(--muted);font-size:14px;margin-bottom:14px}
-  .empty{color:var(--muted);text-align:center;padding:18px 6px}
+  label{display:block;font-size:14px;color:#6b5b8a;margin-bottom:4px;font-weight:600}
+  input{width:100%;padding:13px;border-radius:16px;border:2px solid #ede9fe;background:#faf7ff;color:#2a1d4a;font:inherit;font-size:18px}
+  input:focus{outline:none;border-color:#a78bfa;background:#fff}
+  button{font:inherit;cursor:pointer;border:0;border-radius:16px;font-weight:700}
+  .primary{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;width:100%;padding:15px;font-size:18px;box-shadow:0 8px 0 #5b21b6;transition:transform .08s}
+  .primary:active{transform:translateY(5px);box-shadow:0 3px 0 #5b21b6}
+  .danger{background:#fff0f3;color:#be123c;border:2px solid #fecdd3;padding:8px 12px;font-size:14px}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border-radius:16px;background:#faf7ff;margin-bottom:8px}
+  .av{flex:0 0 44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;background:linear-gradient(135deg,#fde68a,#fbcfe8)}
+  .info{flex:1;min-width:0}
+  .name{font-weight:800}
+  .meta{color:#6b5b8a;font-size:13px;margin-top:3px}
+  .bal{font-weight:800;color:#15803d;white-space:nowrap}
+  .notice{background:#fef9c3;border-radius:16px;padding:12px 14px;color:#713f12;font-size:14px;margin-bottom:14px}
+  .empty{color:#6b5b8a;text-align:center;padding:22px 6px;font-size:16px}
   .hidden{display:none}
   @media (max-width:420px){.kpis{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><a href="./index.html">→ חזרה לכניסה</a><span class="muted" id="status"></span></div>
+  <div class="top"><a href="./index.html">→ חזרה לכניסה</a></div><div class="hero"><h1>שלום 👋 התיק שלך</h1><p>הלקוחות שלך ביד אחת. הוסף או הסר לפי הצורך.</p></div>
 
   <div id="noAgent" class="card hidden">
     <h2>הכניסה לתיק</h2>
@@ -49,17 +55,17 @@
   </div>
 
   <div id="app" class="hidden">
-    <h1 id="agentName"></h1>
-    <div class="muted" style="margin-bottom:14px">התיק שלך: לקוחות, יתרות והחלק שלך בעמלה</div>
+    <h2 id="agentName" style="margin:0 0 4px;color:#4c1d95"></h2>
+    
 
-    <div class="notice">הקופה, אחוזי העמלה והחזרת העמלה נקבעים על ידי המנהל ואי אפשר לשנות אותם מכאן.</div>
+    <div class="notice">💡 הקופה, אחוזי העמלה והחזרת העמלה נקבעים על ידי המנהל ואי אפשר לשנות אותם מכאן.</div>
 
     <div class="card">
       <div class="kpis">
-        <div class="kpi"><span>קופה</span><b id="kBudget">฿0</b></div>
-        <div class="kpi"><span>נשאר בקופה</span><b id="kRemain">฿0</b></div>
-        <div class="kpi"><span>יתרות הלקוחות</span><b id="kBal">฿0</b></div>
-        <div class="kpi"><span>חלקך בעמלה חודשית</span><b id="kShare">฿0</b></div>
+        <div class="kpi k1"><span>קופה</span><b id="kBudget">฿0</b></div>
+        <div class="kpi k2"><span>נשאר בקופה</span><b id="kRemain">฿0</b></div>
+        <div class="kpi k3"><span>יתרות הלקוחות</span><b id="kBal">฿0</b></div>
+        <div class="kpi k4"><span>חלקך בעמלה חודשית</span><b id="kShare">฿0</b></div>
       </div>
     </div>
 
@@ -69,7 +75,7 @@
         <div><label for="cName">שם הלקוח</label><input id="cName" placeholder="שם הלקוח"></div>
         <div><label for="cAmount">סכום ההלוואה (฿)</label><input id="cAmount" type="number" min="0" step="1"></div>
         <div><label for="cMonths">תקופה (חודשים)</label><input id="cMonths" type="number" min="1" step="1" value="12"></div>
-        <button class="primary" id="addBtn">＋ הוסף לקוח</button>
+        <button class="primary" id="addBtn">＋ הוסף לקוח 🎈</button>
       </div>
     </div>
 
@@ -144,7 +150,7 @@ function render(){
     const b=getClientBalance(c);
     const status=b===0?"סגור":(c.status==="בעייתי"?"בעייתי":"פעיל");
     const part=getClientMonthlyGross(c,a)*a.agentShare/100;
-    return '<div class="row"><div><div class="name">'+esc(c.name)+'</div>'+
+    return '<div class="row"><div class="av">👤</div><div class="info"><div class="name">'+esc(c.name)+'</div>'+
       '<div class="meta">'+status+' · הלוואה '+money(c.amount)+' · חלקך בחודש '+money(part)+'</div></div>'+
       '<div style="display:flex;align-items:center;gap:10px"><span class="bal">'+money(b)+'</span>'+
       '<button class="danger" data-id="'+c.id+'">הסר</button></div></div>';
