@@ -328,8 +328,8 @@ https://eldad64-prog.github.io/loan-app/?new=1</textarea>
         <div>
           <div class="agent-tools">
             <button class="btn primary" id="newAgent">＋ הוספת סוכן חדש</button>
-            <button class="btn soft" id="portfolioSummary">📊 ריכוז תיקי סוכנים</button>
-            <button class="btn green wide" id="businessFinance">💰 כספים ועמלות</button>
+            
+            
           </div>
           <div class="notice blue">לכל סוכן יש תיק עצמאי. שינוי בעמלות של סוכן משפיע על חישוב התיק שלו בלבד.</div>
         </div>
@@ -377,7 +377,7 @@ https://eldad64-prog.github.io/loan-app/?new=1</textarea>
     <div class="card">
       <div class="card-head"><div><h2 class="card-title">פעולות מהירות</h2><div class="card-sub">הפעולות המרכזיות של התיק הנבחר.</div></div></div>
       <div class="btn-row">
-        <button class="btn primary" id="goAddClient">＋ הוספת לקוח והלוואה</button>
+        
         <button class="btn soft" id="goClients">👥 ניהול לקוחות והחזרים</button>
         <button class="btn light" id="reportBtn">📄 דוח תיק</button>
         <button class="btn primary" id="sendQuestionnaire">📨 שלח שאלון ללקוח פוטנציאל</button>
@@ -782,8 +782,8 @@ $("addClient").onclick=()=>{
 };
 $("search").oninput=renderClients;$("statusFilter").onchange=renderClients;
 $("agentAddClient").onclick=()=>{ if(!agentPageId)return; $("agentSelect").value=agentPageId; showPage("clientsPage"); setTimeout(()=>$("clientName").focus(),250); };
-$("goClients").onclick=()=>showPage("clientsPage");$("goAddClient").onclick=()=>{showPage("clientsPage");setTimeout(()=>$("clientName").focus(),250)};
-$("portfolioSummary").onclick=()=>showPage("portfolioPage");$("businessFinance").onclick=()=>showPage("financePage");
+$("goClients").onclick=()=>showPage("clientsPage");
+
 $("backupHome")?.addEventListener("click",()=>$("download").click());
 $("restoreHome")?.addEventListener("click",()=>$("restore").click());
 
