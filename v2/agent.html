@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#3b6fd8">
+<title>ידידים - סוכן</title>
+<style>
+  :root{--bg:#f4f7fc;--card:#fff;--text:#1c2433;--muted:#5d6878;--blue:#3b6fd8;--line:#e3e9f4;--red:#c63b3b;--green:#2e8b57;--shadow:0 8px 24px rgba(28,36,51,.08)}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#121826;--card:#1d2636;--text:#eef2fa;--muted:#a7b2c6;--blue:#6f96ea;--line:#2c3850;--red:#e56b6b;--green:#5fbf86;--shadow:none}}
+  :root[data-theme="dark"]{--bg:#121826;--card:#1d2636;--text:#eef2fa;--muted:#a7b2c6;--blue:#6f96ea;--line:#2c3850;--red:#e56b6b;--green:#5fbf86;--shadow:none}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;font-size:17px}
+  .wrap{max-width:640px;margin:0 auto;padding:16px 16px 40px}
+  .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .top a{color:var(--blue);text-decoration:none;font-size:15px}
+  h1{font-size:24px;margin:4px 0 2px}
+  .muted{color:var(--muted);font-size:14px}
+  .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+  .card h2{font-size:18px;margin:0 0 10px}
+  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .kpi{border:1px solid var(--line);border-radius:12px;padding:12px}
+  .kpi span{display:block;color:var(--muted);font-size:13px}
+  .kpi b{font-size:20px}
+  .form{display:grid;gap:10px}
+  label{display:block;font-size:14px;color:var(--muted);margin-bottom:4px}
+  input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit;font-size:18px}
+  button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:13px 16px;font-size:17px;font-weight:700}
+  .primary{background:var(--blue);color:#fff;width:100%}
+  .danger{background:transparent;color:var(--red);border:1px solid var(--red);padding:8px 12px;font-size:14px}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:0}
+  .name{font-weight:700}
+  .meta{color:var(--muted);font-size:13px;margin-top:3px}
+  .bal{font-weight:700;white-space:nowrap}
+  .notice{background:var(--bg);border-radius:12px;padding:12px;color:var(--muted);font-size:14px;margin-bottom:14px}
+  .empty{color:var(--muted);text-align:center;padding:18px 6px}
+  .hidden{display:none}
+  @media (max-width:420px){.kpis{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a href="./index.html">→ חזרה לכניסה</a><span class="muted" id="status"></span></div>
+
+  <div id="noAgent" class="card hidden">
+    <h2>הכניסה לתיק</h2>
+    <div class="muted">הכניסה לתיק של הסוכנת תתבצע במייל בשלב הבא. עד אז אין אפשרות לפתוח את התיק מכאן.</div>
+  </div>
+
+  <div id="app" class="hidden">
+    <h1 id="agentName"></h1>
+    <div class="muted" style="margin-bottom:14px">התיק שלך: לקוחות, יתרות והחלק שלך בעמלה</div>
+
+    <div class="notice">הקופה, אחוזי העמלה והחזרת העמלה נקבעים על ידי המנהל ואי אפשר לשנות אותם מכאן.</div>
+
+    <div class="card">
+      <div class="kpis">
+        <div class="kpi"><span>קופה</span><b id="kBudget">฿0</b></div>
+        <div class="kpi"><span>נשאר בקופה</span><b id="kRemain">฿0</b></div>
+        <div class="kpi"><span>יתרות הלקוחות</span><b id="kBal">฿0</b></div>
+        <div class="kpi"><span>חלקך בעמלה חודשית</span><b id="kShare">฿0</b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>הוספת לקוח</h2>
+      <div class="form">
+        <div><label for="cName">שם הלקוח</label><input id="cName" placeholder="שם הלקוח"></div>
+        <div><label for="cAmount">סכום ההלוואה (฿)</label><input id="cAmount" type="number" min="0" step="1"></div>
+        <div><label for="cMonths">תקופה (חודשים)</label><input id="cMonths" type="number" min="1" step="1" value="12"></div>
+        <button class="primary" id="addBtn">＋ הוסף לקוח</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>הלקוחות שלי</h2>
+      <div id="list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY="loan_portfolios_v3";
+const OLD_KEY="loan_agent_manager_v1";
+const $=id=>document.getElementById(id);
+const money=n=>"฿"+Number(n||0).toLocaleString("en-US",{maximumFractionDigits:0});
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+
+function normalizeDb(x){
+  if(!x||!Array.isArray(x.agents)) return null;
+  let nextAgent=1,nextClient=1,nextRepayment=1;
+  const agents=x.agents.map((a,ai)=>{
+    const agentId=Number(a.id)||ai+1; nextAgent=Math.max(nextAgent,agentId+1);
+    const clients=Array.isArray(a.clients)?a.clients.map((c,ci)=>{
+      const clientId=Number(c.id)||nextClient; nextClient=Math.max(nextClient,clientId+1);
+      const reps=Array.isArray(c.repayments)?c.repayments.map((r,ri)=>{
+        const rid=Number(r.id)||nextRepayment; nextRepayment=Math.max(nextRepayment,rid+1);
+        return {id:rid,amount:Math.max(0,Number(r.amount)||0),date:r.date||new Date().toISOString().slice(0,10),note:r.note||""};
+      }):[];
+      return {id:clientId,name:c.name||"לקוח",amount:Math.max(0,Number(c.amount)||0),months:Math.max(1,Number(c.months)||1),
+        status:c.status||"פעיל",feeType:c.feeType||"agent",
+        feeRate:(c.feeRate===null||c.feeRate===undefined||c.feeRate==="")?null:Math.max(0,Number(c.feeRate)||0),repayments:reps};
+    }):[];
+    return {id:agentId,name:a.name||("סוכן "+(ai+1)),monthlyFee:Math.max(0,Number(a.monthlyFee??a.fee)||0),
+      agentShare:Math.max(0,Number(a.agentShare??a.agentFee)||0),budget:a.budget,feeSettings:a.feeSettings,monthLog:a.monthLog,clients};
+  });
+  return {agents,nextAgent,nextClient,nextRepayment};
+}
+let db=null;
+try{db=normalizeDb(JSON.parse(localStorage.getItem(KEY)||"null"));}catch(e){db=null}
+if(!db){try{db=normalizeDb(JSON.parse(localStorage.getItem(OLD_KEY)||"null"));}catch(e){db=null}}
+
+// כניסה זמנית לפי מזהה סוכן בקישור (?agent=ID). בשלב הבא תוחלף בכניסה במייל.
+const agentId=new URLSearchParams(location.search).get("agent");
+const a=db?db.agents.find(x=>String(x.id)===String(agentId)):null;
+
+function getClientBalance(c){return Math.max(0,c.amount-c.repayments.reduce((x,r)=>x+r.amount,0))}
+function getClientFeeRate(c,ag){return c.feeRate===null||c.feeRate===undefined?ag.monthlyFee:Number(c.feeRate)||0}
+function getClientFeeType(c){return c.feeType&&c.feeType!=="agent"?c.feeType:"monthly"}
+function getClientMonthlyGross(c,ag){const b=getClientBalance(c),r=getClientFeeRate(c,ag);return getClientFeeType(c)==="daily"?b*(r/100)*30.44:b*(r/100)}
+function usedBudget(ag){return ag.clients.reduce((s,c)=>s+(Number(c.amount)||0),0)}
+function remainingBudget(ag){return (Number(ag.budget)||0)-usedBudget(ag)}
+
+function save(){
+  localStorage.setItem(KEY,JSON.stringify(db));
+  try{window.loanCloud?.syncNow?.()}catch(e){}
+}
+
+function render(){
+  if(!a){$("noAgent").classList.remove("hidden");return}
+  $("app").classList.remove("hidden");
+  $("agentName").textContent=a.name;
+  const bal=a.clients.reduce((s,c)=>s+getClientBalance(c),0);
+  const share=a.clients.reduce((s,c)=>s+getClientMonthlyGross(c,a)*a.agentShare/100,0);
+  const hasBudget=Number(a.budget)>0;
+  $("kBudget").textContent=hasBudget?money(a.budget):"לא הוגדרה";
+  $("kRemain").textContent=hasBudget?money(remainingBudget(a)):"—";
+  $("kBal").textContent=money(bal);
+  $("kShare").textContent=money(share);
+  const list=$("list");
+  if(!a.clients.length){list.innerHTML='<div class="empty">אין לקוחות בתיק עדיין</div>';return}
+  list.innerHTML=a.clients.map(c=>{
+    const b=getClientBalance(c);
+    const status=b===0?"סגור":(c.status==="בעייתי"?"בעייתי":"פעיל");
+    const part=getClientMonthlyGross(c,a)*a.agentShare/100;
+    return '<div class="row"><div><div class="name">'+esc(c.name)+'</div>'+
+      '<div class="meta">'+status+' · הלוואה '+money(c.amount)+' · חלקך בחודש '+money(part)+'</div></div>'+
+      '<div style="display:flex;align-items:center;gap:10px"><span class="bal">'+money(b)+'</span>'+
+      '<button class="danger" data-id="'+c.id+'">הסר</button></div></div>';
+  }).join("");
+  list.querySelectorAll("button[data-id]").forEach(btn=>btn.onclick=()=>removeClient(Number(btn.dataset.id)));
+}
+
+function removeClient(id){
+  const c=a.clients.find(x=>x.id===id);
+  if(!c)return;
+  if(!confirm("להסיר את "+c.name+" מהתיק? הפעולה תחזיר את הסכום לקופה.")) return;
+  a.clients=a.clients.filter(x=>x.id!==id);
+  save();render();
+}
+
+$("addBtn").onclick=()=>{
+  const name=$("cName").value.trim();
+  const amount=Math.max(0,Number($("cAmount").value)||0);
+  const months=Math.max(1,Number($("cMonths").value)||1);
+  if(!name||!amount){alert("יש להזין שם לקוח וסכום הלוואה.");return}
+  if(Number(a.budget)>0&&amount>remainingBudget(a)){alert("אין מספיק קופה. נשאר: "+money(remainingBudget(a)));return}
+  const id=db.nextClient||Math.max(0,...db.agents.flatMap(x=>x.clients.map(c=>c.id)))+1;
+  db.nextClient=id+1;
+  a.clients.push({id,name,amount,months,status:"פעיל",feeType:"agent",feeRate:null,repayments:[]});
+  save();
+  $("cName").value="";$("cAmount").value="";$("cMonths").value="12";
+  render();
+};
+
+if(!a) $("noAgent").classList.remove("hidden");
+else render();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+<script src="../supabase-sync.js?v=cloud-fix-20261003-6"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#3b6fd8">
+<title>ידידים</title>
+<style>
+  :root{--bg:#f4f7fc;--card:#fff;--text:#1c2433;--muted:#5d6878;--blue:#3b6fd8;--shadow:0 10px 30px rgba(28,36,51,.10)}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#121826;--card:#1d2636;--text:#eef2fa;--muted:#a7b2c6;--blue:#6f96ea;--shadow:none}}
+  :root[data-theme="dark"]{--bg:#121826;--card:#1d2636;--text:#eef2fa;--muted:#a7b2c6;--blue:#6f96ea;--shadow:none}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;min-height:100vh}
+  .wrap{max-width:520px;margin:0 auto;padding:40px 16px}
+  h1{font-size:28px;margin:0 0 6px;text-align:center}
+  .sub{color:var(--muted);text-align:center;margin:0 0 28px;font-size:16px}
+  .choice{display:block;width:100%;margin:0 0 14px;padding:22px 18px;border:0;border-radius:18px;background:var(--card);color:var(--text);box-shadow:var(--shadow);font:inherit;font-size:20px;font-weight:700;text-align:right;text-decoration:none;cursor:pointer}
+  .choice small{display:block;margin-top:6px;font-size:14px;font-weight:400;color:var(--muted)}
+  .choice:active{transform:scale(.99)}
+  .choice.primary{background:var(--blue);color:#fff}
+  .choice.primary small{color:#e6eeff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ידידים</h1>
+  <p class="sub">בחר כניסה</p>
+  <a class="choice" href="./agent.html">
+    👩‍💼 ניהול סוכנים
+    <small>הלקוחות של הסוכנת בלבד: הוספה והסרה</small>
+  </a>
+  <a class="choice primary" href="./manager.html">
+    🛠 ניהול מנהל
+    <small>כל המערכת: סוכנים, הלוואות, עמלות וקופה</small>
+  </a>
+</div>
+</body>
+</html>
