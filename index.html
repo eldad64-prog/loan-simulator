@@ -493,7 +493,7 @@ function normalizeDb(x){
         feeRate:(c.feeRate===null||c.feeRate===undefined||c.feeRate==="")?null:Math.max(0,Number(c.feeRate)||0),repayments:reps};
     }):[];
     return {id:agentId,name:a.name||("סוכן "+(ai+1)),monthlyFee:Math.max(0,Number(a.monthlyFee??a.fee)||0),
-      agentShare:Math.max(0,Number(a.agentShare??a.agentFee)||0),clients};
+      agentShare:Math.max(0,Number(a.agentShare??a.agentFee)||0),budget:a.budget,feeSettings:a.feeSettings,monthLog:a.monthLog,clients};
   });
   return {agents,nextAgent,nextClient,nextRepayment};
 }
