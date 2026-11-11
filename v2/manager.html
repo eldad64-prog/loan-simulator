@@ -672,9 +672,35 @@ function renderPortfolio(){
     html+='<tr><td><b>'+esc(a.name)+'</b></td><td>'+a.clients.length+'</td><td>'+money(original)+'</td><td>'+money(paid)+'</td><td><b>'+money(bal)+'</b></td><td>'+money(monthly)+'</td><td>'+money(monthly*a.agentShare/100)+'</td></tr>';
   });
   html+='</tbody></table></div>';
-  $("portfolioContent").innerHTML=html;
+  $("portfolioContent").innerHTML=html+renderEfficiency();
 }
-function renderFinance(){
+function renderEfficiency(){
+  const rows=db.agents.map(a=>{
+    const original=a.clients.reduce((s,c)=>s+c.amount,0);
+    const paid=a.clients.reduce((s,c)=>s+c.repayments.reduce((x,r)=>x+r.amount,0),0);
+    const bal=a.clients.reduce((s,c)=>s+getClientBalance(c),0);
+    const monthly=a.clients.reduce((s,c)=>s+getClientMonthlyGross(c,a),0);
+    const used=agentUsedBudget(a);
+    const budget=Number(a.budget)||0;
+    return {name:esc(a.name),n:a.clients.length,yieldPct:bal>0?monthly/bal*100:0,feePerBudget:used>0?monthly/used*100:0,returnPct:original>0?paid/original*100:0,usePct:budget>0?Math.min(100,used/budget*100):null};
+  }).filter(r=>r.n>0);
+  if(!rows.length) return '';
+  const bar=(v,max,color)=>'<div style="background:#e8eefb;border-radius:6px;height:10px;width:100%;margin-top:4px"><div style="background:'+color+';height:10px;border-radius:6px;width:'+(max>0?Math.min(100,v/max*100):0).toFixed(1)+'%"></div></div>';
+  const maxY=Math.max(0.0001,...rows.map(r=>r.yieldPct));
+  const maxF=Math.max(0.0001,...rows.map(r=>r.feePerBudget));
+  const best=[...rows].sort((a,b)=>b.feePerBudget-a.feePerBudget)[0];
+  let h='<div class="card-head" style="margin-top:18px"><div><h2 class="card-title">יעילות התיקים</h2><div class="card-sub">איפה הכסף עובד יותר: לפי היתרות, העמלה החודשית והקופה שנוצלה.</div></div></div>';
+  h+='<div class="notice blue" style="margin:0 0 12px">הכי יעיל לכל ₪ קופה: <b>'+best.name+'</b> ('+best.feePerBudget.toFixed(2)+'% עמלה חודשית מהקופה שנוצלה)</div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>סוכן</th><th>לקוחות</th><th>עמלה חודשית על היתרה</th><th>עמלה לכל ₪ קופה שנוצלה</th><th>ניצול קופה</th><th>הוחזר מהמקור</th></tr></thead><tbody>';
+  rows.forEach(r=>{
+    h+='<tr><td><b>'+r.name+'</b></td><td>'+r.n+'</td>'+
+    '<td>'+r.yieldPct.toFixed(2)+'%'+bar(r.yieldPct,maxY,'#3b6fd8')+'</td>'+
+    '<td>'+r.feePerBudget.toFixed(2)+'%'+bar(r.feePerBudget,maxF,'#25a06a')+'</td>'+
+    '<td>'+(r.usePct===null?'—':r.usePct.toFixed(0)+'%'+bar(r.usePct,100,'#e0a100'))+'</td>'+
+    '<td>'+r.returnPct.toFixed(0)+'%</td></tr>';
+  });
+  return h+'</tbody></table></div>';
+}function renderFinance(){
   let gross=0,agentTotal=0,balance=0,html='<div class="table-wrap"><table><thead><tr><th>סוכן</th><th>הון אצל הסוכן</th><th>עמלה ברוטו</th><th>חלק העסק</th><th>חלק הסוכן</th></tr></thead><tbody>';
   db.agents.forEach(a=>{
     const b=a.clients.reduce((s,c)=>s+getClientBalance(c),0),g=a.clients.reduce((s,c)=>s+getClientMonthlyGross(c,a),0),ag=g*a.agentShare/100,biz=g-ag;
