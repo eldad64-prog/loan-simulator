@@ -247,15 +247,8 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
 </div>
 
 <div class="app hidden" id="app">
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-icon">₪</div>
-      <div><strong>הלוואות</strong></div>
-    </div>
-  </header>
-
-  <section class="hero" style="text-align:center;padding:28px 18px 24px;background:rgba(255,255,255,.76);backdrop-filter:blur(14px)">
-    <h1 style="font-size:clamp(42px,10vw,72px);margin:0">דף ניהול שלי</h1>
+  <section class="hero" style="text-align:center;padding:28px 18px 24px;background:rgba(255,255,255,.76);backdrop-filter:blur(14px);margin-top:6px">
+    <h1 style="font-size:clamp(42px,10vw,72px);margin:0">ידידים</h1>
   </section>
 
   <nav class="nav" style="display:none">
@@ -271,7 +264,6 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
       <div id="waitingList" style="margin-top:8px">טוען...</div>
     </div>
     <div style="text-align:center;margin:0 0 16px"><button class="btn primary" type="button" onclick="document.getElementById('sendQuestionnaire').click()">📨 הזמנת לקוח</button></div>
-    <div style="text-align:center;margin:0 0 16px"><button class="btn light" type="button" onclick="changePin()">🔑 שנה קוד כניסה</button></div>
     <div class="landing-buttons">
       <button class="topic-btn topic-main" onclick="showPage('loansMenuPage')">
         <span class="topic-icon">💼</span><span>הלוואות</span><small>לקוחות, סוכנים, כספים וגיבוי</small>
@@ -287,7 +279,7 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
 
   <section class="page" id="loansMenuPage">
     <div class="page-back" style="display:flex;justify-content:flex-start;margin:0 0 10px">
-      <button class="btn light" type="button" onclick="showPage('dashboard')">→ חזרה לדף הניהול</button>
+      <button class="btn light" type="button" onclick="showPage('dashboard')" style="border-radius:999px;min-height:40px;padding:8px 16px">‹ חזרה</button>
     </div>
     <div class="landing-buttons">
       <button class="topic-btn topic-main" onclick="showPage('agentListPage')">
@@ -305,6 +297,9 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
       <button class="topic-btn" onclick="showPage('backupPage')">
         <span class="topic-icon">💾</span><span>גיבוי ושחזור</span><small>שמירה ושחזור של כל הנתונים</small>
       </button>
+      <button class="topic-btn" type="button" onclick="changePin()">
+        <span class="topic-icon">🔑</span><span>שנה קוד כניסה</span><small>קוד 4 ספרות למכשיר</small>
+      </button>
     </div>
     <div style="display:flex;justify-content:center;margin:4px auto 24px">
       <button class="btn light" type="button" onclick="closeApp()" style="min-width:150px;border:1px solid #d7dce5">✕ סגור</button>
@@ -313,7 +308,7 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
 
   <section class="page" id="potentialPage">
     <div class="page-back" style="display:flex;justify-content:flex-start;margin:0 0 10px">
-      <button class="btn light" type="button" onclick="showPage('dashboard')">→ חזרה לדף הניהול</button>
+      <button class="btn light" type="button" onclick="showPage('dashboard')" style="border-radius:999px;min-height:40px;padding:8px 16px">‹ חזרה</button>
     </div>
     <div class="card">
       <div style="text-align:center;margin:4px 0 14px"><h2 class="card-title" style="margin:0;font-size:26px">לקוחות פוטנציאליים</h2></div>
