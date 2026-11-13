@@ -316,10 +316,9 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
     <div class="card">
       <div class="card-head"><div><h2 class="card-title">לקוחות פוטנציאליים</h2><div class="card-sub">בקשות שהגיעו מהשאלון באתר ההלוואות.</div></div></div>
       <div class="btn-row">
-        <button class="btn primary" type="button" onclick="document.getElementById('sendQuestionnaire').click()">📨 שלח שאלון ללקוח פוטנציאל</button>
-        <button class="btn soft" type="button" id="refreshPotential">🔄 רענן בקשות</button>
+        <button class="btn primary" type="button" onclick="document.getElementById('sendQuestionnaire').click()">📨 הזמנת לקוח</button>
       </div>
-      <div style="margin-top:12px">
+      <div style="display:none">
         <div class="card-sub" style="margin-bottom:6px">ההודעה ללקוח (אפשר להעתיק ולהדביק):</div>
         <textarea id="questionnaireText" readonly style="width:100%;min-height:240px;padding:14px;border-radius:12px;border:2px solid #3b6fd8;font-size:22px;line-height:1.7;box-sizing:border-box;direction:rtl;background:#fff;color:#1c2433">สวัสดีค่ะ/ครับ 🙏
 เราเปิดแบบสอบถามสำหรับคำขอสินเชื่อของคุณ
@@ -1225,7 +1224,7 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
     list.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px">
       <thead><tr style="text-align:right;border-bottom:2px solid #e1e6f0">
         <th style="padding:8px">שם</th><th style="padding:8px">הוגש</th><th style="padding:8px">הכנסה</th><th style="padding:8px">החזרים</th><th style="padding:8px">סטטוס</th><th style="padding:8px">פעולות</th>
-      </tr></thead><tbody>${rowsHtml}${decRows}${invRows}</tbody></table></div>`;
+      </tr></thead><tbody>${rowsHtml}${decRows}</tbody></table></div>`;
     list.querySelectorAll('[data-pot-ok],[data-pot-no]').forEach(b => b.addEventListener('click', () => decide(b)));
     list.querySelectorAll('[data-pot-del]').forEach(b => b.addEventListener('click', () => removeRequest(b)));
     list.querySelectorAll('[data-pot-sum]').forEach(b => b.addEventListener('click', () => showSummary(b.dataset.potSum)));
