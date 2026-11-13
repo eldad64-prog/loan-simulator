@@ -1219,47 +1219,59 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
     [['scen1', 'ירידה בהכנסה', LS.scen1], ['scen2', 'הוצאה דחופה', LS.scen2], ['scen3', 'חודש ללא תשלום', LS.scen3]].forEach(([k, label, arr]) => {
       if (a[k] !== undefined && +a[k] >= 2) flags.push('בתרחיש של ' + label + ': ' + arr[+a[k]] + '.');
     });
-    const level = flags.length === 0 ? ['נמוכה', '#2e8b57'] : flags.length <= 2 ? ['בינונית', '#c98a13'] : ['גבוהה', '#c0392b'];
-    // מסמכים שהועלו וחסרים
-    const need = [];
-    if (a.source === 'salary') { if (!has.has('salary')) need.push(LS.docs.salary); if (!has.has('bank')) need.push(LS.docs.bank); }
-    if (a.source === 'self') { if (!has.has('self')) need.push(LS.docs.self); need.push('דף חשבון עסקי'); }
-    if (a.source === 'other') need.push('מסמך המוכיח הכנסה');
-    if (!has.has('id')) need.push(LS.docs.id);
-    if (has.has('guarantor')) need.push('מסמכי הערב');
-    const got = Object.keys(LS.docs).filter(k => has.has(k)).map(k => LS.docs[k]);
-    const body = '<div style="font-size:18px;font-weight:800">שם בעל השאלון: ' + esc(s.name) + '</div>' +
+    // רמת הסיכון ומצב הנושאים, בדיוק כמו בתבנית הכללית (אדום = חסר, צהוב = חלקי, ירוק = מלא)
+    const level = flags.length === 0 ? ['נמוכה', 'green'] : flags.length <= 2 ? ['בינונית', 'yellow'] : ['גבוהה', 'red'];
+    const colorOf = { red: '#dc2626', yellow: '#d97706', green: '#16a34a' };
+    const txt = { red: 'חסר / סתירה', yellow: 'חלקי', green: 'מלא' };
+    const incomeOk = (a.source === 'salary' && has.has('salary')) || (a.source === 'self' && has.has('self'));
+    const dbt = a.debts === undefined ? undefined : +a.debts;
+    const topics = [
+      { label: 'תעודת זהות', status: has.has('id') ? 'green' : 'red', found: has.has('id') ? 'הועלתה' : '—', missing: has.has('id') ? '—' : LS.docs.id },
+      { label: 'הוכחת הכנסה', status: incomeOk ? 'green' : (a.source ? 'yellow' : 'red'), found: incomeOk ? 'הועלתה' : (a.source ? 'לא הועלתה עדיין' : '—'), missing: incomeOk ? '—' : (a.source === 'self' ? LS.docs.self : a.source === 'other' ? 'מסמך המוכיח הכנסה' : LS.docs.salary) },
+      { label: 'דפי חשבון בנק', status: has.has('bank') ? 'green' : 'red', found: has.has('bank') ? 'הועלה' : '—', missing: has.has('bank') ? '—' : LS.docs.bank },
+      { label: 'מעקב הכנסות יומי', status: 'red', found: '—', missing: 'יומן הכנסות יומי' },
+      { label: 'הלוואות וחובות', status: dbt === undefined ? 'red' : dbt === 0 ? 'green' : 'yellow', found: dbt === undefined ? '—' : (L.debts[dbt] || '—'), missing: dbt ? 'מסמכי הסכמי הלוואה ויתרות' : '—' },
+      { label: 'החזרים חודשיים', status: a.obligations === undefined ? 'red' : 'green', found: at(L.obligations, a.obligations) || '—', missing: '—' },
+      { label: 'נכס או בטוחה', status: has.has('guarantor') ? 'green' : 'yellow', found: has.has('guarantor') ? 'ערב או בטוחה' : '—', missing: has.has('guarantor') ? '—' : 'האם יש ערב או בטוחה (נכס, רכב)' }
+    ];
+    // חסרים לבקשה
+    const need = topics.filter(t => t.status !== 'green' && t.missing !== '—').map(t => t.missing);
+    // דיאגרמת עוגה: פלח שווה לכל נושא
+    const cx = 100, cy = 100, r = 96, step = 360 / topics.length;
+    const pie = topics.map((t, i) => {
+      const a0 = (-90 + i * step) * Math.PI / 180, a1 = (-90 + (i + 1) * step) * Math.PI / 180;
+      const x0 = cx + r * Math.cos(a0), y0 = cy + r * Math.sin(a0), x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+      return '<path d="M' + cx + ' ' + cy + ' L' + x0.toFixed(2) + ' ' + y0.toFixed(2) + ' A' + r + ' ' + r + ' 0 0 1 ' + x1.toFixed(2) + ' ' + y1.toFixed(2) + ' Z" fill="' + colorOf[t.status] + '" stroke="#fff" stroke-width="2"/>';
+    }).join('');
+    const legend = topics.map(t => '<div style="display:flex;align-items:center;gap:8px;margin:6px 0"><span style="width:12px;height:12px;border-radius:3px;flex:0 0 12px;background:' + colorOf[t.status] + '"></span><span>' + esc(t.label) + ': ' + txt[t.status] + '</span></div>').join('');
+    const pill = st => '<span style="display:inline-block;padding:2px 10px;border-radius:999px;color:#fff;font-size:13px;font-weight:600;white-space:nowrap;background:' + colorOf[st] + '">' + txt[st] + '</span>';
+    const topicBlocks = topics.map(t => '<div style="padding:8px 0;border-bottom:1px solid #eef1f6"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap"><b>' + esc(t.label) + '</b>' + pill(t.status) + '</div><div style="font-size:14px;color:#5b6577;word-break:break-word">נמצא: ' + esc(t.found) + ' · חסר: ' + esc(t.missing) + '</div></div>').join('');
+    const facts = [
+      'מקור הכנסה: ' + (LS.source[a.source] || '—'),
+      'הכנסה חודשית: ' + (at(L.income, a.income) || '—'),
+      'החזרים חודשיים: ' + (at(L.obligations, a.obligations) || '—'),
+      'חובות כוללים: ' + (at(L.debts, a.debts) || '—'),
+      'רמת סיכון: ' + level[0]
+    ];
+    const body = '<div style="font-size:18px;font-weight:800">סיכום בקשת הלוואה</div>' +
+      '<div style="font-size:16px;font-weight:700;margin-top:4px">שם בעל השאלון: ' + esc(s.name) + '</div>' +
       (a.id_number ? '<div style="color:#5b6577">ת.ז: ' + esc(a.id_number) + '</div>' : '') +
-      '<div style="margin-top:8px;display:inline-block;padding:4px 12px;border-radius:999px;color:#fff;font-weight:700;background:' + level[1] + '">רמת סיכון: ' + level[0] + '</div>' +
-      sumSec('פרטי הלקוח',
-        sumRow('מקור הכנסה', LS.source[a.source]) +
-        sumRow('משך עבודה', at(LS.tenure, a.tenure)) +
-        sumRow('מגורים', a.housing ? LS.housing[a.housing] : undefined) +
-        sumRow('תלויים כלכלית', at(LS.dependents, a.dependents)) +
-        sumRow('דרך קשר נוחה', a.contact ? LS.contact[a.contact] : undefined) +
-        sumRow('זמן נוח', a.time ? LS.time[a.time] : undefined)) +
-      sumSec('הכנסות והחזרים',
-        sumRow('הכנסה חודשית', at(L.income, a.income)) +
-        sumRow('החזרים חודשיים', at(L.obligations, a.obligations)) +
-        sumRow('חובות כוללים', at(L.debts, a.debts)) +
-        sumRow('איחורים בחצי השנה האחרונה', yesNo(a.late))) +
-      sumSec('תרחישים',
-        sumRow('ירידה בהכנסה', at(LS.scen1, a.scen1)) +
-        sumRow('הוצאה דחופה', at(LS.scen2, a.scen2)) +
-        sumRow('חודש ללא תשלום', at(LS.scen3, a.scen3))) +
-      sumSec('מסמכים',
-        sumRow('הועלו', got.length ? got.join(', ') : 'אין עדיין') +
-        sumRow('חסרים', need.length ? [...new Set(need)].join(', ') : 'אין')) +
+      sumSec('תמצית', '<ul style="margin:0;padding-inline-start:20px">' + facts.map(f => '<li>' + esc(f) + '</li>').join('') + '</ul>') +
+      sumSec('מצב התיק לפי נושא',
+        '<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:center"><svg viewBox="0 0 200 200" width="180" height="180">' + pie + '</svg><div style="flex:1;min-width:200px">' + legend + '</div></div>' +
+        '<p style="font-size:12px;color:#6b665e;margin:8px 0 0">כל נושא מקבל פלח שווה. צבע: אדום = חסר או סתירה, צהוב = חלקי, ירוק = מלא.</p>') +
+      sumSec('פירוט לפי נושא', topicBlocks) +
       sumSec('מסקנות',
         flags.length
           ? '<ul style="margin:6px 0 0;padding-inline-start:20px">' + flags.map(f => '<li>' + esc(f) + '</li>').join('') + '</ul>'
           : '<div>לא נמצאו נקודות לבדיקה מיוחדת.</div>') +
+      sumSec('רשימת חסרים לבקשה', need.length ? '<ul style="margin:6px 0 0;padding-inline-start:20px">' + need.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>' : '<div>אין חסרים.</div>') +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;border-top:1px solid #e1e6f0;padding-top:12px">' +
         '<button class="btn primary" data-pot-ok="' + id + '" data-pot-name="' + esc(s.name) + '">✅ אשר</button>' +
         '<button class="btn light" data-pot-no="' + id + '" data-pot-name="' + esc(s.name) + '">❌ דחה</button>' +
         '<button class="btn light" style="color:#c0392b" data-pot-del="' + id + '" data-pot-name="' + esc(s.name) + '">🗑 מחק</button>' +
       '</div>';
-    openModal('סיכום שאלון', body);
+    openModal('סיכום בקשת הלוואה', body);
     $("modal").querySelectorAll('[data-pot-ok],[data-pot-no]').forEach(b => b.addEventListener('click', () => { closeModal(); decide(b); }));
     $("modal").querySelectorAll('[data-pot-del]').forEach(b => b.addEventListener('click', () => { closeModal(); removeRequest(b); }));
   }
