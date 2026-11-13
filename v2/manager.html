@@ -1150,6 +1150,8 @@ if("serviceWorker" in navigator){
 initAgentSelect();render();
 // רענון באותה כרטיסייה לא מנתק: נשארים מחוברים. סגירת האפליקציה כן מנתקת.
 const wasIn = sessionStorage.getItem("loan_logged_in")==="1";
+// בלי כניסה מאושרת לא נשארים כאן: חוזרים למסך הכפתורים (שם נדרש הקוד)
+if(!wasIn && sessionStorage.getItem("loan_bio_ok")!=="1"){ location.replace("./index.html"); }
 $("app").classList.toggle("hidden", !wasIn);
 $("loginScreen").classList.add("hidden");
 $("secondGate").classList.add("hidden");
