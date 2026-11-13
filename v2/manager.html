@@ -1220,15 +1220,14 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
       if (a[k] !== undefined && +a[k] >= 2) flags.push('בתרחיש של ' + label + ': ' + arr[+a[k]] + '.');
     });
     // רמת הסיכון ומצב הנושאים, בדיוק כמו בתבנית הכללית (אדום = חסר, צהוב = חלקי, ירוק = מלא)
-    const level = flags.length === 0 ? ['נמוכה', 'green'] : flags.length <= 2 ? ['בינונית', 'yellow'] : ['גבוהה', 'red'];
-    const colorOf = { red: '#dc2626', yellow: '#d97706', green: '#16a34a' };
+    const colorOf ={ red: '#dc2626', yellow: '#d97706', green: '#16a34a' };
     const txt = { red: 'חסר / סתירה', yellow: 'חלקי', green: 'מלא' };
     const incomeOk = (a.source === 'salary' && has.has('salary')) || (a.source === 'self' && has.has('self'));
     const dbt = a.debts === undefined ? undefined : +a.debts;
     const topics = [
-      { label: 'תעודת זהות', status: has.has('id') ? 'green' : 'red', found: has.has('id') ? 'הועלתה' : '—', missing: has.has('id') ? '—' : LS.docs.id },
-      { label: 'הוכחת הכנסה', status: incomeOk ? 'green' : (a.source ? 'yellow' : 'red'), found: incomeOk ? 'הועלתה' : (a.source ? 'לא הועלתה עדיין' : '—'), missing: incomeOk ? '—' : (a.source === 'self' ? LS.docs.self : a.source === 'other' ? 'מסמך המוכיח הכנסה' : LS.docs.salary) },
-      { label: 'דפי חשבון בנק', status: has.has('bank') ? 'green' : 'red', found: has.has('bank') ? 'הועלה' : '—', missing: has.has('bank') ? '—' : LS.docs.bank },
+      { label: 'תעודת זהות *', status: has.has('id') ? 'green' : 'red', found: has.has('id') ? 'הועלתה' : '—', missing: has.has('id') ? '—' : LS.docs.id },
+      { label: 'הוכחת הכנסה *', status: incomeOk ? 'green' : (a.source ? 'yellow' : 'red'), found: incomeOk ? 'הועלתה' : (a.source ? 'לא הועלתה עדיין' : '—'), missing: incomeOk ? '—' : (a.source === 'self' ? LS.docs.self : a.source === 'other' ? 'מסמך המוכיח הכנסה' : LS.docs.salary) },
+      { label: 'דפי חשבון בנק *', status: has.has('bank') ? 'green' : 'red', found: has.has('bank') ? 'הועלה' : '—', missing: has.has('bank') ? '—' : LS.docs.bank },
       { label: 'מעקב הכנסות יומי', status: 'red', found: '—', missing: 'יומן הכנסות יומי' },
       { label: 'הלוואות וחובות', status: dbt === undefined ? 'red' : dbt === 0 ? 'green' : 'yellow', found: dbt === undefined ? '—' : (L.debts[dbt] || '—'), missing: dbt ? 'מסמכי הסכמי הלוואה ויתרות' : '—' },
       { label: 'החזרים חודשיים', status: a.obligations === undefined ? 'red' : 'green', found: at(L.obligations, a.obligations) || '—', missing: '—' },
@@ -1236,6 +1235,10 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
     ];
     // חסרים לבקשה
     const need = topics.filter(t => t.status !== 'green' && t.missing !== '—').map(t => t.missing);
+    // מסמכים מחייבים (*): חסר אחד מהם מעלה את רמת הסיכון לגבוהה וחוסם אישור
+    const mandatory = [['תעודת זהות', has.has('id')], ['דף חשבון בנק', has.has('bank')], ['הוכחת הכנסה', incomeOk]].filter(m => !m[1]).map(m => m[0]);
+    if (mandatory.length) flags.unshift('חסרים מסמכים מחייבים: ' + mandatory.join(', ') + '.');
+    const level = mandatory.length ? ['גבוהה', 'red'] : flags.length === 0 ? ['נמוכה', 'green'] : flags.length <= 2 ? ['בינונית', 'yellow'] : ['גבוהה', 'red'];
     // דיאגרמת עוגה: פלח שווה לכל נושא
     const cx = 100, cy = 100, r = 96, step = 360 / topics.length;
     const pie = topics.map((t, i) => {
@@ -1271,7 +1274,7 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
       sumSec('רשימת חסרים לבקשה', need.length ? '<ul style="margin:6px 0 0;padding-inline-start:20px">' + need.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>' : '<div>אין חסרים.</div>') +
       sumSec('על המקור והדיוק', '<ul style="margin:0;padding-inline-start:20px;color:#6b665e;font-size:13px"><li>הנתונים מתוך השאלון באתר ההלוואות, לא אומתו במסמכים.</li><li>הסיכום הוא כלי עזר. ההחלטה נעשית לאחר בדיקת המסמכים.</li></ul>') +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;border-top:1px solid #e1e6f0;padding-top:12px">' +
-        '<button class="btn primary" data-pot-ok="' + id + '" data-pot-name="' + esc(s.name) + '">✅ אשר</button>' +
+        (mandatory.length ? '<button class="btn primary" disabled title="חסרים מסמכים מחייבים" style="opacity:.45;cursor:not-allowed">✅ אשר (חסום)</button>' : '<button class="btn primary" data-pot-ok="' + id + '" data-pot-name="' + esc(s.name) + '">✅ אשר</button>') +
         '<button class="btn light" data-pot-no="' + id + '" data-pot-name="' + esc(s.name) + '">❌ דחה</button>' +
         '<button class="btn light" style="color:#c0392b" data-pot-del="' + id + '" data-pot-name="' + esc(s.name) + '">🗑 מחק</button>' +
       '</div>';
