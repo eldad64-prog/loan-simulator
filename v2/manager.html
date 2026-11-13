@@ -314,8 +314,8 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
       <button class="btn light" type="button" onclick="showPage('dashboard')">→ חזרה לדף הניהול</button>
     </div>
     <div class="card">
-      <div class="card-head"><div><h2 class="card-title">לקוחות פוטנציאליים</h2><div class="card-sub">בקשות שהגיעו מהשאלון באתר ההלוואות.</div></div></div>
-      <div class="btn-row">
+      <div style="text-align:center;margin:4px 0 14px"><h2 class="card-title" style="margin:0;font-size:26px">לקוחות פוטנציאליים</h2></div>
+      <div class="btn-row" style="justify-content:center">
         <button class="btn primary" type="button" onclick="document.getElementById('sendQuestionnaire').click()">📨 הזמנת לקוח</button>
       </div>
       <div style="display:none">
@@ -327,8 +327,9 @@ https://eldad64-prog.github.io/loan-app/?new=1</textarea>
         <button class="btn primary" type="button" id="copyQuestionnaireText" style="margin-top:10px;width:100%;font-size:20px;padding:16px">📋 העתק הודעה</button>
         <button class="btn soft" type="button" id="copyQuestionnaireLink" style="margin-top:10px;width:100%;font-size:20px;padding:16px">🔗 העתק קישור לשאלון בלבד</button>
       </div>
-      <div id="potentialMsg" class="card-sub" style="margin-top:10px"></div>
-      <div id="potentialList" style="margin-top:12px"></div>
+      <div id="potentialMsg" class="card-sub" style="margin-top:10px;text-align:center"></div>
+      <h3 style="text-align:center;margin:18px 0 8px;font-size:20px">טבלת לקוחות</h3>
+      <div id="potentialList"></div>
     </div>
   </section>
 
@@ -1153,21 +1154,90 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
   }
   function msg(t){ const el=document.getElementById('potentialMsg'); if(el) el.textContent=t; }
 
-  // סיכום השאלון והמסקנות, נפתח מכפתור "📄 סיכום" ליד השם
+  // סיכום השאלון והמסקנות, נפתח מכפתור "📄 סיכום" ליד השם (נבנה מהתשובות עצמן)
   const potSummaries = new Map();
+  const LS = {
+    source: { salary: 'שכיר', self: 'עצמאי / עסק', other: 'אחר' },
+    tenure: ['עד חצי שנה', 'חצי שנה עד שנתיים', 'שנתיים עד חמש שנים', 'מעל חמש שנים'],
+    housing: { own: 'בית פרטי', rent: 'שכירות', family: 'אצל משפחה' },
+    dependents: ['אף אחד', 'אחד', 'שניים', 'שלושה ומעלה'],
+    contact: { phone: 'טלפון', whatsapp: 'וואטסאפ', email: 'אימייל' },
+    time: { morning: 'בבוקר', noon: 'בצהריים', evening: 'בערב' },
+    scen1: ['יש חיסכון או הכנסה נוספת', 'יצמצם הוצאות', 'יבקש כסף מאחרים', 'עוד לא ברור'],
+    scen2: ['מחיסכון', 'בתשלומים מההכנסה', 'ידרוש הלוואה נוספת', 'עוד לא ברור'],
+    scen3: ['יודיע מראש ויחפש פתרון', 'יבקש דחייה קצרה', 'ימתין שזה יעבור', 'עוד לא ברור'],
+    docs: { id: 'תעודת זהות או דרכון', salary: 'תלושי שכר', bank: 'דף חשבון בנק', self: 'רישום עסק ודוחות מס', guarantor: 'ערב או בטוחה' }
+  };
+  const at = (arr, v) => (v === undefined || v === null) ? undefined : arr[+v];
+  const fdate = d => new Date(d).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' });
+  // שורה: תווית מימין, ערך משמאל
+  function sumRow(k, v){
+    const val = (v === undefined || v === null || v === '') ? '—' : esc(v);
+    return '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:7px 0;border-bottom:1px solid #eef1f6;font-size:15px">' +
+      '<span style="color:#5b6577">' + esc(k) + '</span><b style="text-align:left;word-break:break-word">' + val + '</b></div>';
+  }
+  function sumSec(title, html){
+    return '<div style="margin-top:16px"><div style="font-weight:800;font-size:17px;color:#3b2a6b;margin-bottom:4px">' + title + '</div>' + html + '</div>';
+  }
   function showSummary(id){
     const s = potSummaries.get(id);
     if (!s) return;
     const a = s.a || {};
-    const concl = [];
-    if (a.income !== undefined) concl.push('הכנסה חודשית: ' + (L.income[+a.income] || '—'));
-    if (a.debts !== undefined) concl.push('חובות כוללים: ' + (L.debts[+a.debts] || '—'));
-    if (a.obligations !== undefined) concl.push('החזרים חודשיים: ' + (L.obligations[+a.obligations] || '—'));
-    const body = '<div style="font-size:14px">' + (s.summary || '<div class="muted">אין סיכום שמור לבקשה הזו.</div>') + '</div>' +
-      '<div style="margin-top:12px"><b>מסקנות (ממילוי השאלון):</b><ul style="margin:6px 0 0;padding-inline-start:20px">' +
-      (concl.length ? concl.map(x => '<li>' + esc(x) + '</li>').join('') : '<li>אין נתונים</li>') +
-      '</ul></div>';
-    openModal('סיכום השאלון: ' + esc(s.name), body);
+    const has = new Set(a.docs || []);
+    const yesNo = v => v === 'yes' ? 'כן' : (v === 'no' ? 'לא' : undefined);
+    // נקודות לבדיקה ורמת סיכון (אותה לוגיקה כמו בסיכום של הלקוחה)
+    const flags = [];
+    [['income', 'income2', 'ההכנסה', L.income], ['debts', 'debts2', 'החובות', L.debts], ['obligations', 'obligations2', 'ההחזרים', L.obligations], ['tenure', 'tenure2', 'משך העבודה', LS.tenure]].forEach(([k1, k2, label, arr]) => {
+      if (a[k1] === undefined || a[k2] === undefined) return;
+      if (Math.abs(+a[k1] - +a[k2]) >= 2) flags.push(label + ' נמסרו בשתי שאלות בטווחים שונים מאוד (' + arr[+a[k1]] + ' ו-' + arr[+a[k2]] + ').');
+    });
+    if (a.late === 'yes') flags.push('היו איחורים בתשלומים בחצי השנה האחרונה.');
+    [['scen1', 'ירידה בהכנסה', LS.scen1], ['scen2', 'הוצאה דחופה', LS.scen2], ['scen3', 'חודש ללא תשלום', LS.scen3]].forEach(([k, label, arr]) => {
+      if (a[k] !== undefined && +a[k] >= 2) flags.push('בתרחיש של ' + label + ': ' + arr[+a[k]] + '.');
+    });
+    const level = flags.length === 0 ? ['נמוכה', '#2e8b57'] : flags.length <= 2 ? ['בינונית', '#c98a13'] : ['גבוהה', '#c0392b'];
+    // מסמכים שהועלו וחסרים
+    const need = [];
+    if (a.source === 'salary') { if (!has.has('salary')) need.push(LS.docs.salary); if (!has.has('bank')) need.push(LS.docs.bank); }
+    if (a.source === 'self') { if (!has.has('self')) need.push(LS.docs.self); need.push('דף חשבון עסקי'); }
+    if (a.source === 'other') need.push('מסמך המוכיח הכנסה');
+    if (!has.has('id')) need.push(LS.docs.id);
+    if (has.has('guarantor')) need.push('מסמכי הערב');
+    const got = Object.keys(LS.docs).filter(k => has.has(k)).map(k => LS.docs[k]);
+    const body = '<div style="font-size:18px;font-weight:800">שם בעל השאלון: ' + esc(s.name) + '</div>' +
+      (a.id_number ? '<div style="color:#5b6577">ת.ז: ' + esc(a.id_number) + '</div>' : '') +
+      '<div style="margin-top:8px;display:inline-block;padding:4px 12px;border-radius:999px;color:#fff;font-weight:700;background:' + level[1] + '">רמת סיכון: ' + level[0] + '</div>' +
+      sumSec('פרטי הלקוח',
+        sumRow('מקור הכנסה', LS.source[a.source]) +
+        sumRow('משך עבודה', at(LS.tenure, a.tenure)) +
+        sumRow('מגורים', a.housing ? LS.housing[a.housing] : undefined) +
+        sumRow('תלויים כלכלית', at(LS.dependents, a.dependents)) +
+        sumRow('דרך קשר נוחה', a.contact ? LS.contact[a.contact] : undefined) +
+        sumRow('זמן נוח', a.time ? LS.time[a.time] : undefined)) +
+      sumSec('הכנסות והחזרים',
+        sumRow('הכנסה חודשית', at(L.income, a.income)) +
+        sumRow('החזרים חודשיים', at(L.obligations, a.obligations)) +
+        sumRow('חובות כוללים', at(L.debts, a.debts)) +
+        sumRow('איחורים בחצי השנה האחרונה', yesNo(a.late))) +
+      sumSec('תרחישים',
+        sumRow('ירידה בהכנסה', at(LS.scen1, a.scen1)) +
+        sumRow('הוצאה דחופה', at(LS.scen2, a.scen2)) +
+        sumRow('חודש ללא תשלום', at(LS.scen3, a.scen3))) +
+      sumSec('מסמכים',
+        sumRow('הועלו', got.length ? got.join(', ') : 'אין עדיין') +
+        sumRow('חסרים', need.length ? [...new Set(need)].join(', ') : 'אין')) +
+      sumSec('מסקנות',
+        flags.length
+          ? '<ul style="margin:6px 0 0;padding-inline-start:20px">' + flags.map(f => '<li>' + esc(f) + '</li>').join('') + '</ul>'
+          : '<div>לא נמצאו נקודות לבדיקה מיוחדת.</div>') +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;border-top:1px solid #e1e6f0;padding-top:12px">' +
+        '<button class="btn primary" data-pot-ok="' + id + '" data-pot-name="' + esc(s.name) + '">✅ אשר</button>' +
+        '<button class="btn light" data-pot-no="' + id + '" data-pot-name="' + esc(s.name) + '">❌ דחה</button>' +
+        '<button class="btn light" style="color:#c0392b" data-pot-del="' + id + '" data-pot-name="' + esc(s.name) + '">🗑 מחק</button>' +
+      '</div>';
+    openModal('סיכום שאלון', body);
+    $("modal").querySelectorAll('[data-pot-ok],[data-pot-no]').forEach(b => b.addEventListener('click', () => { closeModal(); decide(b); }));
+    $("modal").querySelectorAll('[data-pot-del]').forEach(b => b.addEventListener('click', () => { closeModal(); removeRequest(b); }));
   }
 
   async function loadPotential(){
@@ -1186,47 +1256,29 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
     const pendingInv = (invites || []).filter(i => !answeredCodes.has(i.code));
     if (!(data || []).length && !pendingInv.length) { msg('אין בקשות ממתינות.'); list.innerHTML=''; return; }
     msg('');
+    // ממתינות להחלטה: מילאו שאלון ועוד לא הוחלט לגביהן. הכפתור "סיכום" ליד השם
     const rowsHtml = (data || []).map(r => {
       const a = r.answers || {};
       const name = a.name || 'ללא שם';
-      const summary = a.summaryHtml || '';
-      potSummaries.set(r.user_id, { name, summary, a });
+      potSummaries.set(r.user_id, { name, a });
       return `<tr>
-        <td>${esc(name)} <button class="btn light" style="padding:4px 8px;font-size:13px" data-pot-sum="${r.user_id}">📄 סיכום</button></td>
-        <td>${new Date(r.submitted_at).toLocaleString('he-IL',{dateStyle:'short',timeStyle:'short'})}</td>
-        <td>${a.income!==undefined ? esc(L.income[+a.income]||'') : '—'}</td>
-        <td>${a.obligations!==undefined ? esc(L.obligations[+a.obligations]||'') : '—'}</td>
-        <td>✅ מילא</td>
-        <td>
-          <details><summary>פרטים</summary><div style="margin-top:8px;font-size:14px">${summary}</div></details>
-          <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
-            <button class="btn primary" style="padding:6px 10px" data-pot-ok="${r.user_id}" data-pot-name="${esc(name)}">אשר</button>
-            <button class="btn light" style="padding:6px 10px" data-pot-no="${r.user_id}" data-pot-name="${esc(name)}">דחה</button>
-            <button class="btn light" style="padding:6px 10px;color:#c0392b" data-pot-del="${r.user_id}" data-pot-name="${esc(name)}">🗑 מחק</button>
-          </div>
-        </td>
+        <td><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="font-weight:700">${esc(name)}</span><button class="btn light" style="padding:3px 8px;font-size:13px" data-pot-sum="${r.user_id}">📄 סיכום</button></div></td>
+        <td>⏳ ממתין להחלטה</td>
+        <td>${fdate(r.submitted_at)}</td>
       </tr>`;
     }).join('');
-    // החלטות שכבר נשמרו (אושר / נדחה). בקשה שנמחקה ידנית (expired) לא מוצגת
+    // החלטות שכבר נשמרו (מאושר / נדחה). בקשה שנמחקה ידנית (expired) לא מוצגת
     const decRows = (decs || []).filter(d => d.decision === 'approved' || d.decision === 'rejected').map(d => `<tr>
-        <td>${esc(d.full_name || 'ללא שם')}</td>
-        <td>—</td><td>—</td><td>—</td>
-        <td>${d.decision === 'approved' ? '✅ אושר' : '❌ נדחה'}</td>
+        <td><span style="font-weight:700">${esc(d.full_name || 'ללא שם')}</span></td>
+        <td>${d.decision === 'approved' ? '✅ מאושר' : '❌ נדחה'}</td>
         <td>—</td>
       </tr>`).join('');
-    const invRows = pendingInv.map(i => `<tr>
-        <td>${esc(i.name)}</td>
-        <td>${new Date(i.sent_at).toLocaleString('he-IL',{dateStyle:'short',timeStyle:'short'})}</td>
-        <td>—</td><td>—</td>
-        <td>❌ לא מילא (נשלח)</td>
-        <td><button class="btn light" style="padding:6px 10px;color:#c0392b" data-inv-del="${esc(i.code)}" data-pot-name="${esc(i.name)}">🗑 מחק</button></td>
-      </tr>`).join('');
-    list.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px">
-      <thead><tr style="text-align:right;border-bottom:2px solid #e1e6f0">
-        <th style="padding:8px">שם</th><th style="padding:8px">הוגש</th><th style="padding:8px">הכנסה</th><th style="padding:8px">החזרים</th><th style="padding:8px">סטטוס</th><th style="padding:8px">פעולות</th>
-      </tr></thead><tbody>${rowsHtml}${decRows}</tbody></table></div>`;
-    list.querySelectorAll('[data-pot-ok],[data-pot-no]').forEach(b => b.addEventListener('click', () => decide(b)));
-    list.querySelectorAll('[data-pot-del]').forEach(b => b.addEventListener('click', () => removeRequest(b)));
+    list.innerHTML = `<style>#potList{width:100%;table-layout:fixed;border-collapse:collapse;font-size:15px}
+      #potList th,#potList td{padding:8px;vertical-align:middle;border-bottom:1px solid #eef1f6;word-break:break-word;text-align:right}
+      #potList th{border-bottom:2px solid #e1e6f0}</style>
+      <table id="potList">
+      <colgroup><col style="width:44%"><col style="width:34%"><col style="width:22%"></colgroup>
+      <thead><tr><th>שם</th><th>סטטוס</th><th>הוגש</th></tr></thead><tbody>${rowsHtml}${decRows}</tbody></table>`;
     list.querySelectorAll('[data-pot-sum]').forEach(b => b.addEventListener('click', () => showSummary(b.dataset.potSum)));
     list.querySelectorAll('[data-inv-del]').forEach(b => b.addEventListener('click', () => removeInvite(b)));
   }
