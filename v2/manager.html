@@ -259,6 +259,9 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
   </nav>
 
   <section class="page active" id="dashboard">
+    <div style="display:flex;justify-content:flex-start;margin:0 0 12px">
+      <button class="btn light" type="button" onclick="sessionStorage.removeItem('loan_logged_in');location.reload()" style="border-radius:999px;min-height:40px;padding:8px 16px">🚪 חזרה לדף שער</button>
+    </div>
     <div class="card" style="margin:0 0 16px">
       <div class="card-head"><div><h2 class="card-title">⏳ ממתינים למילוי שאלון</h2><div class="card-sub">לקוחות שנרשמו ועוד לא שלחו את השאלון.</div></div></div>
       <div id="waitingList" style="margin-top:8px">טוען...</div>
@@ -1145,11 +1148,12 @@ if("serviceWorker" in navigator){
   navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister())).catch(()=>{});
 }
 initAgentSelect();render();
-sessionStorage.removeItem("loan_logged_in");
-$("app").classList.add("hidden");
+// רענון באותה כרטיסייה לא מנתק: נשארים מחוברים. סגירת האפליקציה כן מנתקת.
+const wasIn = sessionStorage.getItem("loan_logged_in")==="1";
+$("app").classList.toggle("hidden", !wasIn);
 $("loginScreen").classList.add("hidden");
 $("secondGate").classList.add("hidden");
-$("landingScreen").classList.remove("hidden");
+$("landingScreen").classList.toggle("hidden", wasIn);
 // אם טביעת האצבע אומתה כבר בדף הידידים, נכנסים ישר למסך הניהול
 if(sessionStorage.getItem("loan_bio_ok")==="1"){
   sessionStorage.removeItem("loan_bio_ok");
