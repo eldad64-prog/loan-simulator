@@ -1285,24 +1285,28 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
       const a = r.answers || {};
       const name = a.name || 'ללא שם';
       potSummaries.set(r.user_id, { name, a });
-      return `<tr>
-        <td><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="font-weight:700">${esc(name)}</span><button class="btn light" style="padding:3px 8px;font-size:13px" data-pot-sum="${r.user_id}">📄 סיכום</button></div></td>
-        <td>⏳ ממתין להחלטה</td>
-        <td>${fdate(r.submitted_at)}</td>
-      </tr>`;
+      return `<div class="pot-row">
+        <div class="pot-name"><span style="font-weight:700">${esc(name)}</span><button class="btn light" style="padding:3px 8px;font-size:13px" data-pot-sum="${r.user_id}">📄 סיכום</button></div>
+        <div>⏳ ממתין להחלטה</div>
+        <div>${fdate(r.submitted_at)}</div>
+      </div>`;
     }).join('');
     // החלטות שכבר נשמרו (מאושר / נדחה). בקשה שנמחקה ידנית (expired) לא מוצגת
-    const decRows = (decs || []).filter(d => d.decision === 'approved' || d.decision === 'rejected').map(d => `<tr>
-        <td><span style="font-weight:700">${esc(d.full_name || 'ללא שם')}</span></td>
-        <td>${d.decision === 'approved' ? '✅ מאושר' : '❌ נדחה'}</td>
-        <td>—</td>
-      </tr>`).join('');
-    list.innerHTML = `<style>#potList{width:100%;max-width:100%;table-layout:fixed;border-collapse:collapse;font-size:15px;box-sizing:border-box}
-      #potList th,#potList td{box-sizing:border-box;padding:8px;vertical-align:middle;border-bottom:1px solid #eef1f6;word-break:break-word;overflow-wrap:anywhere;text-align:right}
-      #potList th{border-bottom:2px solid #e1e6f0}</style>
-      <table id="potList">
-      <colgroup><col style="width:44%"><col style="width:34%"><col style="width:22%"></colgroup>
-      <thead><tr><th>שם</th><th>סטטוס</th><th>הוגש</th></tr></thead><tbody>${rowsHtml}${decRows}</tbody></table>`;
+    const decRows = (decs || []).filter(d => d.decision === 'approved' || d.decision === 'rejected').map(d => `<div class="pot-row">
+        <div class="pot-name"><span style="font-weight:700">${esc(d.full_name || 'ללא שם')}</span></div>
+        <div>${d.decision === 'approved' ? '✅ מאושר' : '❌ נדחה'}</div>
+        <div>—</div>
+      </div>`).join('');
+    // שורות בגריד (לא טבלה): כל עמודה מוגבלת לרוחב המסך, כך שאין גלילה לצדדים
+    list.innerHTML = `<style>
+      #potList{width:100%;max-width:100%;box-sizing:border-box;font-size:15px;overflow:hidden}
+      #potList .pot-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1.2fr) minmax(0,0.8fr);gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid #eef1f6;text-align:right;min-width:0}
+      #potList .pot-head{font-weight:700;color:#5b6577;border-bottom:2px solid #e1e6f0}
+      #potList .pot-row>div{min-width:0;overflow-wrap:anywhere}
+      #potList .pot-name{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    </style>
+      <div id="potList">
+      <div class="pot-row pot-head"><div>שם</div><div>סטטוס</div><div>הוגש</div></div>${rowsHtml}${decRows}</div>`;
     list.querySelectorAll('[data-pot-sum]').forEach(b => b.addEventListener('click', () => showSummary(b.dataset.potSum)));
     list.querySelectorAll('[data-inv-del]').forEach(b => b.addEventListener('click', () => removeInvite(b)));
   }
