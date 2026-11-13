@@ -881,16 +881,38 @@ function showReport(){
   openModal("דוח תיק — "+esc(a.name),'<div class="loan-summary"><div class="summary-box"><span>לקוחות</span><b>'+a.clients.length+'</b></div><div class="summary-box"><span>יתרות</span><b>'+money(balance)+'</b></div><div class="summary-box"><span>עמלה חודשית</span><b>'+money(monthly)+'</b></div><div class="summary-box"><span>עמלה שנתית</span><b>'+money(yearly)+'</b></div><div class="summary-box"><span>חלק סוכן חודשי</span><b>'+money(monthly*a.agentShare/100)+'</b></div><div class="summary-box"><span>חלק סוכן שנתי</span><b>'+money(yearly*a.agentShare/100)+'</b></div></div>');
 }
 $("reportBtn").onclick=showReport;
+// לפני השליחה: המנהל מסמן אילו מסמכים מחייבים לאותה לקוחה (ברירת מחדל: זהות, חשבון בנק, מעקב הכנסות)
+function pickRequiredDocs(name){
+  const opts=[['id','תעודת זהות'],['bank','דף חשבון בנק (3 חודשים)'],['income','מעקב הכנסות יומי'],['loans','הסכמי הלוואות קיימות'],['lease','שכירות או נכס'],['collateral','שעבוד או בטוחה'],['other','מסמך נוסף']];
+  const defaults=['id','bank','income'];
+  return new Promise(resolve=>{
+    const bg=document.createElement('div');
+    bg.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:18px;z-index:9999';
+    bg.innerHTML='<div style="background:#fff;color:#1c2433;border-radius:18px;padding:20px;max-width:380px;width:100%;font-family:inherit">'+
+      '<div style="font-weight:800;font-size:18px;margin-bottom:6px">מסמכים מחייבים: '+esc(name)+'</div>'+
+      '<div style="font-size:14px;color:#5b6577;margin-bottom:12px">סמן את המסמכים שבלעדיהם השאלון לא יישלח.</div>'+
+      opts.map(([k,l])=>'<label style="display:flex;gap:10px;align-items:center;padding:6px 0"><input type="checkbox" value="'+k+'"'+(defaults.includes(k)?' checked':'')+' style="width:18px;height:18px"><span>'+esc(l)+'</span></label>').join('')+
+      '<div style="display:flex;gap:8px;margin-top:14px"><button id="rdOk" class="btn primary" style="flex:1">המשך</button><button id="rdNo" class="btn light" style="flex:1">ביטול</button></div></div>';
+    document.body.appendChild(bg);
+    bg.querySelector('#rdNo').onclick=()=>{ bg.remove(); resolve(null); };
+    bg.querySelector('#rdOk').onclick=()=>{
+      const ks=[...bg.querySelectorAll('input:checked')].map(i=>i.value);
+      if(!ks.length){ alert('סמן לפחות מסמך אחד.'); return; }
+      bg.remove(); resolve(ks);
+    };
+  });
+}
 $("sendQuestionnaire").onclick=async ()=>{
   // שורה בטבלה נוצרת כבר בשליחה, ומתמלאת כשהלקוחה מסיימת את השאלון
   const name=(prompt("שם הלקוח הפוטנציאלי (ייכנס לרשימה):")||"").trim();
   if(!name) return;
+  const reqKeys=await pickRequiredDocs(name); if(!reqKeys) return;
   const code=Math.random().toString(36).slice(2,10);
   const cl=window.loanCloud&&window.loanCloud.client;
   if(!cl){ alert("יש להתחבר לענן (☁️) לפני שליחה."); return; }
   const {error:invErr}=await cl.from("loan_invites").insert({code,name});
   if(invErr){ alert("שגיאה ברישום: "+invErr.message); return; }
-  const link="https://eldad64-prog.github.io/loan-app/?new=1&ref="+code;
+  const link="https://eldad64-prog.github.io/loan-app/?new=1&ref="+code+"&req="+reqKeys.join(",");
   const msg="สวัสดีค่ะ/ครับ 🙏\nเราเปิดแบบสอบถามสำหรับคำขอสินเชื่อของคุณ\nกรุณาเข้าที่ลิงก์นี้ กรอกชื่อและเลขบัตรประชาชน แล้วกรอกแบบสอบถามได้เลย\n"+link;
   const old=document.getElementById("questionnaireSheet"); if(old) old.remove();
   const box=document.createElement("div");
@@ -1235,7 +1257,9 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
     // חסרים לבקשה
     const need = topics.filter(t => t.status !== 'green' && t.missing !== '—').map(t => t.missing);
     // מסמכים מחייבים (*): חסר אחד מהם מעלה את רמת הסיכון לגבוהה וחוסם אישור
-    const mandatory = [['תעודת זהות', has.has('id')], ['דף חשבון בנק', has.has('bank')], ['מעקב הכנסות יומי', incomeOk]].filter(m => !m[1]).map(m => m[0]);
+    const labelOf = { id: 'תעודת זהות', bank: 'דף חשבון בנק', income: 'מעקב הכנסות יומי', loans: 'הסכמי הלוואות קיימות', lease: 'שכירות או נכס', collateral: 'שעבוד או בטוחה', other: 'מסמך נוסף' };
+    const reqKeys = (a.required_docs && a.required_docs.length) ? a.required_docs : ['id', 'bank', 'income'];
+    const mandatory = reqKeys.filter(k => !has.has(k)).map(k => labelOf[k] || k);
     if (mandatory.length) flags.unshift('חסרים מסמכים מחייבים: ' + mandatory.join(', ') + '.');
     const level = mandatory.length ? ['גבוהה', 'red'] : flags.length === 0 ? ['נמוכה', 'green'] : flags.length <= 2 ? ['בינונית', 'yellow'] : ['גבוהה', 'red'];
     // דיאגרמת עוגה: פלח שווה לכל נושא
@@ -1249,6 +1273,7 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
     const pill = st => '<span style="display:inline-block;padding:2px 10px;border-radius:999px;color:#fff;font-size:13px;font-weight:600;white-space:nowrap;background:' + colorOf[st] + '">' + txt[st] + '</span>';
     const topicBlocks = topics.map(t => '<div style="padding:8px 0;border-bottom:1px solid #eef1f6"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap"><b>' + esc(t.label) + '</b>' + pill(t.status) + '</div><div style="font-size:14px;color:#5b6577;word-break:break-word">נמצא: ' + esc(t.found) + ' · חסר: ' + esc(t.missing) + '</div></div>').join('');
     const facts = [
+      'מסמכים מחייבים: ' + reqKeys.map(k => labelOf[k] || k).join(', '),
       'מקור הכנסה: ' + (LS.source[a.source] || '—'),
       'הכנסה חודשית: ' + (at(L.income, a.income) || '—'),
       'החזרים חודשיים: ' + (at(L.obligations, a.obligations) || '—'),
