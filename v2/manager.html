@@ -1060,6 +1060,15 @@ $("app").classList.add("hidden");
 $("loginScreen").classList.add("hidden");
 $("secondGate").classList.add("hidden");
 $("landingScreen").classList.remove("hidden");
+// אם טביעת האצבע אומתה כבר בדף הידידים, נכנסים ישר למסך הניהול
+if(sessionStorage.getItem("loan_bio_ok")==="1"){
+  sessionStorage.removeItem("loan_bio_ok");
+  sessionStorage.setItem("loan_logged_in","1");
+  $("landingScreen").classList.add("hidden");
+  $("loginScreen").classList.add("hidden");
+  $("secondGate").classList.add("hidden");
+  $("app").classList.remove("hidden");
+}
 
 /* ===== לקוחות פוטנציאליים: בקשות מהשאלון (אותו פרויקט Supabase) ===== */
 (function(){

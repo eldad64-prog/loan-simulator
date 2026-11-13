@@ -47,12 +47,34 @@
     <span class="txt"><b>ניהול סוכנים</b><small>הלקוחות שלך במקום אחד: הוספה והסרה</small></span>
     <span class="arrow">‹</span>
   </a>
-  <a class="choice manager" href="./manager.html">
+  <a class="choice manager" href="./manager.html" id="mgrLink">
     <span class="ico">🛠</span>
     <span class="txt"><b>ניהול מנהל</b><small>כל המערכת: סוכנים, הלוואות, עמלות וקופה</small></span>
     <span class="arrow">‹</span>
   </a>
   <div class="stars">✨ ⭐ ✨</div>
 </div>
+<script>
+// "ניהול מנהל": קופצת דרישת טביעת אצבע מיד, ואחריה נפתח מסך הניהול ישירות
+(function(){
+  function b64ToBytes(s){ s=s.replace(/-/g,"+").replace(/_/g,"/"); while(s.length%4) s+="="; const bin=atob(s), out=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) out[i]=bin.charCodeAt(i); return out; }
+  const link = document.getElementById("mgrLink");
+  if(!link) return;
+  link.addEventListener("click", async function(e){
+    const id = localStorage.getItem("loan_passkey_id");
+    if(!id || !window.PublicKeyCredential || !navigator.credentials || !window.isSecureContext) return; // בלי טביעת אצבע: הדף הרגיל עם הסיסמה
+    e.preventDefault();
+    try{
+      const challenge = new Uint8Array(32); crypto.getRandomValues(challenge);
+      const credential = await navigator.credentials.get({ publicKey: {
+        challenge: challenge, rpId: location.hostname,
+        allowCredentials: [{ type: "public-key", id: b64ToBytes(id) }],
+        userVerification: "required", timeout: 60000 } });
+      if(credential) sessionStorage.setItem("loan_bio_ok", "1");
+    }catch(err){ /* בוטל: נפתח הדף הרגיל */ }
+    location.href = "./manager.html";
+  });
+})();
+</script>
 </body>
 </html>
