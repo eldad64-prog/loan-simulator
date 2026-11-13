@@ -214,6 +214,11 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
     </div>
     <div class="landing-title">ידידים</div>
     <button class="landing-enter" id="landingEnter" type="button">אימות וכניסה</button>
+    <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap">
+      <input id="pinInput" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="קוד 4 ספרות" style="width:150px;padding:10px;border-radius:12px;border:1px solid #d6dbe6;text-align:center;font-size:18px;letter-spacing:6px">
+      <button id="pinBtn" class="btn primary" type="button">כניסה בקוד</button>
+    </div>
+    <div id="pinMsg" style="color:#c0392b;font-size:14px;margin-top:8px;text-align:center"></div>
   </div>
 </div>
 <div class="second-gate hidden" id="secondGate">
@@ -944,8 +949,49 @@ function login(){
   if($("passwordInput").value===ACCESS_CODE){
     sessionStorage.setItem("loan_logged_in","1");
     $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");$("loginError").style.display="none";$("passwordInput").value="";
+    offerPinSetup();
   }else{$("loginError").style.display="block";$("passwordInput").select()}
 }
+// קוד כניסה של 4 ספרות למכשיר (נשמר כ-hash עם מלח, PBKDF2) ונעילה אחרי 5 ניסיונות שגויים
+const PIN_KEY="loan_pin_hash", PIN_SALT="loan_pin_salt", PIN_FAILS="loan_pin_fails", PIN_LOCK="loan_pin_lock";
+async function pinHash(pin, saltB64){
+  const enc=new TextEncoder();
+  const key=await crypto.subtle.importKey("raw",enc.encode(pin),"PBKDF2",false,["deriveBits"]);
+  const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt:base64UrlToBytes(saltB64),iterations:200000,hash:"SHA-256"},key,256);
+  return bytesToBase64Url(new Uint8Array(bits));
+}
+async function setPin(pin){
+  const saltB64=bytesToBase64Url(randomBytes(16));
+  localStorage.setItem(PIN_SALT,saltB64);
+  localStorage.setItem(PIN_KEY,await pinHash(pin,saltB64));
+}
+async function offerPinSetup(){
+  if(localStorage.getItem(PIN_KEY)) return;
+  const p=prompt("קבע קוד כניסה של 4 ספרות למכשיר הזה (לביטול: השאר ריק):");
+  if(p && /^\d{4}$/.test(p.trim())) await setPin(p.trim());
+}
+async function checkPin(){
+  const pin=$("pinInput").value.trim(), msgEl=$("pinMsg");
+  const lock=Number(localStorage.getItem(PIN_LOCK)||0);
+  if(lock && Date.now()<lock){ msgEl.textContent="נעול זמנית. נסה שוב מאוחר יותר."; return; }
+  if(!/^\d{4}$/.test(pin)){ msgEl.textContent="הזן 4 ספרות."; return; }
+  const stored=localStorage.getItem(PIN_KEY), salt=localStorage.getItem(PIN_SALT);
+  if(!stored||!salt){ msgEl.textContent="לא הוגדר קוד במכשיר הזה. היכנס פעם אחת עם הסיסמה."; return; }
+  if(await pinHash(pin,salt)===stored){
+    localStorage.removeItem(PIN_FAILS); localStorage.removeItem(PIN_LOCK);
+    $("pinInput").value=""; msgEl.textContent="";
+    sessionStorage.setItem("loan_logged_in","1");
+    $("landingScreen").classList.add("hidden"); $("loginScreen").classList.add("hidden"); $("secondGate").classList.add("hidden");
+    $("app").classList.remove("hidden");
+  } else {
+    const fails=Number(localStorage.getItem(PIN_FAILS)||0)+1;
+    if(fails>=5){ localStorage.setItem(PIN_LOCK,String(Date.now()+5*60*1000)); localStorage.setItem(PIN_FAILS,"0"); msgEl.textContent="יותר מדי ניסיונות. נעול ל-5 דקות."; }
+    else { localStorage.setItem(PIN_FAILS,String(fails)); msgEl.textContent="קוד שגוי. נשארו "+(5-fails)+" ניסיונות."; }
+    $("pinInput").select();
+  }
+}
+$("pinBtn").onclick=checkPin;
+$("pinInput").onkeydown=e=>{if(e.key==="Enter")checkPin()};
 $("loginBtn").onclick=login;$("showPassword").onclick=togglePassword;$("passwordInput").onkeydown=e=>{if(e.key==="Enter")login()};
 
 function bytesToBase64Url(bytes){
