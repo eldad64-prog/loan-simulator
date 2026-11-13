@@ -1051,12 +1051,9 @@ $("secondBiometricBtn").onclick=()=>{biometricStage=2;biometricLogin()};
 refreshBiometricUI();
 if($("logoutBtn"))$("logoutBtn").onclick=()=>{sessionStorage.removeItem("loan_logged_in");$("app").classList.add("hidden");$("loginScreen").classList.remove("hidden");$("passwordInput").focus()};
 
+// ביטול שמירת גרסאות ישנות במכשיר (לא רושמים service worker יותר)
 if("serviceWorker" in navigator){
-  window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("../sw.js",{updateViaCache:"none"}).then(reg=>{
-      reg.update();
-    }).catch(()=>{});
-  });
+  navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister())).catch(()=>{});
 }
 initAgentSelect();render();
 sessionStorage.removeItem("loan_logged_in");
