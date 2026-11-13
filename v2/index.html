@@ -56,7 +56,7 @@
 </div>
 <script>
 // קישור כניסה לענן (מהמייל) חוזר לכאן עם האישור בכתובת: מעבירים אותו לדף הניהול שקורא אותו
-if(location.hash.indexOf("access_token=")>-1){ location.replace("./manager.html" + location.hash); }
+if(location.hash.indexOf("access_token=")>-1){ try{ sessionStorage.setItem("loan_goto","potential"); }catch(e){} location.replace("./manager.html" + location.hash); }
 // "ניהול מנהל": קופצת דרישת טביעת אצבע מיד, ואחריה נפתח מסך הניהול ישירות
 (function(){
   function b64ToBytes(s){ s=s.replace(/-/g,"+").replace(/_/g,"/"); while(s.length%4) s+="="; const bin=atob(s), out=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) out[i]=bin.charCodeAt(i); return out; }

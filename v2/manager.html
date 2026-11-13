@@ -1029,6 +1029,7 @@ async function checkPin(){
     sessionStorage.setItem("loan_logged_in","1");
     $("landingScreen").classList.add("hidden"); $("loginScreen").classList.add("hidden"); $("secondGate").classList.add("hidden");
     $("app").classList.remove("hidden");
+    if(sessionStorage.getItem("loan_goto")==="potential"){ sessionStorage.removeItem("loan_goto"); showPage("potentialPage"); }
   } else {
     const fails=Number(localStorage.getItem(PIN_FAILS)||0)+1;
     if(fails>=5){ localStorage.setItem(PIN_LOCK,String(Date.now()+5*60*1000)); localStorage.setItem(PIN_FAILS,"0"); msgEl.textContent="יותר מדי ניסיונות. נעול ל-5 דקות."; }
@@ -1101,6 +1102,7 @@ async function biometricLogin(){
     $("loginScreen").classList.add("hidden");
     $("landingScreen").classList.add("hidden");
     $("app").classList.remove("hidden");
+    if(sessionStorage.getItem("loan_goto")==="potential"){ sessionStorage.removeItem("loan_goto"); showPage("potentialPage"); }
   }catch(e){
     const msg="האימות הביומטרי בוטל או נכשל. נסה שוב.";
     if($("secondGateStatus") && biometricStage===2){$("secondGateStatus").textContent=msg}
