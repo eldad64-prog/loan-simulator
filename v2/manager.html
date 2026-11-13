@@ -1297,8 +1297,8 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
         <td>${d.decision === 'approved' ? '✅ מאושר' : '❌ נדחה'}</td>
         <td>—</td>
       </tr>`).join('');
-    list.innerHTML = `<style>#potList{width:100%;table-layout:fixed;border-collapse:collapse;font-size:15px}
-      #potList th,#potList td{padding:8px;vertical-align:middle;border-bottom:1px solid #eef1f6;word-break:break-word;text-align:right}
+    list.innerHTML = `<style>#potList{width:100%;max-width:100%;table-layout:fixed;border-collapse:collapse;font-size:15px;box-sizing:border-box}
+      #potList th,#potList td{box-sizing:border-box;padding:8px;vertical-align:middle;border-bottom:1px solid #eef1f6;word-break:break-word;overflow-wrap:anywhere;text-align:right}
       #potList th{border-bottom:2px solid #e1e6f0}</style>
       <table id="potList">
       <colgroup><col style="width:44%"><col style="width:34%"><col style="width:22%"></colgroup>
