@@ -1107,6 +1107,23 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
   }
   function msg(t){ const el=document.getElementById('potentialMsg'); if(el) el.textContent=t; }
 
+  // סיכום השאלון והמסקנות, נפתח מכפתור "📄 סיכום" ליד השם
+  const potSummaries = new Map();
+  function showSummary(id){
+    const s = potSummaries.get(id);
+    if (!s) return;
+    const a = s.a || {};
+    const concl = [];
+    if (a.income !== undefined) concl.push('הכנסה חודשית: ' + (L.income[+a.income] || '—'));
+    if (a.debts !== undefined) concl.push('חובות כוללים: ' + (L.debts[+a.debts] || '—'));
+    if (a.obligations !== undefined) concl.push('החזרים חודשיים: ' + (L.obligations[+a.obligations] || '—'));
+    const body = '<div style="font-size:14px">' + (s.summary || '<div class="muted">אין סיכום שמור לבקשה הזו.</div>') + '</div>' +
+      '<div style="margin-top:12px"><b>מסקנות (ממילוי השאלון):</b><ul style="margin:6px 0 0;padding-inline-start:20px">' +
+      (concl.length ? concl.map(x => '<li>' + esc(x) + '</li>').join('') : '<li>אין נתונים</li>') +
+      '</ul></div>';
+    openModal('סיכום השאלון: ' + esc(s.name), body);
+  }
+
   async function loadPotential(){
     const c = client();
     const list = document.getElementById('potentialList');
@@ -1126,12 +1143,13 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
       const a = r.answers || {};
       const name = a.name || 'ללא שם';
       const summary = a.summaryHtml || '';
+      potSummaries.set(r.user_id, { name, summary, a });
       return `<tr>
-        <td>${esc(name)}</td>
+        <td>${esc(name)} <button class="btn light" style="padding:4px 8px;font-size:13px" data-pot-sum="${r.user_id}">📄 סיכום</button></td>
         <td>${new Date(r.submitted_at).toLocaleString('he-IL',{dateStyle:'short',timeStyle:'short'})}</td>
         <td>${a.income!==undefined ? esc(L.income[+a.income]||'') : '—'}</td>
         <td>${a.obligations!==undefined ? esc(L.obligations[+a.obligations]||'') : '—'}</td>
-        <td>⏳ ממתין</td>
+        <td>✅ מילא</td>
         <td>
           <details><summary>פרטים</summary><div style="margin-top:8px;font-size:14px">${summary}</div></details>
           <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
@@ -1146,7 +1164,7 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
         <td>${esc(i.name)}</td>
         <td>${new Date(i.sent_at).toLocaleString('he-IL',{dateStyle:'short',timeStyle:'short'})}</td>
         <td>—</td><td>—</td>
-        <td>📨 נשלח, ממתין לשאלון</td>
+        <td>❌ לא מילא (נשלח)</td>
         <td><button class="btn light" style="padding:6px 10px;color:#c0392b" data-inv-del="${esc(i.code)}" data-pot-name="${esc(i.name)}">🗑 מחק</button></td>
       </tr>`).join('');
     list.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px">
@@ -1155,6 +1173,7 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
       </tr></thead><tbody>${rowsHtml}${invRows}</tbody></table></div>`;
     list.querySelectorAll('[data-pot-ok],[data-pot-no]').forEach(b => b.addEventListener('click', () => decide(b)));
     list.querySelectorAll('[data-pot-del]').forEach(b => b.addEventListener('click', () => removeRequest(b)));
+    list.querySelectorAll('[data-pot-sum]').forEach(b => b.addEventListener('click', () => showSummary(b.dataset.potSum)));
     list.querySelectorAll('[data-inv-del]').forEach(b => b.addEventListener('click', () => removeInvite(b)));
   }
 
