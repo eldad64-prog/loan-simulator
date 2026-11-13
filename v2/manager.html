@@ -1114,6 +1114,7 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
   $("loginScreen").classList.add("hidden");
   $("secondGate").classList.add("hidden");
   $("app").classList.remove("hidden");
+  if(sessionStorage.getItem("loan_goto")==="potential"){ sessionStorage.removeItem("loan_goto"); setTimeout(()=>showPage("potentialPage"),0); }
 }
 
 /* ===== לקוחות פוטנציאליים: בקשות מהשאלון (אותו פרויקט Supabase) ===== */
@@ -1179,6 +1180,7 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
     if (!session) { msg('לא מחובר לענן. התחבר בכפתור ☁️ ונסה שוב.'); list.innerHTML=''; return; }
     const { data, error } = await c.from('loan_answers').select('user_id, answers, submitted_at').order('submitted_at', { ascending: false });
     if (error) { msg('שגיאה: ' + error.message); return; }
+    const { data: decs } = await c.from('loan_decisions').select('user_id, full_name, decision');
     const { data: invites, error: ie } = await c.from('loan_invites').select('code, name, sent_at').order('sent_at', { ascending: false });
     if (ie) { msg('שגיאה: ' + ie.message); return; }
     const answeredCodes = new Set((data || []).map(r => (r.answers || {}).invite).filter(Boolean));
@@ -1206,6 +1208,13 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
         </td>
       </tr>`;
     }).join('');
+    // החלטות שכבר נשמרו (אושר / נדחה). בקשה שנמחקה ידנית (expired) לא מוצגת
+    const decRows = (decs || []).filter(d => d.decision === 'approved' || d.decision === 'rejected').map(d => `<tr>
+        <td>${esc(d.full_name || 'ללא שם')}</td>
+        <td>—</td><td>—</td><td>—</td>
+        <td>${d.decision === 'approved' ? '✅ אושר' : '❌ נדחה'}</td>
+        <td>—</td>
+      </tr>`).join('');
     const invRows = pendingInv.map(i => `<tr>
         <td>${esc(i.name)}</td>
         <td>${new Date(i.sent_at).toLocaleString('he-IL',{dateStyle:'short',timeStyle:'short'})}</td>
@@ -1216,7 +1225,7 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
     list.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px">
       <thead><tr style="text-align:right;border-bottom:2px solid #e1e6f0">
         <th style="padding:8px">שם</th><th style="padding:8px">הוגש</th><th style="padding:8px">הכנסה</th><th style="padding:8px">החזרים</th><th style="padding:8px">סטטוס</th><th style="padding:8px">פעולות</th>
-      </tr></thead><tbody>${rowsHtml}${invRows}</tbody></table></div>`;
+      </tr></thead><tbody>${rowsHtml}${decRows}${invRows}</tbody></table></div>`;
     list.querySelectorAll('[data-pot-ok],[data-pot-no]').forEach(b => b.addEventListener('click', () => decide(b)));
     list.querySelectorAll('[data-pot-del]').forEach(b => b.addEventListener('click', () => removeRequest(b)));
     list.querySelectorAll('[data-pot-sum]').forEach(b => b.addEventListener('click', () => showSummary(b.dataset.potSum)));
