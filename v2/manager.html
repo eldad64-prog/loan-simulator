@@ -1207,7 +1207,7 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
     const s = potSummaries.get(id);
     if (!s) return;
     const a = s.a || {};
-    const has = new Set(a.docs || []);
+    const has = new Set(s.have || []);
     const yesNo = v => v === 'yes' ? 'כן' : (v === 'no' ? 'לא' : undefined);
     // נקודות לבדיקה ורמת סיכון (אותה לוגיקה כמו בסיכום של הלקוחה)
     const flags = [];
@@ -1222,21 +1222,20 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
     // רמת הסיכון ומצב הנושאים, בדיוק כמו בתבנית הכללית (אדום = חסר, צהוב = חלקי, ירוק = מלא)
     const colorOf ={ red: '#dc2626', yellow: '#d97706', green: '#16a34a' };
     const txt = { red: 'חסר / סתירה', yellow: 'חלקי', green: 'מלא' };
-    const incomeOk = (a.source === 'salary' && has.has('salary')) || (a.source === 'self' && has.has('self'));
+    const incomeOk = has.has('income');
     const dbt = a.debts === undefined ? undefined : +a.debts;
     const topics = [
       { label: 'תעודת זהות *', status: has.has('id') ? 'green' : 'red', found: has.has('id') ? 'הועלתה' : '—', missing: has.has('id') ? '—' : LS.docs.id },
-      { label: 'הוכחת הכנסה *', status: incomeOk ? 'green' : (a.source ? 'yellow' : 'red'), found: incomeOk ? 'הועלתה' : (a.source ? 'לא הועלתה עדיין' : '—'), missing: incomeOk ? '—' : (a.source === 'self' ? LS.docs.self : a.source === 'other' ? 'מסמך המוכיח הכנסה' : LS.docs.salary) },
+      { label: 'מעקב הכנסות יומי *', status: incomeOk ? 'green' : 'red', found: incomeOk ? 'הועלה' : '—', missing: incomeOk ? '—' : 'רישום הכנסות יומי של העסק' },
       { label: 'דפי חשבון בנק *', status: has.has('bank') ? 'green' : 'red', found: has.has('bank') ? 'הועלה' : '—', missing: has.has('bank') ? '—' : LS.docs.bank },
-      { label: 'מעקב הכנסות יומי', status: 'red', found: '—', missing: 'יומן הכנסות יומי' },
       { label: 'הלוואות וחובות', status: dbt === undefined ? 'red' : dbt === 0 ? 'green' : 'yellow', found: dbt === undefined ? '—' : (L.debts[dbt] || '—'), missing: dbt ? 'מסמכי הסכמי הלוואה ויתרות' : '—' },
       { label: 'החזרים חודשיים', status: a.obligations === undefined ? 'red' : 'green', found: at(L.obligations, a.obligations) || '—', missing: '—' },
-      { label: 'נכס או בטוחה', status: has.has('guarantor') ? 'green' : 'yellow', found: has.has('guarantor') ? 'ערב או בטוחה' : '—', missing: has.has('guarantor') ? '—' : 'האם יש ערב או בטוחה (נכס, רכב)' }
+      { label: 'נכס או בטוחה', status: (has.has('collateral') || has.has('lease')) ? 'green' : 'yellow', found: (has.has('collateral') || has.has('lease')) ? 'הועלה' : '—', missing: (has.has('collateral') || has.has('lease')) ? '—' : 'מסמך נכס, שכירות או בטוחה' }
     ];
     // חסרים לבקשה
     const need = topics.filter(t => t.status !== 'green' && t.missing !== '—').map(t => t.missing);
     // מסמכים מחייבים (*): חסר אחד מהם מעלה את רמת הסיכון לגבוהה וחוסם אישור
-    const mandatory = [['תעודת זהות', has.has('id')], ['דף חשבון בנק', has.has('bank')], ['הוכחת הכנסה', incomeOk]].filter(m => !m[1]).map(m => m[0]);
+    const mandatory = [['תעודת זהות', has.has('id')], ['דף חשבון בנק', has.has('bank')], ['מעקב הכנסות יומי', incomeOk]].filter(m => !m[1]).map(m => m[0]);
     if (mandatory.length) flags.unshift('חסרים מסמכים מחייבים: ' + mandatory.join(', ') + '.');
     const level = mandatory.length ? ['גבוהה', 'red'] : flags.length === 0 ? ['נמוכה', 'green'] : flags.length <= 2 ? ['בינונית', 'yellow'] : ['גבוהה', 'red'];
     // דיאגרמת עוגה: פלח שווה לכל נושא
@@ -1299,11 +1298,17 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
     const pendingInv = (invites || []).filter(i => !answeredCodes.has(i.code));
     if (!(data || []).length && !pendingInv.length) { msg('אין בקשות ממתינות.'); list.innerHTML=''; return; }
     msg('');
+    // מסמכים שהועלו לכל לקוחה (מתיקיית האחסון לפי מזהה המשתמשת), לבדיקת המסמכים המחייבים בסיכום
+    const haveByUser = {};
+    await Promise.all((data || []).map(async r => {
+      const { data: files } = await c.storage.from('loan-documents').list(r.user_id, { limit: 200 });
+      haveByUser[r.user_id] = new Set((files || []).map(f => f.name.split('__')[0]));
+    }));
     // ממתינות להחלטה: מילאו שאלון ועוד לא הוחלט לגביהן. הכפתור "סיכום" ליד השם
     const rowsHtml = (data || []).map(r => {
       const a = r.answers || {};
       const name = a.name || 'ללא שם';
-      potSummaries.set(r.user_id, { name, a });
+      potSummaries.set(r.user_id, { name, a, have: haveByUser[r.user_id] || new Set() });
       return `<div class="pot-row">
         <div class="pot-name"><span style="font-weight:700">${esc(name)}</span><button class="btn light" style="padding:3px 8px;font-size:13px" data-pot-sum="${r.user_id}">📄 סיכום</button></div>
         <div>⏳ ממתין להחלטה</div>
