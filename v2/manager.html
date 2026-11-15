@@ -315,10 +315,12 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
     </div>
     <div class="card">
       <div style="text-align:center;margin:4px 0 14px"><h2 class="card-title" style="margin:0;font-size:26px">לקוחות פוטנציאליים</h2></div>
-      <div class="btn-row" style="justify-content:center">
+      <div class="btn-row" style="justify-content:center;flex-wrap:wrap;gap:10px">
         <button class="btn primary" type="button" onclick="document.getElementById('sendQuestionnaire').click()">📨 הזמנת לקוח</button>
+        <button class="btn soft" type="button" id="hebrewQuestionnaireBtn">🇮🇱 שאלון עברית</button>
+        <button class="btn soft" type="button" onclick="document.getElementById('potentialList').scrollIntoView({behavior:'smooth'})">📋 פירוט לקוחות</button>
       </div>
-      <div style="display:none">
+      <div>
         <div class="card-sub" style="margin-bottom:6px">ההודעה ללקוח (אפשר להעתיק ולהדביק):</div>
         <textarea id="questionnaireText" readonly style="width:100%;min-height:240px;padding:14px;border-radius:12px;border:2px solid #3b6fd8;font-size:22px;line-height:1.7;box-sizing:border-box;direction:rtl;background:#fff;color:#1c2433">สวัสดีค่ะ/ครับ 🙏
 เราเปิดแบบสอบถามสำหรับคำขอสินเชื่อของคุณ
@@ -901,6 +903,11 @@ function pickRequiredDocs(name){
     };
   });
 }
+document.getElementById("hebrewQuestionnaireBtn").onclick=()=>{
+  const t=document.getElementById("questionnaireText");
+  t.value="שלום,\nלהלן הקישור לשאלון לבקשת ההלוואה. היכנס לקישור, מלא שם ותעודת זהות, ומלא את השאלון.\nhttps://eldad64-prog.github.io/loan-app/?new=1";
+  t.focus();
+};
 $("sendQuestionnaire").onclick=async ()=>{
   // שורה בטבלה נוצרת כבר בשליחה, ומתמלאת כשהלקוחה מסיימת את השאלון
   const name=(prompt("שם הלקוח הפוטנציאלי (ייכנס לרשימה):")||"").trim();
