@@ -50,8 +50,9 @@
   <div class="top"><a href="./index.html">→ חזרה לכניסה</a></div><div class="hero"><h1>שלום 👋 התיק שלך</h1><p>הלקוחות שלך ביד אחת. הוסף או הסר לפי הצורך.</p></div>
 
   <div id="noAgent" class="card hidden">
-    <h2>הכניסה לתיק</h2>
-    <div class="muted">הכניסה לתיק של הסוכנת תתבצע במייל בשלב הבא. עד אז אין אפשרות לפתוח את התיק מכאן.</div>
+    <h2>ניהול סוכנים</h2>
+    <div class="muted" id="pickHint">בחר סוכן כדי לפתוח את התיק שלו.</div>
+    <div id="agentPick" style="margin-top:10px;display:flex;flex-direction:column;gap:8px"></div>
   </div>
 
   <div id="app" class="hidden">
@@ -180,7 +181,12 @@ $("addBtn").onclick=()=>{
   render();
 };
 
-if(!a) $("noAgent").classList.remove("hidden");
+if(!a){
+  $("noAgent").classList.remove("hidden");
+  const pick=$("agentPick");
+  if(!db||!db.agents.length){ $("pickHint").textContent="אין סוכנים עדיין. הוסף סוכנים במסך המנהל."; }
+  else pick.innerHTML=db.agents.map(x=>'<a class="btn soft" href="?agent='+encodeURIComponent(x.id)+'" style="display:block;text-align:center;padding:12px;border-radius:12px;text-decoration:none;color:#1d2433;background:#e8eefb">'+esc(x.name)+'</a>').join("");
+}
 else render();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
