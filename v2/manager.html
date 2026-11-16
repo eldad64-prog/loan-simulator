@@ -1285,9 +1285,74 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
   function sumSec(title, html){
     return '<div style="margin-top:16px"><div style="font-weight:800;font-size:17px;color:#3b2a6b;margin-bottom:4px">' + title + '</div>' + html + '</div>';
   }
-  function showSummary(id){
+  // ניתוח דף חשבון בתוך הדפדפן: חילוץ טקסט מה-PDF וחישוב הפקדות, חיובים והעברות מחשבון בשם הלקוחה
+  let pdfJsPromise = null;
+  function loadPdfJs(){
+    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+    if (!pdfJsPromise) pdfJsPromise = new Promise((res, rej) => {
+      const sc = document.createElement('script');
+      sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      sc.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; res(window.pdfjsLib); };
+      sc.onerror = () => rej(new Error('לא נטען ספריית קריאת PDF'));
+      document.head.appendChild(sc);
+    });
+    return pdfJsPromise;
+  }
+  async function analyzeBank(s){
+    const c = client();
+    const { data: blob, error } = await c.storage.from('loan-documents').download(s.uid + '/' + s.bankFile);
+    if (error || !blob) throw new Error('לא ניתן להוריד את הקובץ');
+    const pdfjs = await loadPdfJs();
+    const doc = await pdfjs.getDocument({ data: await blob.arrayBuffer() }).promise;
+    const lines = [];
+    for (let p = 1; p <= doc.numPages; p++) {
+      const page = await doc.getPage(p);
+      const tc = await page.getTextContent();
+      const rows = {};
+      tc.items.forEach(it => { const y = Math.round(it.transform[5]); (rows[y] = rows[y] || []).push(it); });
+      Object.keys(rows).map(Number).sort((x, y) => y - x).forEach(y => {
+        lines.push(rows[y].sort((x, z) => x.transform[4] - z.transform[4]).map(it => it.str).join(' '));
+      });
+    }
+    const names = (s.name || '').split(/\s+/).filter(t => t.length >= 3);
+    const isOwn = l => names.some(t => l.includes(t));
+    const monthly = {};
+    let credits = 0, debits = 0, own = 0, cash = 0, count = 0;
+    for (const l of lines) {
+      const m = l.match(/^(\d{2})-(\d{2})-(\d{2})\b/);
+      if (!m) continue;
+      const nums = [...l.matchAll(/\d{1,3}(?:,\d{3})*\.\d{2}/g)].map(x => parseFloat(x[0].replace(/,/g, '')));
+      if (!nums.length) continue;
+      const amt = nums[0];
+      if (/รับโอนเงิน|ฝากเงิน|รับเงิน|ดอกเบี้ย/.test(l)) {
+        credits += amt; count++;
+        monthly[m[2]] = (monthly[m[2]] || 0) + amt;
+        if (/ฝากเงินสด/.test(l)) cash += amt;
+        if (isOwn(l)) own += amt;
+      } else if (/โอนเงิน|ชำระ|ถอน|หักบัญชี/.test(l)) {
+        debits += amt;
+      }
+    }
+    if (!count) throw new Error('לא נמצאו תנועות בדף. ייתכן שזה סריקה ולא PDF עם טקסט');
+    const months = Object.keys(monthly).length || 1;
+    return { credits, debits, own, cash, count, months, monthlyNet: (credits - own) / months };
+  }
+  // פער בין הכנסה שהצהירה לבין דף החשבון (לפי טווח ההצהרה, באחוזים)
+  const INCOME_BOUNDS = [[0, 10000], [10000, 20000], [20000, 35000], [35000, 50000], [50000, Infinity]];
+  function incomeGapPct(value, idx){
+    const b = INCOME_BOUNDS[+idx];
+    if (!b || idx === undefined) return 0;
+    if (value > b[1]) return (value - b[1]) / b[1];
+    if (value < b[0]) return (b[0] - value) / b[0];
+    return 0;
+  }
+  async function showSummary(id){
     const s = potSummaries.get(id);
     if (!s) return;
+    if (s.bankFile && !s.bank) {
+      openModal('סיכום בקשת הלוואה', '<p>מנתח את דף החשבון, רגע...</p>');
+      try { s.bank = await analyzeBank(s); } catch (e) { s.bank = { error: e.message || String(e) }; }
+    }
     const a = s.a || {};
     const has = new Set(s.have || []);
     const yesNo = v => v === 'yes' ? 'כן' : (v === 'no' ? 'לא' : undefined);
@@ -1340,8 +1405,21 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
       'חובות כוללים: ' + (at(L.debts, a.debts) || '—'),
       'רמת סיכון: ' + level[0]
     ];
-    // פער בין מה שהצהיר בשאלון לבין המסמכים שהועלו (בדיקה לפי קיום המסמכים בלבד, לא לפי תוכנם)
     const gapList = [];
+    // דף חשבון שנותח: השוואת ההכנסה החודשית (בלי העברות בשמה) להצהרה, רק פער של 10% ומעלה
+    const bankOk = !!(s.bank && !s.bank.error);
+    let bankGapPct = 0;
+    if (bankOk) {
+      const fmt = n => Math.round(n).toLocaleString('he-IL');
+      [['income', 'ההכנסה'], ['income2', 'ההכנסה בשאלה השנייה']].forEach(([key, label]) => {
+        if (a[key] === undefined) return;
+        const pct = incomeGapPct(s.bank.monthlyNet, a[key]);
+        bankGapPct = Math.max(bankGapPct, pct);
+        if (pct >= 0.10) gapList.push(label + ' שהצהירה: ' + L.income[+a[key]] + ' באט בחודש. דף החשבון מראה כ-' + fmt(s.bank.monthlyNet) + ' באט בחודש (פער של ' + Math.round(pct * 100) + '%).');
+      });
+      if (s.bank.own > 0) gapList.push('העברות מחשבון בשמה הלקוחה: ' + fmt(s.bank.own) + ' באט. לא נספרו כהכנסה.');
+    }
+    // פער בין מה שהצהיר בשאלון לבין המסמכים שהועלו (בדיקה לפי קיום המסמכים בלבד, לא לפי תוכנם)
     if (a.debts !== undefined && +a.debts > 0 && !has.has('loans')) gapList.push('הצהיר על חובות (' + L.debts[+a.debts] + ') ולא הועלו הסכמי הלוואות או יתרות.');
     if (a.income !== undefined && +a.income > 0 && !has.has('bank') && !has.has('income')) gapList.push('הצהיר על הכנסה (' + L.income[+a.income] + ') ולא הועלה דף חשבון או מעקב הכנסות.');
     if (a.obligations !== undefined && +a.obligations > 0 && !has.has('bank') && !has.has('loans')) gapList.push('הצהיר על החזרים חודשיים (' + L.obligations[+a.obligations] + ') ולא הועלו מסמכים שמאשרים אותם.');
@@ -1350,6 +1428,11 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
     // כפתורי מסמכים בצבע לפי רמת המהימנות: אדום = לא הועלה, צהוב = הועלה ולא נבדק באפליקציה
     const docVerdict = reqKeys.map(k => {
       const name = labelOf[k] || k;
+      if (k === 'bank' && bankOk) {
+        if (bankGapPct >= 0.10) return { k, name, color: '#dc2626', word: 'אדום: משאיר ספקות', why: 'דף החשבון לא תואם להצהרה בפער של ' + Math.round(bankGapPct * 100) + '% או יותר. ראה את הפערים בסיכום.' };
+        return { k, name, color: '#16a34a', word: 'ירוק: תקין', why: 'ההכנסה בדף החשבון, בלי העברות בשמה הלקוחה, תואמת את ההצהרה בפער של פחות מ-10%.' };
+      }
+      if (k === 'bank' && s.bank && s.bank.error) return { k, name, color: '#d97706', word: 'צהוב: לא נותח', why: 'הקובץ הועלה, אבל הניתוח נכשל: ' + s.bank.error + '.' };
       if (!has.has(k)) return { k, name, color: '#dc2626', word: 'אדום: לא הועלה', why: 'המסמך לא הועלה. בלי המסמך אי אפשר לבדוק את הנתון שהלקוחה הצהירה עליו בשאלון.' };
       return { k, name, color: '#d97706', word: 'צהוב: הועלה, לא נבדק', why: 'המסמך הועלה, אבל התוכן שלו לא נבדק באפליקציה. צריך לבדוק ידנית את הסכומים והתאריכים מול השאלון ומול דף החשבון.' };
     });
@@ -1409,15 +1492,18 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
     msg('');
     // מסמכים שהועלו לכל לקוחה (מתיקיית האחסון לפי מזהה המשתמשת), לבדיקת המסמכים המחייבים בסיכום
     const haveByUser = {};
+    const fileListByUser = {};
     await Promise.all((data || []).map(async r => {
       const { data: files } = await c.storage.from('loan-documents').list(r.user_id, { limit: 200 });
+      fileListByUser[r.user_id] = files || [];
       haveByUser[r.user_id] = new Set((files || []).map(f => f.name.split('__')[0]));
     }));
     // ממתינות להחלטה: מילאו שאלון ועוד לא הוחלט לגביהן. הכפתור "סיכום" ליד השם
     const rowsHtml = (data || []).map(r => {
       const a = r.answers || {};
       const name = a.name || 'ללא שם';
-      potSummaries.set(r.user_id, { name, a, have: haveByUser[r.user_id] || new Set() });
+      const bankF = (fileListByUser[r.user_id] || []).find(f => /^bank__/.test(f.name) && /\.pdf$/i.test(f.name));
+      potSummaries.set(r.user_id, { name, a, uid: r.user_id, bankFile: bankF ? bankF.name : null, have: haveByUser[r.user_id] || new Set() });
       return `<div class="pot-row">
         <div class="pot-name"><span style="font-weight:700">${esc(name)}</span><button class="btn light" style="padding:3px 8px;font-size:13px" data-pot-sum="${r.user_id}">📄 סיכום</button></div>
         <div>⏳ ממתין להחלטה</div>
