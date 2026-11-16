@@ -1347,6 +1347,12 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
     if (a.obligations !== undefined && +a.obligations > 0 && !has.has('bank') && !has.has('loans')) gapList.push('הצהיר על החזרים חודשיים (' + L.obligations[+a.obligations] + ') ולא הועלו מסמכים שמאשרים אותם.');
     if (a.late === 'yes' && !has.has('bank')) gapList.push('הצהיר על איחורים בתשלומים ואין דף חשבון לבדיקה.');
     const docsNote = has.has('bank') ? 'הועלה דף חשבון. ההשוואה לסכומים שבשאלון נעשית ידנית.' : 'לא הועלה דף חשבון, ולכן לא ניתן להשוות את ההכנסה לשאלון.';
+    // כפתורי מסמכים בצבע לפי רמת המהימנות: אדום = לא הועלה, צהוב = הועלה ולא נבדק באפליקציה
+    const docVerdict = reqKeys.map(k => {
+      const name = labelOf[k] || k;
+      if (!has.has(k)) return { k, name, color: '#dc2626', word: 'אדום: לא הועלה', why: 'המסמך לא הועלה. בלי המסמך אי אפשר לבדוק את הנתון שהלקוחה הצהירה עליו בשאלון.' };
+      return { k, name, color: '#d97706', word: 'צהוב: הועלה, לא נבדק', why: 'המסמך הועלה, אבל התוכן שלו לא נבדק באפליקציה. צריך לבדוק ידנית את הסכומים והתאריכים מול השאלון ומול דף החשבון.' };
+    });
     const body = '<div style="font-size:18px;font-weight:800">סיכום בקשת הלוואה</div>' +
       '<div style="font-size:16px;font-weight:700;margin-top:4px">שם בעל השאלון: ' + esc(s.name) + '</div>' +
       (a.id_number ? '<div style="color:#5b6577">ת.ז: ' + esc(a.id_number) + '</div>' : '') +
@@ -1362,6 +1368,7 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
           ? '<ul style="margin:6px 0 0;padding-inline-start:20px">' + gapList.map(g => '<li>' + esc(g) + '</li>').join('') + '</ul>'
           : '<div>לא נמצא פער בין מה שהצהיר לבין המסמכים שהועלו.</div>') +
         '<p style="color:#6b665e;margin:6px 0 0;font-size:13px">' + esc(docsNote) + '</p>') +
+      sumSec('מסמכים לבדיקה (לחץ לאבחון)', '<div style="display:flex;gap:8px;flex-wrap:wrap">' + docVerdict.map(d => '<button class="btn light" data-doc-verdict="' + esc(d.k) + '" style="border-inline-start:8px solid ' + d.color + '">' + esc(d.name) + '</button>').join('') + '</div>') +
       sumSec('מסקנות',
         flags.length
           ? '<ul style="margin:6px 0 0;padding-inline-start:20px">' + flags.map(f => '<li>' + esc(f) + '</li>').join('') + '</ul>'
@@ -1376,6 +1383,12 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
     openModal('סיכום בקשת הלוואה', body);
     $("modal").querySelectorAll('[data-pot-ok],[data-pot-no]').forEach(b => b.addEventListener('click', () => { closeModal(); decide(b); }));
     $("modal").querySelectorAll('[data-pot-del]').forEach(b => b.addEventListener('click', () => { closeModal(); removeRequest(b); }));
+    $("modal").querySelectorAll('[data-doc-verdict]').forEach(b => b.addEventListener('click', () => {
+      const d = docVerdict.find(x => x.k === b.dataset.docVerdict);
+      if (!d) return;
+      openModal('אבחון: ' + d.name, '<div style="font-size:16px;font-weight:700;color:' + d.color + '">' + esc(d.word) + '</div><p style="margin:8px 0">' + esc(d.why) + '</p><p style="font-size:13px;color:#6b665e">צבע: אדום = לא הועלה, צהוב = הועלה ולא נבדק, ירוק = נבדק ותקין.</p><button class="btn light" id="backToSummary">‹ חזרה לסיכום</button>');
+      $("backToSummary").onclick = () => showSummary(id);
+    }));
   }
 
   async function loadPotential(){
