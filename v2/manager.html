@@ -1452,6 +1452,16 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
           ? '<ul style="margin:6px 0 0;padding-inline-start:20px">' + gapList.map(g => '<li>' + esc(g) + '</li>').join('') + '</ul>'
           : '<div>לא נמצא פער בין מה שהצהיר לבין המסמכים שהועלו.</div>') +
         '<p style="color:#6b665e;margin:6px 0 0;font-size:13px">' + esc(docsNote) + '</p>') +
+      sumSec('עקביות התשובות (שאלה חוזרת)', (() => {
+        const pairs = [['income', 'income2', 'ההכנסה החודשית', L.income], ['obligations', 'obligations2', 'החזרים חודשיים', L.obligations], ['debts', 'debts2', 'סך החובות', L.debts], ['tenure', 'tenure2', 'משך העבודה', LS.tenure]];
+        const rows = pairs.filter(([k1, k2]) => a[k1] !== undefined && a[k2] !== undefined).map(([k1, k2, label, arr]) => {
+          const d = Math.abs(+a[k1] - +a[k2]);
+          const col = d === 0 ? '#16a34a' : (d >= 2 ? '#dc2626' : '#d97706');
+          const word = d === 0 ? 'עקבי' : (d >= 2 ? 'פער גדול' : 'פער קל');
+          return '<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #eef1f6;flex-wrap:wrap"><b>' + esc(label) + '</b><span style="font-size:14px">' + esc(arr[+a[k1]] || '—') + ' · ' + esc(arr[+a[k2]] || '—') + '</span><span style="display:inline-block;padding:2px 10px;border-radius:999px;color:#fff;font-size:13px;background:' + col + '">' + word + '</span></div>';
+        });
+        return rows.length ? rows.join('') : '<div>אין שאלות חוזרות להשוואה.</div>';
+      })()) +
       sumSec('מסמכים לבדיקה (לחץ לאבחון)', '<div style="display:flex;gap:8px;flex-wrap:wrap">' + docVerdict.map(d => '<button class="btn light" data-doc-verdict="' + esc(d.k) + '" style="border-inline-start:8px solid ' + d.color + '">' + esc(d.name) + '</button>').join('') + '</div>') +
       sumSec('מסקנות',
         flags.length
