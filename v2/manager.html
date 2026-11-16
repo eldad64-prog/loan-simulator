@@ -1429,11 +1429,12 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
     const docVerdict = reqKeys.map(k => {
       const name = labelOf[k] || k;
       if (k === 'bank' && bankOk) {
-        if (bankGapPct >= 0.10) return { k, name, color: '#dc2626', word: 'אדום: משאיר ספקות', why: 'דף החשבון לא תואם להצהרה בפער של ' + Math.round(bankGapPct * 100) + '% או יותר. ראה את הפערים בסיכום.' };
-        return { k, name, color: '#16a34a', word: 'ירוק: תקין', why: 'ההכנסה בדף החשבון, בלי העברות בשמה הלקוחה, תואמת את ההצהרה בפער של פחות מ-10%.' };
+        if (bankGapPct >= 0.30) return { k, name, color: '#dc2626', word: 'אדום: פער מהותי', why: 'דף החשבון לא תואם להצהרה בפער של ' + Math.round(bankGapPct * 100) + '%. זה פער מהותי. ראה את הפערים בסיכום.' };
+        if (bankGapPct >= 0.10) return { k, name, color: '#d97706', word: 'צהוב: פער קל', why: 'דף החשבון שונה מההצהרה בפער של ' + Math.round(bankGapPct * 100) + '%. זה פער קל.' };
+        return { k, name, color: '#16a34a', word: 'ירוק: תקין', why: 'ההכנסה בדף החשבון, בלי העברות בשמה הלקוחה, תואמת את ההצהרה. אין פער של 10% ומעלה.' };
       }
       if (k === 'bank' && s.bank && s.bank.error) return { k, name, color: '#d97706', word: 'צהוב: לא נותח', why: 'הקובץ הועלה, אבל הניתוח נכשל: ' + s.bank.error + '.' };
-      if (!has.has(k)) return { k, name, color: '#dc2626', word: 'אדום: לא הועלה', why: 'המסמך לא הועלה. בלי המסמך אי אפשר לבדוק את הנתון שהלקוחה הצהירה עליו בשאלון.' };
+      if (!has.has(k)) return { k, name, color: '#d97706', word: 'צהוב: חסר', why: 'המסמך לא הועלה. לפי הכללים השאלון לא נשלח בלעדיו, לכן זה לא אמור לקרות.' };
       return { k, name, color: '#d97706', word: 'צהוב: הועלה, לא נבדק', why: 'המסמך הועלה, אבל התוכן שלו לא נבדק באפליקציה. צריך לבדוק ידנית את הסכומים והתאריכים מול השאלון ומול דף החשבון.' };
     });
     const body = '<div style="font-size:18px;font-weight:800">סיכום בקשת הלוואה</div>' +
@@ -1469,7 +1470,7 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
     $("modal").querySelectorAll('[data-doc-verdict]').forEach(b => b.addEventListener('click', () => {
       const d = docVerdict.find(x => x.k === b.dataset.docVerdict);
       if (!d) return;
-      openModal('אבחון: ' + d.name, '<div style="font-size:16px;font-weight:700;color:' + d.color + '">' + esc(d.word) + '</div><p style="margin:8px 0">' + esc(d.why) + '</p><p style="font-size:13px;color:#6b665e">צבע: אדום = לא הועלה, צהוב = הועלה ולא נבדק, ירוק = נבדק ותקין.</p><button class="btn light" id="backToSummary">‹ חזרה לסיכום</button>');
+      openModal('אבחון: ' + d.name, '<div style="font-size:16px;font-weight:700;color:' + d.color + '">' + esc(d.word) + '</div><p style="margin:8px 0">' + esc(d.why) + '</p><p style="font-size:13px;color:#6b665e">צבע: אדום = פער מהותי מול דף החשבון או ההצהרות, צהוב = פער קל או מסמך שלא נבדק, ירוק = תקין.</p><button class="btn light" id="backToSummary">‹ חזרה לסיכום</button>');
       $("backToSummary").onclick = () => showSummary(id);
     }));
   }
