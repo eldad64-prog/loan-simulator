@@ -315,12 +315,12 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
     </div>
     <div class="card">
       <div style="text-align:center;margin:4px 0 14px"><h2 class="card-title" style="margin:0;font-size:26px">לקוחות פוטנציאליים</h2></div>
-      <div class="btn-row" style="justify-content:center;flex-wrap:wrap;gap:10px">
+      <div class="btn-row" style="justify-content:center;flex-direction:column;align-items:center;gap:10px">
         <button class="btn primary" type="button" onclick="document.getElementById('sendQuestionnaire').click()">📨 הזמנת לקוח</button>
-        <button class="btn soft" type="button" id="hebrewQuestionnaireBtn">🇮🇱 שאלון עברית</button>
-        <button class="btn soft" type="button" onclick="document.getElementById('potentialList').scrollIntoView({behavior:'smooth'})">📋 פירוט לקוחות</button>
+        <button class="btn light" type="button" id="hebrewQuestionnaireBtn" style="font-size:15px;padding:8px 14px">🇮🇱 שאלון בעברית</button>
+        <button class="btn light" type="button" onclick="document.getElementById('potentialList').scrollIntoView({behavior:'smooth'})" style="font-size:15px;padding:8px 14px">📋 לטבלת הלקוחות</button>
       </div>
-      <div>
+      <div style="display:none">
         <div class="card-sub" style="margin-bottom:6px">ההודעה ללקוח (אפשר להעתיק ולהדביק):</div>
         <textarea id="questionnaireText" readonly style="width:100%;min-height:240px;padding:14px;border-radius:12px;border:2px solid #3b6fd8;font-size:22px;line-height:1.7;box-sizing:border-box;direction:rtl;background:#fff;color:#1c2433">สวัสดีค่ะ/ครับ 🙏
 เราเปิดแบบสอบถามสำหรับคำขอสินเชื่อของคุณ
@@ -332,6 +332,51 @@ https://eldad64-prog.github.io/loan-app/?new=1</textarea>
       <div id="potentialMsg" class="card-sub" style="margin-top:10px;text-align:center"></div>
       <h3 style="text-align:center;margin:18px 0 8px;font-size:20px">טבלת לקוחות</h3>
       <div id="potentialList"></div>
+    </div>
+  </section>
+
+  <section class="page" id="hebrewQuestPage">
+    <div class="page-back" style="display:flex;justify-content:flex-start;margin:0 0 10px">
+      <button class="btn light" type="button" onclick="showPage('potentialPage')" style="border-radius:999px;min-height:40px;padding:8px 16px">‹ חזרה ללקוחות פוטנציאליים</button>
+    </div>
+    <div class="card" style="line-height:1.8;font-size:17px">
+      <h2 class="card-title" style="text-align:center;margin:0 0 6px;font-size:24px">שאלון בעברית (לעיון בלבד)</h2>
+      <p class="card-sub" style="text-align:center">זה תרגום של השאלון שהלקוח ממלא. הסכומים באט, כמו בשאלון המקורי.</p>
+
+      <h3>1. הסכמה ומידע בסיסי</h3>
+      <p><b>האם את/ה מסכים/ה לשימוש במידע ובמסמכים שלך כדי לבחון את הבקשה?</b><br>מסכים/ה · לא מסכים/ה</p>
+      <p><b>שם (לא חובה)</b></p>
+
+      <h3>2. העבודה שלך</h3>
+      <p><b>ממה מגיעה ההכנסה העיקרית שלך?</b><br>שכר מעבודה · עסק שלי · אחר</p>
+      <p><b>כמה זמן את/ה עובד/ת כאן?</b><br>עד 6 חודשים · 6 חודשים עד שנתיים · 2 עד 5 שנים · מעל 5 שנים</p>
+
+      <h3>3. מצב כלכלי</h3>
+      <p><b>בערך, כמה כסף נכנס לחשבונך בחודש?</b><br>עד 10,000 באט · 10,000–20,000 · 20,000–35,000 · 35,000–50,000 · מעל 50,000</p>
+      <p><b>כמה את/ה משלם/ת בערך לחודש על החזרי חובות?</b><br>אין · עד 5,000 · 5,000–10,000 · 10,000–20,000 · מעל 20,000</p>
+      <p><b>בסך הכול, כמה חוב יש לך?</b><br>אין · עד 50,000 · 50,000–150,000 · 150,000–300,000 · מעל 300,000</p>
+      <p><b>בחצי השנה האחרונה, היו תשלומים באיחור?</b><br>אין · יש</p>
+
+      <h3>4. אם יקרה…</h3>
+      <p><b>ההכנסה החודשית שלך תרד ב-30% בחודש הבא. מה תעשה/י?</b><br>יש חיסכון או הכנסה נוספת · אצמצם הוצאות אחרות · אבקש כסף מאדם אחר · עדיין לא בטוח/ה</p>
+      <p><b>יש לך הוצאה דחופה של 10,000 באט. איך תשלם/י?</b><br>מהחיסכון שלי · בחלוקה מההכנסה החודשית · אקח הלוואה נוספת · עדיין לא בטוח/ה</p>
+      <p><b>חודש אחד לא תוכל/ל לשלם את התשלום. מה תעשה/י?</b><br>אודיע מראש ונמצא פתרון יחד · אבקש דחייה קצרה · אשאיר ככה ואחכה שזה יעבור · עדיין לא בטוח/ה</p>
+
+      <h3>5. בדיקה נוספת</h3>
+      <p><b>בחודש האחרון, כמה כסף נכנס לחשבון בערך?</b> (אותן אפשרויות כמו בסעיף 3)</p>
+      <p><b>כמה את/ה משלם/ת בערך לחודש על החזרי חובות?</b> (אותן אפשרויות כמו בסעיף 3)</p>
+      <p><b>בסך הכול, כמה חוב יש לך?</b> (אותן אפשרויות כמו בסעיף 3)</p>
+      <p><b>כמה זמן את/ה עובד/ת כאן?</b> (אותן אפשרויות כמו בסעיף 2)</p>
+
+      <h3>6. פרטים נוספים</h3>
+      <p><b>איפה את/ה גר/ה עכשיו?</b><br>בית שלי · שוכר/ת חדר · גר/ה עם המשפחה</p>
+      <p><b>כמה אנשים את/ה צריך/ה לדאוג להם כלכלית?</b><br>אף אחד · 1 · 2 · 3 ומעלה</p>
+      <p><b>באיזו דרך נוח ליצור איתך קשר?</b><br>טלפון · WhatsApp · אימייל</p>
+      <p><b>באיזה זמן נוח לך?</b><br>בבוקר · בצהריים · בערב</p>
+
+      <h3>7. מסמכים</h3>
+      <p class="card-sub">אפשר לבחור כמה אפשרויות. זה לא משפיע על הציון.</p>
+      <p>תעודת זהות או דרכון · תלוש משכורת · דף חשבון בנק · רישום עסק ומסמכי מס · ערב או בטוחה</p>
     </div>
   </section>
 
@@ -903,11 +948,7 @@ function pickRequiredDocs(name){
     };
   });
 }
-document.getElementById("hebrewQuestionnaireBtn").onclick=()=>{
-  const t=document.getElementById("questionnaireText");
-  t.value="שלום,\nלהלן הקישור לשאלון לבקשת ההלוואה. היכנס לקישור, מלא שם ותעודת זהות, ומלא את השאלון.\nhttps://eldad64-prog.github.io/loan-app/?new=1";
-  t.focus();
-};
+document.getElementById("hebrewQuestionnaireBtn").onclick=()=>showPage("hebrewQuestPage");
 $("sendQuestionnaire").onclick=async ()=>{
   // שורה בטבלה נוצרת כבר בשליחה, ומתמלאת כשהלקוחה מסיימת את השאלון
   const name=(prompt("שם הלקוח הפוטנציאלי (ייכנס לרשימה):")||"").trim();
