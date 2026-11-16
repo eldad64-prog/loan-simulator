@@ -318,7 +318,7 @@ th{font-size:13px;color:var(--muted);background:#f8f9fb}td{font-size:14px}tr:las
       <div class="btn-row" style="justify-content:center;flex-direction:column;align-items:center;gap:10px">
         <button class="btn primary" type="button" onclick="document.getElementById('sendQuestionnaire').click()">📨 הזמנת לקוח</button>
         <button class="btn light" type="button" id="hebrewQuestionnaireBtn" style="font-size:15px;padding:8px 14px">🇮🇱 שאלון בעברית</button>
-        <button class="btn light" type="button" onclick="document.getElementById('potentialList').scrollIntoView({behavior:'smooth'})" style="font-size:15px;padding:8px 14px">📋 לטבלת הלקוחות</button>
+        <button class="btn light" type="button" onclick="showPage('customersTablePage')" style="font-size:15px;padding:8px 14px">📋 לטבלת הלקוחות</button>
       </div>
       <div style="display:none">
         <div class="card-sub" style="margin-bottom:6px">ההודעה ללקוח (אפשר להעתיק ולהדביק):</div>
@@ -329,8 +329,16 @@ https://eldad64-prog.github.io/loan-app/?new=1</textarea>
         <button class="btn primary" type="button" id="copyQuestionnaireText" style="margin-top:10px;width:100%;font-size:20px;padding:16px">📋 העתק הודעה</button>
         <button class="btn soft" type="button" id="copyQuestionnaireLink" style="margin-top:10px;width:100%;font-size:20px;padding:16px">🔗 העתק קישור לשאלון בלבד</button>
       </div>
+    </div>
+  </section>
+
+  <section class="page" id="customersTablePage">
+    <div class="page-back" style="display:flex;justify-content:flex-start;margin:0 0 10px">
+      <button class="btn light" type="button" onclick="showPage('potentialPage')" style="border-radius:999px;min-height:40px;padding:8px 16px">‹ חזרה ללקוחות פוטנציאליים</button>
+    </div>
+    <div class="card">
+      <h3 style="text-align:center;margin:0 0 8px;font-size:22px">טבלת לקוחות</h3>
       <div id="potentialMsg" class="card-sub" style="margin-top:10px;text-align:center"></div>
-      <h3 style="text-align:center;margin:18px 0 8px;font-size:20px">טבלת לקוחות</h3>
       <div id="potentialList"></div>
     </div>
   </section>
@@ -1332,6 +1340,13 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
       'חובות כוללים: ' + (at(L.debts, a.debts) || '—'),
       'רמת סיכון: ' + level[0]
     ];
+    // פער בין מה שהצהיר בשאלון לבין המסמכים שהועלו (בדיקה לפי קיום המסמכים בלבד, לא לפי תוכנם)
+    const gapList = [];
+    if (a.debts !== undefined && +a.debts > 0 && !has.has('loans')) gapList.push('הצהיר על חובות (' + L.debts[+a.debts] + ') ולא הועלו הסכמי הלוואות או יתרות.');
+    if (a.income !== undefined && +a.income > 0 && !has.has('bank') && !has.has('income')) gapList.push('הצהיר על הכנסה (' + L.income[+a.income] + ') ולא הועלה דף חשבון או מעקב הכנסות.');
+    if (a.obligations !== undefined && +a.obligations > 0 && !has.has('bank') && !has.has('loans')) gapList.push('הצהיר על החזרים חודשיים (' + L.obligations[+a.obligations] + ') ולא הועלו מסמכים שמאשרים אותם.');
+    if (a.late === 'yes' && !has.has('bank')) gapList.push('הצהיר על איחורים בתשלומים ואין דף חשבון לבדיקה.');
+    const docsNote = has.has('bank') ? 'הועלה דף חשבון. ההשוואה לסכומים שבשאלון נעשית ידנית.' : 'לא הועלה דף חשבון, ולכן לא ניתן להשוות את ההכנסה לשאלון.';
     const body = '<div style="font-size:18px;font-weight:800">סיכום בקשת הלוואה</div>' +
       '<div style="font-size:16px;font-weight:700;margin-top:4px">שם בעל השאלון: ' + esc(s.name) + '</div>' +
       (a.id_number ? '<div style="color:#5b6577">ת.ז: ' + esc(a.id_number) + '</div>' : '') +
@@ -1342,7 +1357,11 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
       sumSec('פירוט לפי נושא', topicBlocks) +
       sumSec('דף חשבון בנק', '<p style="color:#6b665e;margin:0">אין עדיין דף חשבון לניתוח. הניתוח נעשה ידנית אחרי שהלקוח מעלה מסמכים.</p>') +
       sumSec('הפקדות ומשיכות גדולות', '<p style="color:#6b665e;margin:0">אין עדיין תנועות לתיעוד.</p>') +
-      sumSec('הלוואות: מה נטען מול מה שנראה', '<ul style="margin:0;padding-inline-start:20px"><li><b>מה נטען:</b> ' + esc(at(L.debts, a.debts) || 'לא נענה') + '</li><li><b>מה נראה בדף החשבון:</b> לא נבדק עדיין</li><li><b>מסקנה:</b> ממתין למסמכים</li></ul>') +
+      sumSec('פער בין המסמכים לשאלון',
+        (gapList.length
+          ? '<ul style="margin:6px 0 0;padding-inline-start:20px">' + gapList.map(g => '<li>' + esc(g) + '</li>').join('') + '</ul>'
+          : '<div>לא נמצא פער בין מה שהצהיר לבין המסמכים שהועלו.</div>') +
+        '<p style="color:#6b665e;margin:6px 0 0;font-size:13px">' + esc(docsNote) + '</p>') +
       sumSec('מסקנות',
         flags.length
           ? '<ul style="margin:6px 0 0;padding-inline-start:20px">' + flags.map(f => '<li>' + esc(f) + '</li>').join('') + '</ul>'
@@ -1475,7 +1494,7 @@ if(sessionStorage.getItem("loan_bio_ok")==="1"){
   const origShow = window.showPage;
   window.showPage = function(id){
     if (typeof origShow === 'function') origShow(id);
-    if (id === 'potentialPage') loadPotential();
+    if (id === 'potentialPage' || id === 'customersTablePage') loadPotential();
     if (id === 'dashboard') loadWaiting();
   };
   loadWaiting();
