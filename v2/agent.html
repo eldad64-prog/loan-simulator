@@ -45,7 +45,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><a class="btn light" href="./index.html">→ חזרה לכניסה</a></div>
+  <div class="top"><a id="topLink" class="btn light" href="./index.html">→ חזרה לכניסה</a></div>
 
   <div id="noAgent" class="card hidden">
     <div class="card-head"><div><h2 class="card-title">תיקי סוכנים</h2><div class="card-sub" id="pickHint">בחר סוכן כדי לפתוח את התיק שלו.</div></div></div>
@@ -107,6 +107,9 @@ function remainingBudget(ag){return (Number(ag.budget)||0)-usedBudget(ag)}
 function render(){
   if(!a){$("noAgent").classList.remove("hidden");return}
   $("app").classList.remove("hidden");
+  // כפתור חזרה לרשימת הסוכנים, כמו במסך המנהל
+  $("topLink").textContent="→ חזרה לרשימת הסוכנים";
+  $("topLink").href="./agent.html";
   $("agentClientsTitle").textContent="לקוחות של "+a.name;
   $("agentClientsSub").textContent=a.clients.length+" לווים";
   // מה שהסוכנת רואה: היתרות וחלקה בלבד. עמלת המנהל וחלקו לא מוצגים.
