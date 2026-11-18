@@ -81,7 +81,7 @@ function normalizeDb(x){
         return {id:rid,amount:Math.max(0,Number(r.amount)||0),date:r.date||"",note:r.note||""};
       }):[];
       return {id:clientId,name:c.name||"לקוח",amount:Math.max(0,Number(c.amount)||0),months:Math.max(1,Number(c.months)||1),
-        status:c.status||"פעיל",feeType:c.feeType||"agent",
+        status:c.status||"פעיל",feeType:c.feeType||"agent",fixedFee:Number(c.fixedFee)||0,termDays:Number(c.termDays)||90,
         feeRate:(c.feeRate===null||c.feeRate===undefined||c.feeRate==="")?null:Math.max(0,Number(c.feeRate)||0),repayments:reps};
     }):[];
     return {id:agentId,name:a.name||("סוכן "+(ai+1)),monthlyFee:Math.max(0,Number(a.monthlyFee??a.fee)||0),
@@ -100,7 +100,7 @@ const a=db?db.agents.find(x=>String(x.id)===String(agentId)):null;
 function getClientBalance(c){return Math.max(0,c.amount-c.repayments.reduce((x,r)=>x+r.amount,0))}
 function getClientFeeRate(c,ag){return c.feeRate===null||c.feeRate===undefined?ag.monthlyFee:Number(c.feeRate)||0}
 function getClientFeeType(c){return c.feeType&&c.feeType!=="agent"?c.feeType:"monthly"}
-function getClientMonthlyGross(c,ag){const b=getClientBalance(c),r=getClientFeeRate(c,ag);return getClientFeeType(c)==="daily"?b*(r/100)*30.44:b*(r/100)}
+function getClientMonthlyGross(c,ag){const b=getClientBalance(c),r=getClientFeeRate(c,ag);if(getClientFeeType(c)==="fixed")return b>0?(Number(c.fixedFee)||0)/Math.max(1,Number(c.termDays)||90)*30.44:0;return getClientFeeType(c)==="daily"?b*(r/100)*30.44:b*(r/100)}
 function usedBudget(ag){return ag.clients.reduce((s,c)=>s+(Number(c.amount)||0),0)}
 function remainingBudget(ag){return (Number(ag.budget)||0)-usedBudget(ag)}
 

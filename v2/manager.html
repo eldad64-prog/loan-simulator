@@ -578,7 +578,7 @@ function normalizeDb(x){
         return {id:rid,amount:Math.max(0,Number(r.amount)||0),date:r.date||new Date().toISOString().slice(0,10),note:r.note||""};
       }):[];
       return {id:clientId,name:c.name||"לקוח",amount:Math.max(0,Number(c.amount)||0),months:Math.max(1,Number(c.months)||1),
-        status:c.status||"פעיל",feeType:c.feeType||"agent",
+        status:c.status||"פעיל",feeType:c.feeType||"agent",fixedFee:Number(c.fixedFee)||0,termDays:Number(c.termDays)||90,
         feeRate:(c.feeRate===null||c.feeRate===undefined||c.feeRate==="")?null:Math.max(0,Number(c.feeRate)||0),repayments:reps};
     }):[];
     return {id:agentId,name:a.name||("סוכן "+(ai+1)),monthlyFee:Math.max(0,Number(a.monthlyFee??a.fee)||0),
@@ -600,8 +600,8 @@ const currentClient=()=>agent()?.clients.find(c=>c.id===selectedClient);
 function getClientBalance(c){return Math.max(0,c.amount-c.repayments.reduce((x,r)=>x+r.amount,0))}
 function getClientFeeRate(c,a){return c.feeRate===null||c.feeRate===undefined?a.monthlyFee:Number(c.feeRate)||0}
 function getClientFeeType(c){return c.feeType&&c.feeType!=="agent"?c.feeType:"monthly"}
-function getClientMonthlyGross(c,a){const b=getClientBalance(c),r=getClientFeeRate(c,a);return getClientFeeType(c)==="daily"?b*(r/100)*30.44:b*(r/100)}
-function getClientAnnualGross(c,a){const b=getClientBalance(c),r=getClientFeeRate(c,a);return getClientFeeType(c)==="daily"?b*(r/100)*365:b*(r/100)*12}
+function getClientMonthlyGross(c,a){const b=getClientBalance(c),r=getClientFeeRate(c,a);if(getClientFeeType(c)==="fixed")return b>0?(Number(c.fixedFee)||0)/Math.max(1,Number(c.termDays)||90)*30.44:0;return getClientFeeType(c)==="daily"?b*(r/100)*30.44:b*(r/100)}
+function getClientAnnualGross(c,a){const b=getClientBalance(c),r=getClientFeeRate(c,a);if(getClientFeeType(c)==="fixed")return b>0?(Number(c.fixedFee)||0)/Math.max(1,Number(c.termDays)||90)*365:0;return getClientFeeType(c)==="daily"?b*(r/100)*365:b*(r/100)*12}
 
 function openModal(title,body){
   $("modal").innerHTML='<div class="modal-head"><h2>'+title+'</h2><button class="close" onclick="closeModal()">×</button></div>'+body;
@@ -663,7 +663,7 @@ function renderClients(){
   if(!rows.length){$("clientList").innerHTML='<div class="empty">אין לקוחות להצגה</div>';return}
   $("clientList").innerHTML=rows.map(c=>{
     const paid=c.repayments.reduce((s,r)=>s+r.amount,0),balance=getClientBalance(c),m=getClientMonthlyGross(c,a),rate=getClientFeeRate(c,a);
-    const type=getClientFeeType(c),typeText=type==="daily"?"יומית":"חודשית";
+    const type=getClientFeeType(c),typeText=type==="daily"?"יומית":(type==="fixed"?"ריבית קבועה":"חודשית");
     const status=balance===0?"closed":(c.status==="בעייתי"?"problem":"active"),statusText=balance===0?"סגור":(c.status==="בעייתי"?"בעייתי":"פעיל");
     return '<article class="client-card"><div class="client-top"><div><div class="client-name">'+esc(c.name)+'</div><div class="client-meta">הלוואה מקורית: '+money(c.amount)+' · '+c.months+' חודשים</div></div><span class="status '+status+'">'+statusText+'</span></div>'+
       '<div class="client-numbers"><div class="number-box"><span>יתרה</span><b>'+money(balance)+'</b></div><div class="number-box"><span>סה״כ הוחזר</span><b>'+money(paid)+'</b></div><div class="number-box"><span>עמלה חודשית</span><b>'+money(m)+'</b></div><div class="number-box"><span>שיעור עמלה</span><b>'+rate+'% '+typeText+'</b></div></div>'+
@@ -910,12 +910,12 @@ function openClient(id){
 }
 function editClient(id){
   const c=agent().clients.find(x=>x.id===id);if(!c)return;
-  openModal("עריכת לקוח והלוואה",'<div class="field"><label>שם הלקוח</label><input id="eName" value="'+esc(c.name)+'"></div><div class="field"><label>סכום ההלוואה (฿)</label><input id="eAmount" type="number" min="0" value="'+c.amount+'"></div><div class="field"><label>תקופה (חודשים)</label><input id="eMonths" type="number" min="1" value="'+c.months+'"></div><div class="field"><label>סוג עמלה</label><select id="eFeeType"><option value="agent" '+(c.feeType==="agent"||c.feeType==null?"selected":"")+'>לפי עמלת הסוכן</option><option value="monthly" '+(c.feeType==="monthly"?"selected":"")+'>חודשית</option><option value="daily" '+(c.feeType==="daily"?"selected":"")+'>יומית</option></select></div><div class="field"><label>אחוז עמלה</label><input id="eFeeRate" type="number" min="0" step="0.1" value="'+(c.feeRate??"")+'" placeholder="ריק = לפי עמלת הסוכן"></div><div class="field"><label>סטטוס</label><select id="eStatus"><option value="פעיל" '+(c.status==="פעיל"?"selected":"")+'>פעיל</option><option value="הסתיים" '+(c.status==="הסתיים"?"selected":"")+'>הסתיים</option><option value="בעייתי" '+(c.status==="בעייתי"?"selected":"")+'>בעייתי</option></select></div><div class="btn-row"><button class="btn primary" onclick="saveClientEdit('+id+')">✓ שמור</button><button class="btn light" onclick="closeModal()">ביטול</button></div>');
+  openModal("עריכת לקוח והלוואה",'<div class="field"><label>שם הלקוח</label><input id="eName" value="'+esc(c.name)+'"></div><div class="field"><label>סכום ההלוואה (฿)</label><input id="eAmount" type="number" min="0" value="'+c.amount+'"></div><div class="field"><label>תקופה (חודשים)</label><input id="eMonths" type="number" min="1" value="'+c.months+'"></div><div class="field"><label>סוג עמלה</label><select id="eFeeType"><option value="agent" '+(c.feeType==="agent"||c.feeType==null?"selected":"")+'>לפי עמלת הסוכן</option><option value="monthly" '+(c.feeType==="monthly"?"selected":"")+'>חודשית</option><option value="daily" '+(c.feeType==="daily"?"selected":"")+'>יומית</option><option value="fixed" '+(c.feeType==="fixed"?"selected":"")+'>ריבית קבועה לתקופה</option></select></div><div class="field"><label>סך עמלה קבועה (฿), לשימוש בריבית קבועה</label><input id="eFixedFee" type="number" min="0" value="'+(c.fixedFee||"")+'"></div><div class="field"><label>תקופה בימים (לריבית קבועה)</label><input id="eTermDays" type="number" min="1" value="'+(c.termDays||90)+'"></div><div class="field"><label>אחוז עמלה</label><input id="eFeeRate" type="number" min="0" step="0.1" value="'+(c.feeRate??"")+'" placeholder="ריק = לפי עמלת הסוכן"></div><div class="field"><label>סטטוס</label><select id="eStatus"><option value="פעיל" '+(c.status==="פעיל"?"selected":"")+'>פעיל</option><option value="הסתיים" '+(c.status==="הסתיים"?"selected":"")+'>הסתיים</option><option value="בעייתי" '+(c.status==="בעייתי"?"selected":"")+'>בעייתי</option></select></div><div class="btn-row"><button class="btn primary" onclick="saveClientEdit('+id+')">✓ שמור</button><button class="btn light" onclick="closeModal()">ביטול</button></div>');
 }
 function saveClientEdit(id){
   const c=agent().clients.find(x=>x.id===id);if(!c)return;
   c.name=$("eName").value.trim()||"לקוח";c.amount=Math.max(0,Number($("eAmount").value)||0);c.months=Math.max(1,Number($("eMonths").value)||1);
-  c.feeType=$("eFeeType").value;c.feeRate=$("eFeeRate").value===""?null:Math.max(0,Number($("eFeeRate").value)||0);c.status=$("eStatus").value;
+  c.feeType=$("eFeeType").value;c.fixedFee=Math.max(0,Number($("eFixedFee").value)||0);c.termDays=Math.max(1,Number($("eTermDays").value)||90);c.feeRate=$("eFeeRate").value===""?null:Math.max(0,Number($("eFeeRate").value)||0);c.status=$("eStatus").value;
   if(getClientBalance(c)===0)c.status="הסתיים";save();closeModal();render();
 }
 function addRepayment(id){
