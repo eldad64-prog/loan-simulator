@@ -164,6 +164,53 @@ h1,h2,.num,.big,.disp{font-family:var(--display);font-weight:400}
 .finger svg{width:58px;height:58px}
 .lock .help{margin-top:22px;color:var(--on-dark);opacity:.85;text-decoration:underline;font-size:14px;padding:6px}
 
+/* leads */
+.lead{display:flex;align-items:center;gap:12px;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:8px}
+.score{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-size:18px;flex:none;color:var(--on-dark)}
+.score.g{background:var(--jade)} .score.y{background:var(--gold);color:var(--ink)} .score.r{background:var(--red)} .score.n{background:var(--line);color:var(--muted);font-size:13px}
+.lead .t{flex:1;min-width:0}
+.lead .t b{display:block}
+.lead .t span{font-size:13px;color:var(--muted)}
+.lead .r{text-align:left}
+.lead .r b{display:block;font-size:16px;font-variant-numeric:tabular-nums}
+.prog{height:6px;background:var(--bg);border-radius:99px;margin-top:6px;overflow:hidden}
+.prog b{display:block;height:100%;background:var(--gold)}
+.hero{display:grid;grid-template-columns:110px 1fr;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px;margin-bottom:12px}
+.ring{width:110px;height:110px;max-width:100%}
+.hero .lv{font-family:var(--display);font-size:20px}
+.hero p{font-size:14px;color:var(--muted);line-height:1.45;margin-top:4px}
+.bars{display:grid;gap:10px}
+.bar .h{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
+.bar .h span{color:var(--muted)}
+.bar .tr{height:10px;background:var(--bg);border-radius:99px;overflow:hidden}
+.bar .tr b{display:block;height:100%;border-radius:99px}
+.gate{display:flex;gap:10px;align-items:flex-start;border-radius:14px;padding:12px;margin-bottom:12px;font-size:15px;line-height:1.45}
+.gate.r{background:var(--red-soft);color:var(--red)} .gate.g{background:var(--jade-soft);color:var(--jade)}
+.why{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px;line-height:1.45}
+.why:last-child{border:0}
+.why .pt{direction:ltr;unicode-bidi:isolate;font-family:var(--display);font-size:15px;min-width:40px;text-align:center;border-radius:8px;padding:1px 0;height:fit-content}
+.pt.m{background:var(--red-soft);color:var(--red)} .pt.p{background:var(--jade-soft);color:var(--jade)} .pt.z{background:var(--bg);color:var(--muted)}
+.why span{color:var(--muted);display:block}
+.cmp{width:100%;border-collapse:collapse;font-size:14px}
+.cmp th{color:var(--muted);font-weight:600;font-size:12px;text-align:right;padding:6px 3px;border-bottom:1px solid var(--line)}
+.cmp td{padding:8px 3px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;vertical-align:top}
+.cmp tr:last-child td{border:0}
+.cmp td.gap{color:var(--red);font-weight:700}
+details.qa{border-bottom:1px solid var(--line)}
+details.qa:last-child{border:0}
+details.qa summary{padding:11px 0;font-weight:700;cursor:pointer;list-style:none;display:flex;justify-content:space-between}
+details.qa summary::-webkit-details-marker{display:none}
+details.qa summary::after{content:"+";color:var(--muted)}
+details.qa[open] summary::after{content:"−"}
+.qa .in{padding:0 0 12px;display:grid;gap:6px;font-size:14px}
+.qa .in span{color:var(--muted)}
+.docrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.docrow:last-child{border:0}
+.chk{display:flex;flex-wrap:wrap;gap:8px}
+.chk label{display:flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:99px;padding:6px 12px;font-size:14px;font-weight:600}
+.chk label.base{background:var(--jade-soft);border-color:var(--jade-soft);color:var(--jade)}
+.chk input{width:auto}
+.msgbox{background:var(--bg);border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.5;margin-bottom:10px;word-break:break-word;direction:ltr;text-align:left}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--on-dark);padding:10px 16px;border-radius:12px;font-weight:700;z-index:60;font-size:15px;max-width:90vw;text-align:center}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .2s ease-out}@keyframes up{from{transform:translateY(30px);opacity:.6}}}
 </style>
@@ -176,6 +223,7 @@ h1,h2,.num,.big,.disp{font-family:var(--display);font-weight:400}
 
 <nav class="tabs" id="tabs">
   <button data-t="home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>תיקים</button>
+  <button data-t="leads" onclick="go('leads')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4h6l1 2h3v15H5V6h3z"/><path d="M9 12l2 2 4-4"/></svg>לקוחות</button>
   <button class="fab" onclick="openLoanSheet()" aria-label="הלוואה חדשה"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
   <button data-t="more" onclick="go('more')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>עוד</button>
 </nav>
@@ -247,13 +295,15 @@ function statusTag(t){
 /* ================= router ================= */
 var route={v:'home',id:null};
 function go(v,id){route={v:v,id:id||null};var h='#'+v+(id?'-'+id:'');if(location.hash!==h){try{history.pushState(null,'',h)}catch(e){location.hash=h}}render();window.scrollTo(0,0)}
-function readHash(){var h=(location.hash||'').slice(1);if(h.indexOf('p-')===0)route={v:'p',id:h.slice(2)};else if(h==='more')route={v:'more',id:null};else route={v:'home',id:null}}
+function readHash(){var h=(location.hash||'').slice(1);if(h.indexOf('p-')===0)route={v:'p',id:h.slice(2)};else if(h.indexOf('lead-')===0)route={v:'lead',id:h.slice(5)};else if(h==='more'||h==='leads')route={v:h,id:null};else route={v:'home',id:null}}
 window.addEventListener('popstate',function(){readHash();render()});
 
 function render(){
   NOW=mk();
-  document.querySelectorAll('.tabs [data-t]').forEach(function(b){b.classList.toggle('on',b.dataset.t===route.v||(route.v==='p'&&b.dataset.t==='home'))});
+  document.querySelectorAll('.tabs [data-t]').forEach(function(b){b.classList.toggle('on',b.dataset.t===route.v||(route.v==='p'&&b.dataset.t==='home')||(route.v==='lead'&&b.dataset.t==='leads'))});
   if(route.v==='p'&&person(route.id))return renderPerson(route.id);
+  if(route.v==='leads')return renderLeads();
+  if(route.v==='lead')return renderLead(route.id);
   if(route.v==='more')return renderMore();
   renderHome();
 }
@@ -557,6 +607,212 @@ async function cloudPush(){
   if(r.error){cloud.state='err';cloud.msg='שמירה בענן נכשלה: '+r.error.message}else{cloud.state='ok';cloud.msg='';cloud.last=new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}
   if(route.v!=='p'||$('sheet').hidden)render();
 }
+
+/* ================= potential clients (cloud only, manager account) ================= */
+var LD={inv:[],apps:[],loaded:false,err:''};
+var APPLY_URL='https://eldad64-prog.github.io/loan-simulator/yedidim/apply/?c=';
+var DOCS_EXTRA=[['payslip3','תלושים 3 חודשים'],['lease','חוזה שכירות'],['g_id','תעודת זהות של הערב'],['g_payslip','תלוש של הערב'],['car','רישום רכב'],['bill','חשבון חשמל']];
+var DOC_HE={id:'תעודת זהות',bank:'דפי בנק 6 חודשים',payslip:'תלוש אחרון',biz:'רישום עסק',payslip3:'תלושים 3 חודשים',lease:'חוזה שכירות',g_id:'תעודת זהות של הערב',g_payslip:'תלוש של הערב',car:'רישום רכב',bill:'חשבון חשמל'};
+function docHe(k){return k.indexOf('other:')===0?k.slice(6):(DOC_HE[k]||k)}
+var HE={purpose:{biz:'עסק',car:'רכב',debt:'חוב אחר',family:'משפחה',other:'אחר'},source:{salary:'משכורת',self:'עסק שלו',other:'אחר'},
+  scen1:{save:'יש חיסכון',cut:'יצמצם הוצאות',ask:'יבקש ממישהו',unsure:'לא בטוח'},scen2:{notify:'יודיע מראש',delay:'יבקש דחייה',wait:'יחכה שיעבור'},
+  guarantor:{biz:'בעל עסק',two:'שני עובדים עם תלוש',none:'אין'},yn:{yes:'כן',no:'לא',unk:'לא ידוע'}};
+function nz(v){var n=num(v);return isFinite(n)?n:null}
+function gapPct(a,b){if(a==null||b==null)return null;if(a===0&&b===0)return 0;var base=Math.max(Math.abs(a),Math.abs(b));return base?Math.abs(a-b)/base*100:0}
+
+async function leadsLoad(){
+  if(!cloud.user||!cloud.sb){LD.err='login';return}
+  var a=await cloud.sb.from('yd_invites').select('*').order('created_at',{ascending:false});
+  var b=await cloud.sb.from('yd_apps').select('*');
+  if(a.error||b.error){LD.err=(a.error||b.error).message;return}
+  LD.inv=a.data||[];LD.apps=b.data||[];LD.loaded=true;LD.err='';
+}
+function appOf(code){return LD.apps.find(function(x){return x.invite_code===code})}
+
+/* score: 40 reliability, 35 repayment, 25 stability; guarantor rule decides first */
+function scoreOf(inv,app){
+  var A=(app&&app.answers)||{},S=(app&&app.signals)||{},R=(app&&app.review)||{},K=inv.talk||{},why=[];
+  var rel=0,rep=0,sta=0,partial=false;
+  // talk vs questionnaire
+  var gaps=0,cmp=0;
+  [['income','הכנסה'],['debts','חובות בחודש'],['amount','סכום']].forEach(function(f){var a=nz(K[f[0]]),b=nz(A[f[0]]);if(a==null||b==null)return;cmp++;if(gapPct(a,b)>=10){gaps++;why.push(['m',0,f[1]+': בשיחה '+money(a)+', בשאלון '+money(b),'פער של '+Math.round(gapPct(a,b))+'%'])}});
+  if(nz(K.startYear)!=null&&nz(A.startYear)!=null){cmp++;if(nz(K.startYear)!==nz(A.startYear)){gaps++;why.push(['m',0,'שנת התחלה: בשיחה '+K.startYear+', בשאלון '+A.startYear,''])}}
+  if(K.privateLoan==='yes'||K.privateLoan==='no'){if(A.privateLoan){cmp++;if(K.privateLoan!==A.privateLoan){gaps++;why.push(['m',0,'הלוואה פרטית: בשיחה "'+HE.yn[K.privateLoan]+'", בשאלון "'+HE.yn[A.privateLoan]+'"',''])}}}
+  if(K.guarantor&&A.guarantor){cmp++;if(K.guarantor!==A.guarantor){gaps++;why.push(['m',0,'ערב: בשיחה "'+HE.guarantor[K.guarantor]+'", בשאלון "'+HE.guarantor[A.guarantor]+'"',''])}}
+  var p1=!cmp?0:(gaps===0?12:(gaps===1?6:0));rel+=p1;
+  if(!cmp){partial=true;why.push(['z',0,'אין סיכום שיחה להשוואה','השיחה מול השאלון לא נבדקה'])}else why.push([p1>=12?'p':'m',p1,'השיחה מול השאלון',gaps?gaps+(gaps===1?' פער':' פערים'):'הכול תואם']);
+  // questionnaire vs bank
+  var inc=nz(A.income),bank=nz(R.bankIncome);
+  if(bank==null){partial=true;why.push(['z',0,'השאלון מול הבנק','עוד לא הקלדת הכנסה מדפי הבנק'])}
+  else{var g=gapPct(inc,bank),p2=g<10?12:(g<=30?6:0);rel+=p2;why.push([p2>=12?'p':'m',p2,'הכנסה: בשאלון '+money(inc)+', בבנק '+money(bank),'פער של '+Math.round(g)+'%'])}
+  // control question
+  var wk=nz(A.weekly);
+  if(wk!=null&&inc!=null){var g3=gapPct(inc,wk*4.3),p3=g3<10?12:(g3<=30?6:0);rel+=p3;why.push([p3>=12?'p':'m',p3,'שאלת הביקורת','בחודש '+money(inc)+', בשבוע '+money(wk)+' שזה כ-'+money(wk*4.3)+' בחודש'])}
+  // salary day
+  var pd=nz(A.payDay),bpd=nz(R.bankPayDay);
+  if(bpd==null){partial=true;why.push(['z',0,'יום המשכורת מול הבנק','עוד לא הקלדת יום משכורת מהבנק'])}
+  else{var ok=pd!=null&&Math.abs(pd-bpd)<=2;rel+=ok?4:0;why.push([ok?'p':'m',ok?4:0,'יום משכורת: בשאלון '+(pd||'—')+', בבנק '+bpd,''])}
+  // quiet signals
+  if(S.seconds&&S.seconds<90){rel-=2;why.push(['m',-2,'מילא מהר מאוד',Math.round(S.seconds)+' שניות'])}
+  if((S.incomeChanges||0)>1){rel-=2;why.push(['m',-2,'שינה את תשובת ההכנסה '+S.incomeChanges+' פעמים',''])}
+  rel=Math.max(0,Math.min(40,rel));
+  // repayment
+  var amt=nz(A.amount),mo=nz(A.months)||12,rate=nz(R.rate);if(rate==null)rate=20;
+  var pay=amt!=null?amt*rate/100+amt/mo:null,debt=(nz(A.debts)||0)+(A.privateLoan==='yes'?(nz(A.privateAmt)||0):0),base=bank!=null?bank:inc;
+  if(pay!=null&&base){var ratio=(pay+debt)/base*100;rep=ratio<=30?35:ratio<=40?25:ratio<=50?15:ratio<=60?8:0;why.push([rep>=25?'p':'m',rep,'ההחזרים לוקחים '+Math.round(ratio)+'% מההכנסה',money(pay)+' בחודש להלוואה ('+rate+'% + קרן), ועוד '+money(debt)+' חובות, מתוך '+money(base)])}
+  if(A.privateLoan==='yes'){rep=Math.max(0,rep-5);why.push(['m',-5,'יש הלוואה פרטית או מקבוצה',''])}
+  // stability
+  var y=nz(A.startYear),yrs=y!=null?new Date().getFullYear()-y:null;
+  if(yrs!=null){var p6=yrs>=3?10:yrs>=1?7:2;sta+=p6;why.push([p6>=7?'p':'m',p6,'ותק: מ-'+y,yrs+' שנים'])}
+  var s1={save:6,cut:5,ask:2,unsure:0}[A.scen1],s2={notify:9,delay:6,wait:0}[A.scen2];
+  if(s1!=null){sta+=s1;why.push([s1>=5?'p':'m',s1,'הכנסה יורדת: '+(HE.scen1[A.scen1]||''),''])}
+  if(s2!=null){sta+=s2;why.push([s2>=6?'p':'m',s2,'חודש בלי לשלם: '+(HE.scen2[A.scen2]||''),''])}
+  // guarantor rule
+  var gate=A.guarantor==='biz'?!!(A.g1||'').trim():A.guarantor==='two'?!!((A.g1||'').trim()&&(A.g2||'').trim()):false;
+  var total=Math.round(rel+rep+sta),lv=!gate?'r':total>=80?'g':total>=60?'y':'r';
+  return {rel:rel,rep:rep,sta:sta,total:total,gate:gate,lv:lv,partial:partial,why:why,pay:pay};
+}
+function lvText(s){if(!s.gate)return 'לא לאשר בלי ערב';return s.lv==='g'?'סיכון נמוך':s.lv==='y'?'סיכון בינוני':'סיכון גבוה'}
+
+async function renderLeads(){
+  var h='<div class="top"><div><small>לקוחות חדשים</small><h1>מי ביקש הלוואה</h1></div>'+syncBadge()+'</div>';
+  if(!cloud.user){$('view').innerHTML=h+'<div class="card empty">כדי לראות לקוחות חדשים צריך להיות מחובר לענן.<br><br><button class="btn pri" onclick="go(\'more\')">לחיבור</button></div>';return}
+  $('view').innerHTML=h+'<div class="card empty">טוען…</div>';
+  await leadsLoad();
+  if(route.v!=='leads')return;
+  if(LD.err){$('view').innerHTML=h+'<div class="card empty">לא הצלחתי לטעון: '+esc(LD.err)+'</div>';return}
+  h+='<button class="btn pri full" style="margin-bottom:14px" onclick="openInvite()">שלח שאלון ללקוח חדש</button>';
+  var wait=[],prog=[],done=[];
+  LD.inv.forEach(function(inv){var app=appOf(inv.code);if(app&&app.decision)done.push([inv,app]);else if(app&&app.submitted_at)wait.push([inv,app]);else prog.push([inv,app])});
+  function row(inv,app){
+    var s=app&&app.submitted_at?scoreOf(inv,app):null,A=(app&&app.answers)||{};
+    var badge=s?'<div class="score '+s.lv+' num">'+s.total+'</div>':'<div class="score n">'+(app?(app.step||0)+'/6':'—')+'</div>';
+    var right=app&&app.decision?'<span class="tag '+(app.decision==='approved'?'ok':app.decision==='rejected'?'late':'due')+'">'+({approved:'אושר בתנאי ערבות',rejected:'נדחה',more:'ביקשת עוד'}[app.decision]||'')+'</span>'
+      :s?'<span class="tag '+(s.lv==='g'?'ok':s.lv==='y'?'due':'late')+'">'+lvText(s)+'</span>':'<span class="tag n">'+(app?'ממלא שאלון':'עוד לא התחיל')+'</span>';
+    var amt=nz(A.amount)||nz((inv.talk||{}).amount);
+    return '<button class="lead" onclick="go(\'lead\',\''+inv.code+'\')">'+badge+'<div class="t"><b>'+esc(inv.client_name||'ללא שם')+'</b><span>'+(inv.agent?esc(inv.agent)+' הביא, ':'')+new Date(inv.created_at).toLocaleDateString('he-IL')+'</span>'+(app&&!app.submitted_at?'<div class="prog"><b style="width:'+Math.round((app.step||0)/6*100)+'%"></b></div>':'')+'</div><div class="r">'+(amt?'<b>'+money(amt)+'</b>':'')+right+'</div></button>';
+  }
+  if(!LD.inv.length)h+='<div class="card empty">עוד לא נשלחו שאלונים. אחרי השיחה עם לקוח, לחץ "שלח שאלון ללקוח חדש".</div>';
+  if(wait.length)h+='<div class="sec">מחכים להחלטה שלך</div>'+wait.map(function(x){return row(x[0],x[1])}).join('');
+  if(prog.length)h+='<div class="sec">בתהליך</div>'+prog.map(function(x){return row(x[0],x[1])}).join('');
+  if(done.length)h+='<div class="sec">הוחלט</div>'+done.map(function(x){return row(x[0],x[1])}).join('');
+  $('view').innerHTML=h;
+}
+
+/* invite: talk summary + required documents */
+function openInvite(code){
+  var inv=code?LD.inv.find(function(x){return x.code===code}):null,K=(inv&&inv.talk)||{},docs=(inv&&inv.docs)||[];
+  var other=docs.filter(function(d){return d.indexOf('other:')===0}).map(function(d){return d.slice(6)}).join(', ');
+  function f(k,l,mode){return '<div class="fl"><label for="k_'+k+'">'+l+'</label><input id="k_'+k+'" inputmode="'+(mode||'text')+'" value="'+esc(K[k]==null?'':K[k])+'"></div>'}
+  function sel(k,l,map){return '<div class="fl"><label for="k_'+k+'">'+l+'</label><select id="k_'+k+'"><option value="">לא עלה בשיחה</option>'+Object.keys(map).map(function(v){return '<option value="'+v+'"'+(K[k]===v?' selected':'')+'>'+map[v]+'</option>'}).join('')+'</select></div>'}
+  var agents=D.people.map(function(p){return '<option value="'+esc(p.name)+'">'}).join('');
+  var h='<h2>'+(inv?'עריכת סיכום שיחה':'שאלון ללקוח חדש')+'</h2><div class="sub">ממלאים רק מה שעלה בשיחה. הלקוח לא רואה את הסיכום.</div><div class="err" id="fErr"></div>'+
+    '<div class="two"><div class="fl"><label for="k_name">שם הלקוח</label><input id="k_name" value="'+esc(inv?inv.client_name:'')+'"></div><div class="fl"><label for="k_agent">מי הביא</label><input id="k_agent" list="agList" value="'+esc(inv?inv.agent:'')+'"><datalist id="agList">'+agents+'</datalist></div></div>'+
+    '<div class="sec" style="font-size:16px">מה סיפר בשיחה</div>'+
+    '<div class="two">'+f('amount','סכום שביקש','numeric')+f('months','לכמה חודשים','numeric')+'</div>'+
+    sel('purpose','למה',HE.purpose)+
+    '<div class="two">'+f('employer','איפה עובד')+f('startYear','מאיזו שנה','numeric')+'</div>'+
+    '<div class="two">'+f('income','הכנסה בחודש','numeric')+f('payDay','יום משכורת','numeric')+'</div>'+
+    '<div class="two">'+f('debts','חובות בחודש','numeric')+sel('privateLoan','הלוואה פרטית',{yes:'כן',no:'לא'})+'</div>'+
+    sel('guarantor','ערב',HE.guarantor)+
+    '<div class="two">'+f('home','מגורים')+f('dependents','כמה מפרנס','numeric')+'</div>'+
+    f('feel','התחושה שלך (לא נכנס לציון)')+
+    '<div class="sec" style="font-size:16px">מסמכים שהלקוח חייב לצרף</div><div class="chk" style="margin-bottom:8px"><label class="base">✓ תעודת זהות</label><label class="base">✓ דפי בנק 6 חודשים</label><label class="base">✓ תלוש או רישום עסק</label></div>'+
+    '<div class="chk" id="docChk" style="margin-bottom:10px">'+DOCS_EXTRA.map(function(d){return '<label><input type="checkbox" value="'+d[0]+'"'+(docs.indexOf(d[0])>=0?' checked':'')+'>'+d[1]+'</label>'}).join('')+'</div>'+
+    '<div class="fl"><label for="k_other">מסמך אחר (באנגלית או בתאית, כדי שהלקוח יבין)</label><input id="k_other" value="'+esc(other)+'" placeholder="למשל: Work contract"></div>'+
+    '<button class="btn pri full" onclick="saveInvite('+(inv?'\''+inv.code+'\'':'null')+')">'+(inv?'שמור':'צור שאלון וקבל הודעה לשליחה')+'</button>';
+  openSheet(h);
+}
+function randCode(){var a='abcdefghjkmnpqrstuvwxyz23456789',s='',r=crypto.getRandomValues(new Uint8Array(10));for(var i=0;i<10;i++)s+=a[r[i]%a.length];return s}
+async function saveInvite(code){
+  var name=$('k_name').value.trim();if(!name){$('fErr').textContent='חסר שם הלקוח.';return}
+  var K={};['amount','months','employer','startYear','income','payDay','debts','home','dependents','feel'].forEach(function(k){var v=$('k_'+k).value.trim();if(v)K[k]=v});
+  ['purpose','privateLoan','guarantor'].forEach(function(k){var v=$('k_'+k).value;if(v)K[k]=v});
+  var docs=[].slice.call(document.querySelectorAll('#docChk input:checked')).map(function(i){return i.value});
+  $('k_other').value.split(',').map(function(s){return s.trim()}).filter(Boolean).forEach(function(s){docs.push('other:'+s.slice(0,60))});
+  var row={agent:$('k_agent').value.trim()||null,client_name:name,talk:K,docs:docs};
+  var r=code?await cloud.sb.from('yd_invites').update(row).eq('code',code):await cloud.sb.from('yd_invites').insert(Object.assign({code:randCode()},row)).select('*').single();
+  if(r.error){$('fErr').textContent='השמירה נכשלה: '+r.error.message;return}
+  if(code){closeSheet();toast('נשמר');render();return}
+  showInviteMsg(r.data);
+}
+function inviteText(inv){return 'สวัสดีค่ะ คุณ'+(inv.client_name||'')+'\nกรุณากรอกคำขอสินเชื่อที่ลิงก์นี้ ใช้เวลาประมาณ 4 นาที และเตรียมถ่ายรูปเอกสารไว้ด้วย:\n'+APPLY_URL+inv.code}
+function showInviteMsg(inv){
+  var txt=inviteText(inv);
+  $('sheet').innerHTML='<div class="grab"></div><h2>השאלון מוכן</h2><div class="sub">שלח ללקוח את ההודעה הזאת (בתאית, עם הקישור האישי שלו). הקישור עובד רק ללקוח אחד.</div>'+
+    '<div class="msgbox" id="msgTxt">'+esc(txt).replace(/\n/g,'<br>')+'</div>'+
+    '<div class="acts"><button class="btn pri" onclick="copyInvite()">העתק הודעה</button><a class="btn sec2" style="text-decoration:none;color:var(--ink)" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(txt)+'">פתח בוואטסאפ</a></div>'+
+    '<button class="btn sec2 full" style="margin-top:8px" onclick="closeSheet();render()">סגור</button>';
+  window._inviteTxt=txt;
+}
+function copyInvite(){var t=window._inviteTxt||'';function ok(){toast('ההודעה הועתקה')}
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok,fallback);else fallback();
+  function fallback(){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');ok()}catch(e){}ta.remove()}}
+
+/* lead detail */
+async function renderLead(code){
+  if(!cloud.user){go('leads');return}
+  if(!LD.loaded){$('view').innerHTML='<div class="card empty">טוען…</div>';await leadsLoad()}
+  var inv=LD.inv.find(function(x){return x.code===code});if(!inv){go('leads');return}
+  var app=appOf(code),A=(app&&app.answers)||{},K=inv.talk||{},R=(app&&app.review)||{};
+  var h='<button class="back" onclick="go(\'leads\')">→ לקוחות חדשים</button><div class="top"><div><small>'+(inv.agent?esc(inv.agent)+' הביא. ':'')+(A.amount?'מבקש '+money(A.amount)+(A.months?' ל-'+A.months+' חודשים':''):'')+(A.purpose?', '+HE.purpose[A.purpose]:'')+'</small><h1>'+esc(inv.client_name||'ללא שם')+'</h1></div></div>';
+  if(!app||!app.submitted_at){
+    h+='<div class="card empty">'+(app?'הלקוח באמצע השאלון: שלב '+(app.step||0)+' מתוך 6.':'הלקוח עוד לא פתח את הקישור.')+'</div>'+
+       '<div class="acts"><button class="btn pri" onclick="showInviteMsg(LD.inv.find(function(x){return x.code===\''+code+'\'}));$(\'sheet\').hidden=false;$(\'veil\').hidden=false">שלח שוב את ההודעה</button><button class="btn sec2" onclick="openInvite(\''+code+'\')">עריכת סיכום שיחה</button></div>'+
+       '<button class="more-link" onclick="delInvite(\''+code+'\')">מחיקת השאלון ‹</button>';
+    $('view').innerHTML=h;return;
+  }
+  var s=scoreOf(inv,app),col=s.lv==='g'?'var(--jade)':s.lv==='y'?'var(--gold)':'var(--red)';
+  h+='<div class="hero"><svg class="ring" viewBox="0 0 42 42" role="img" aria-label="ציון '+s.total+'"><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--bg)" stroke-width="5"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="'+col+'" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+s.total+' '+(100-s.total)+'" stroke-dashoffset="25" transform="scale(-1,1) translate(-42,0)"/><text x="21" y="24.5" text-anchor="middle" font-size="10" font-family="Secular One, Arial" fill="var(--ink)">'+s.total+'</text></svg>'+
+     '<div><div class="lv" style="color:'+col+'">'+lvText(s)+'</div><p>'+(s.partial?'הציון חלקי: חסרים נתונים מהבנק או מהשיחה. הקלד אותם למטה והציון יתעדכן.':'כל הבדיקות בוצעו.')+'</p></div></div>';
+  h+='<div class="card bars">'+[['מהימנות',s.rel,40],['יכולת החזר',s.rep,35],['יציבות',s.sta,25]].map(function(b){var p=b[1]/b[2];return '<div class="bar"><div class="h"><b>'+b[0]+'</b><span class="num">'+Math.round(b[1])+' מתוך '+b[2]+'</span></div><div class="tr"><b style="width:'+Math.round(p*100)+'%;background:'+(p>=.7?'var(--jade)':p>=.45?'var(--gold)':'var(--red)')+'"></b></div></div>'}).join('')+'</div>';
+  h+=s.gate?'<div class="gate g"><b>✓</b><div>ערב: '+HE.guarantor[A.guarantor]+'. '+esc(A.g1||'')+(A.g2?', '+esc(A.g2):'')+'</div></div>'
+           :'<div class="gate r"><b>⚠</b><div><b>חסרה ערבות.</b> צריך ערב אחד בעל עסק, או שני ערבים עם תלוש ו-6 חודשי ותק. בלי זה לא מאשרים.</div></div>';
+  // bank check inputs
+  h+='<div class="sec">בדיקה שלך מול דפי הבנק</div><div class="card"><div class="two"><div class="fl"><label for="r_bank">הכנסה ממוצעת בבנק</label><input id="r_bank" inputmode="numeric" value="'+esc(R.bankIncome||'')+'"></div><div class="fl"><label for="r_pd">יום משכורת בבנק</label><input id="r_pd" inputmode="numeric" value="'+esc(R.bankPayDay||'')+'"></div></div>'+
+     '<div class="two"><div class="fl"><label for="r_rate">אחוז לחודש לחישוב ההחזר</label><input id="r_rate" inputmode="decimal" value="'+esc(R.rate==null?20:R.rate)+'"></div><div class="fl"><label for="r_note">הערה שלך</label><input id="r_note" value="'+esc(R.note||'')+'"></div></div>'+
+     '<button class="btn dark full" onclick="saveReview(\''+app.id+'\',\''+code+'\')">עדכן ציון</button></div>';
+  // why
+  h+='<div class="sec">למה הציון הזה</div><div class="card">'+s.why.map(function(w){var sign=w[1]>0?'+'+w[1]:String(w[1]);return '<div class="why"><b class="pt '+w[0]+' num">'+(w[0]==='z'?'?':sign)+'</b><div>'+esc(w[2])+(w[3]?'<span>'+esc(w[3])+'</span>':'')+'</div></div>'}).join('')+'</div>';
+  // three sources
+  function cell(v){return v==null||v===''?'—':esc(v)}
+  function row3(l,k,isNum,map){var a=K[k],b=A[k],c=k==='income'?R.bankIncome:k==='payDay'?R.bankPayDay:null;
+    var fa=map&&a?map[a]:isNum&&nz(a)!=null?money(a):a,fb=map&&b?map[b]:isNum&&nz(b)!=null?money(b):b,fc=isNum&&nz(c)!=null&&k!=='payDay'?money(c):c;
+    var gab=isNum?gapPct(nz(a),nz(b)):(a&&b&&a!==b?100:0),gbc=isNum?gapPct(nz(b),nz(c)):0;
+    return '<tr><td>'+l+'</td><td'+(gab>=10?' class="gap"':'')+'>'+cell(fa)+'</td><td>'+cell(fb)+'</td><td'+(gbc>=10?' class="gap"':'')+'>'+cell(fc)+'</td></tr>'}
+  h+='<div class="sec">שיחה, שאלון, מסמכים</div><div class="card"><table class="cmp"><thead><tr><th>נתון</th><th>שיחה</th><th>שאלון</th><th>בנק</th></tr></thead><tbody>'+
+     row3('סכום','amount',true)+row3('הכנסה','income',true)+row3('חובות','debts',true)+row3('מאיזו שנה','startYear',false)+row3('יום משכורת','payDay',false)+row3('הלוואה פרטית','privateLoan',false,HE.yn)+row3('ערב','guarantor',false,HE.guarantor)+
+     '</tbody></table>'+(K.feel?'<p class="ex" style="text-align:right">התחושה שלך: '+esc(K.feel)+'</p>':'')+'</div>';
+  // docs
+  var F=app.files||{},req=['id','bank',A.source==='self'?'biz':'payslip'].concat((inv.docs||[]).filter(function(d){return ['id','bank','payslip','biz'].indexOf(d)<0}));
+  h+='<div class="sec">מסמכים</div><div class="card">'+req.map(function(k){var fs=F[k]||[];return '<div class="docrow"><span>'+esc(docHe(k))+'</span>'+(fs.length?fs.map(function(p,i){return '<button class="btn sec2" style="width:auto;padding:6px 12px" onclick="openDoc(\''+p.replace(/'/g,'')+'\')">פתח'+(fs.length>1?' '+(i+1):'')+'</button>'}).join(' '):'<span class="tag late">חסר</span>')+'</div>'}).join('')+'</div>';
+  // signals + answers
+  var S=app.signals||{};
+  h+='<div class="sec">סימנים שקטים</div><div class="card" style="font-size:14px;line-height:1.6">מילא ב-'+(S.seconds?(S.seconds<90?S.seconds+' שניות':Math.round(S.seconds/60)+' דקות'):'—')+'. שינה את תשובת ההכנסה '+(S.incomeChanges||0)+' פעמים. נשלח ב-'+new Date(app.submitted_at).toLocaleString('he-IL')+'.</div>';
+  function qa(l,v){return '<div><span>'+l+'</span><br>'+cell(v)+'</div>'}
+  h+='<div class="sec">תשובות השאלון</div><div class="card" style="padding-block:2px">'+
+    '<details class="qa"><summary>1. הבקשה</summary><div class="in">'+qa('סכום',A.amount&&money(A.amount))+qa('חודשים',A.months)+qa('למה',HE.purpose[A.purpose])+'</div></details>'+
+    '<details class="qa"><summary>2. עבודה</summary><div class="in">'+qa('מקור הכנסה',HE.source[A.source])+qa('מקום עבודה',A.employer)+qa('טלפון',A.workPhone)+qa('מאיזו שנה',A.startYear)+qa('יום משכורת',A.payDay)+'</div></details>'+
+    '<details class="qa"><summary>3. כסף</summary><div class="in">'+qa('נכנס בחודש שעבר',A.income&&money(A.income))+qa('חובות בחודש',A.debts&&money(A.debts))+qa('הלוואה פרטית',HE.yn[A.privateLoan]+(A.privateAmt?', '+money(A.privateAmt)+' בחודש':''))+'</div></details>'+
+    '<details class="qa"><summary>4. אם יקרה…</summary><div class="in">'+qa('הכנסה יורדת',HE.scen1[A.scen1])+qa('חודש בלי לשלם',HE.scen2[A.scen2])+'</div></details>'+
+    '<details class="qa"><summary>5. ערב</summary><div class="in">'+qa('סוג',HE.guarantor[A.guarantor])+qa('ערב 1',A.g1)+qa('ערב 2',A.g2)+'</div></details>'+
+    '<details class="qa"><summary>6. שאלה אחרונה</summary><div class="in">'+qa('כמה נכנס בשבוע',A.weekly&&money(A.weekly))+'</div></details></div>';
+  h+='<div class="acts"><button class="btn pri" style="grid-column:1/-1" onclick="decide(\''+app.id+'\',\''+code+'\',\'approved\')">'+(app.decision==='approved'?'✓ אושר בתנאי ערבות':'אשר בתנאי ערבות')+'</button><button class="btn sec2" onclick="decide(\''+app.id+'\',\''+code+'\',\'more\')">בקש עוד</button><button class="btn danger" onclick="decide(\''+app.id+'\',\''+code+'\',\'rejected\')">דחה</button></div>';
+  if(app.decision==='approved')h+='<button class="btn dark full" style="margin-top:8px" onclick="loanFromLead(\''+code+'\')">פתח הלוואה בתיקים</button>';
+  h+='<button class="more-link" onclick="openInvite(\''+code+'\')">עריכת סיכום השיחה ‹</button>';
+  $('view').innerHTML=h;
+}
+async function saveReview(id,code){var app=appOf(code),R=Object.assign({},app.review||{});
+  R.bankIncome=$('r_bank').value.trim()||null;R.bankPayDay=$('r_pd').value.trim()||null;var rt=num($('r_rate').value);R.rate=isFinite(rt)?rt:20;R.note=$('r_note').value.trim();
+  var r=await cloud.sb.rpc('yd_review',{app:id,rev:R,d:app.decision||null});if(r.error){toast('השמירה נכשלה');return}
+  app.review=R;toast('הציון עודכן');renderLead(code)}
+async function decide(id,code,d){var app=appOf(code);var r=await cloud.sb.rpc('yd_review',{app:id,rev:app.review||{},d:d});if(r.error){toast('השמירה נכשלה');return}
+  app.decision=d;toast({approved:'סומן: אושר בתנאי ערבות',more:'סומן: ביקשת עוד',rejected:'סומן: נדחה'}[d]);renderLead(code)}
+async function openDoc(path){var r=await cloud.sb.storage.from('yd-docs').createSignedUrl(path,300);if(r.error){toast('לא הצלחתי לפתוח');return}window.open(r.data.signedUrl,'_blank','noopener')}
+function delInvite(code){openSheet('<h2>למחוק את השאלון?</h2><div class="sub">הקישור שנשלח ללקוח יפסיק לעבוד.</div><div class="acts"><button class="btn danger" id="okDel">כן, למחוק</button><button class="btn sec2" onclick="closeSheet()">ביטול</button></div>');
+  $('okDel').onclick=async function(){var r=await cloud.sb.from('yd_invites').delete().eq('code',code);closeSheet();if(r.error){toast('המחיקה נכשלה');return}LD.loaded=false;go('leads')}}
+function loanFromLead(code){var inv=LD.inv.find(function(x){return x.code===code}),A=(appOf(code)||{}).answers||{};
+  openLoanSheet(null,null);$('fP').value='__new';$('fNewWrap').hidden=false;$('fNew').value=inv.client_name||'';$('fAmt').value=A.amount||'';if(A.months)$('fTerm').value=A.months;$('fRef').value='';$('fNote').value='מהשאלון';loanPrev()}
 
 /* ================= start ================= */
 load();readHash();render();checkLock();
