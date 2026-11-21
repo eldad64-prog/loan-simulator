@@ -1,0 +1,14 @@
+{
+  "name": "ידידים",
+  "short_name": "ידידים",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "dir": "rtl",
+  "lang": "he",
+  "background_color": "#E9EFEB",
+  "theme_color": "#0E5A43",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
