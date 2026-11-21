@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E5A43">
+<meta name="robots" content="noindex">
+<title>Yedidim</title>
+<!-- Client loan questionnaire for the new Yedidim app. Separate from the old app.
+     Marker for the old site worker: this page loads its own cloud code, so supabase-sync.js must not be injected. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=Prompt:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E9EFEB; --surface:#FFFFFF; --ink:#13251E; --muted:#56665F; --line:#D5DED8;
+  --jade:#0E5A43; --jade-soft:#DCEDE5; --gold:#F2B134; --gold-soft:#FDF0D3; --gold-ink:#7A5000;
+  --red:#C23B2A; --red-soft:#F9E1DD; --blue:#2F5E8C; --on-dark:#FFFFFF;
+  --display:"Prompt","Sarabun",Arial,sans-serif; --body:"Sarabun",Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.wrap{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding:calc(14px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.brand{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.brand b{font-family:var(--display);font-weight:600;font-size:20px;color:var(--jade)}
+.lang{display:flex;gap:4px}
+.lang button{font-size:13px;font-weight:700;padding:4px 10px;border-radius:99px;border:1.5px solid var(--line);color:var(--muted)}
+.lang button.on{border-color:var(--jade);color:var(--jade);background:var(--jade-soft)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:18px 16px;flex:1;display:flex;flex-direction:column}
+.prog{height:8px;background:var(--bg);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.prog b{display:block;height:100%;background:var(--jade);border-radius:99px;transition:width .3s}
+.stepno{font-size:14px;color:var(--muted);margin-bottom:14px}
+h1{font-family:var(--display);font-weight:600;font-size:24px;line-height:1.3;margin-bottom:6px}
+.lead{color:var(--muted);margin-bottom:14px}
+.q{margin-bottom:16px}
+.q>label,.q>.lbl{display:block;font-weight:700;margin-bottom:6px}
+.q input{width:100%;padding:13px;border-radius:12px;border:1.5px solid var(--line);font:inherit;font-size:18px;background:var(--surface);color:var(--ink)}
+.q input.bad{border-color:var(--red)}
+.hint{font-size:13px;color:var(--muted);margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{padding:10px 14px;border-radius:99px;border:1.5px solid var(--line);font-weight:600;font-size:16px;text-align:start}
+.chips button.on{border-color:var(--jade);background:var(--jade-soft);color:var(--jade)}
+.chips.bad button{border-color:var(--red)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pledge{display:flex;gap:10px;align-items:flex-start;background:var(--jade-soft);border-radius:14px;padding:12px;width:100%;text-align:start;margin-bottom:10px}
+.pledge i{width:24px;height:24px;border-radius:6px;border:2px solid var(--jade);flex:none;margin-top:2px;display:grid;place-items:center;font-style:normal;color:var(--on-dark);font-size:15px}
+.pledge.on i{background:var(--jade)}
+.pledge.bad{outline:2px solid var(--red)}
+.note{background:var(--gold-soft);color:var(--gold-ink);border-radius:12px;padding:10px 12px;font-size:15px;margin-bottom:14px}
+.doc{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1.5px dashed var(--line);border-radius:14px;padding:12px;margin-bottom:8px}
+.doc.ok{border-style:solid;border-color:var(--jade);background:var(--jade-soft)}
+.doc .t b{display:block}
+.doc .t span{font-size:13px;color:var(--muted)}
+.doc label{flex:none;padding:9px 14px;border-radius:12px;background:var(--ink);color:var(--on-dark);font-weight:700;font-size:15px;cursor:pointer}
+.doc.ok label{background:var(--surface);color:var(--jade);border:1.5px solid var(--jade)}
+.doc input{position:absolute;width:1px;height:1px;opacity:0}
+.req{font-size:11px;font-weight:700;background:var(--red-soft);color:var(--red);border-radius:99px;padding:1px 7px;margin-inline-start:6px}
+.nav{margin-top:auto;display:grid;grid-template-columns:1fr 2fr;gap:10px;padding-top:12px}
+.btn{padding:15px 12px;border-radius:14px;font-weight:700;text-align:center;font-size:17px;display:block;width:100%}
+.btn.pri{background:var(--jade);color:var(--on-dark)}
+.btn.pri:disabled{background:var(--line);color:var(--muted)}
+.btn.sec{background:var(--surface);border:1.5px solid var(--line)}
+.err{color:var(--red);font-weight:700;font-size:15px;min-height:22px;margin-top:6px}
+.center{text-align:center;margin:auto 0;padding:30px 0}
+.center .big{font-family:var(--display);font-size:64px;color:var(--jade);line-height:1}
+.steps3{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.steps3 span{font-size:13px;background:var(--bg);border-radius:99px;padding:4px 10px}
+.saving{font-size:12px;color:var(--muted);text-align:center;margin-top:6px;min-height:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><b>Yedidim</b><div class="lang"><button data-l="th" onclick="setLang('th')">ไทย</button><button data-l="en" onclick="setLang('en')">EN</button></div></div>
+  <div class="card" id="card"><div class="center"><p id="loading">…</p></div></div>
+  <div class="saving" id="saving"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+<script>
+var URL_='https://ayqzwlvgxupbxhvrnrke.supabase.co';
+var KEY_='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5cXp3bHZneHVwYnhodnJucmtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMTQxNzksImV4cCI6MjEwNjU5MDE3OX0.jtWagMsm0w4DVQ9ZGO43y9myP3yOcUpN3au-gpuvdQg';
+var T={
+ th:{
+  title:'ขอสินเชื่อ',intro:'6 ขั้นตอนสั้น ๆ ประมาณ 4 นาที หยุดแล้วกลับมาทำต่อได้จากจุดเดิม',
+  pledge:'ข้าพเจ้าสัญญาว่าจะตอบตามความจริง และทราบว่าคำตอบจะถูกตรวจสอบกับเอกสาร',
+  start:'เริ่มเลย',next:'ถัดไป',back:'ย้อนกลับ',send:'ส่งคำขอ',step:'ขั้นตอนที่ {n} จาก 6',last:'ขั้นตอนสุดท้าย',
+  s1:'คำขอ',amount:'ต้องการกู้เงินเท่าไร (บาท)',months:'ต้องการผ่อนกี่เดือน',purpose:'กู้ไปทำอะไร',
+  p_biz:'ธุรกิจ',p_car:'รถ',p_debt:'ใช้หนี้อื่น',p_family:'ครอบครัว',p_other:'อื่น ๆ',
+  s2:'งาน',source:'รายได้หลักมาจากอะไร',src_salary:'เงินเดือน',src_self:'ธุรกิจของตัวเอง',src_other:'อื่น ๆ',
+  employer:'ชื่อที่ทำงาน',workPhone:'เบอร์โทรของที่ทำงาน',startYear:'เริ่มทำงานที่นี่ตั้งแต่ปีไหน (ค.ศ.)',payDay:'เงินเดือนเข้าวันที่เท่าไรของเดือน',
+  s3:'การเงิน',income:'เดือนที่แล้วมีเงินเข้าบัญชีเท่าไร (บาท)',incomeHint:'ประมาณได้ เราจะตรวจสอบกับรายการเดินบัญชี',
+  debts:'ตอนนี้ผ่อนหนี้เดือนละเท่าไร (บาท)',private:'มีหนี้นอกระบบ หรือแชร์ อยู่หรือไม่',no:'ไม่มี',yes:'มี',privateAmt:'ผ่อนเดือนละเท่าไร (บาท)',
+  s4:'ถ้าเกิด…',scen1:'ถ้าเดือนหน้ารายได้ลดลง 30% จะทำอย่างไร',sc1_save:'มีเงินเก็บ',sc1_cut:'ลดค่าใช้จ่าย',sc1_ask:'ขอยืมคนอื่น',sc1_unsure:'ยังไม่แน่ใจ',
+  scen2:'ถ้ามีเดือนหนึ่งจ่ายไม่ได้ จะทำอย่างไร',sc2_notify:'แจ้งล่วงหน้าและหาทางออกด้วยกัน',sc2_delay:'ขอเลื่อนสั้น ๆ',sc2_wait:'รอให้ผ่านไปเอง',
+  s5:'ผู้ค้ำประกัน',guar:'ใครสามารถค้ำประกันให้ได้',g_biz:'เจ้าของธุรกิจ',g_two:'พนักงาน 2 คน มีสลิปเงินเดือน ทำงาน 6 เดือนขึ้นไป',g_none:'ไม่มี',
+  g1:'ผู้ค้ำคนที่ 1: ชื่อและเบอร์โทร',g2:'ผู้ค้ำคนที่ 2: ชื่อและเบอร์โทร',gNone:'ถ้าไม่มีผู้ค้ำ เราไม่สามารถอนุมัติได้ คุณยังส่งคำขอได้ และเพิ่มผู้ค้ำภายหลังได้',
+  s6:'เอกสาร',docsLead:'ใกล้เสร็จแล้ว ถ่ายรูปเอกสารเหล่านี้:',required:'จำเป็น',upload:'ถ่ายรูป',again:'เปลี่ยน',uploaded:'อัปโหลดแล้ว',uploading:'กำลังอัปโหลด…',
+  weekly:'คำถามสุดท้าย: โดยประมาณ มีเงินเข้าสัปดาห์ละเท่าไร (บาท)',missing:'ยังขาดเอกสาร {n} รายการ',
+  fill:'กรุณากรอกช่องที่มีกรอบสีแดง',saved:'บันทึกแล้ว',saving:'กำลังบันทึก…',saveErr:'บันทึกไม่สำเร็จ ลองอีกครั้ง',
+  doneT:'ส่งคำขอแล้ว',doneL:'ขอบคุณ เราจะตรวจสอบข้อมูลและติดต่อกลับผ่านตัวแทนภายใน 24 ชั่วโมง',d1:'✓ ส่งแล้ว',d2:'กำลังตรวจสอบ',d3:'ตอบกลับภายใน 24 ชม.',
+  bad:'ลิงก์นี้ใช้ไม่ได้ หรือถูกใช้ไปแล้ว กรุณาขอลิงก์ใหม่จากตัวแทน',net:'ไม่มีการเชื่อมต่ออินเทอร์เน็ต ลองใหม่อีกครั้ง',hello:'สวัสดี {name}',
+  d_id:'บัตรประชาชน',d_bank:'รายการเดินบัญชี 6 เดือน',d_payslip:'สลิปเงินเดือนล่าสุด',d_biz:'เอกสารจดทะเบียนธุรกิจ',d_payslip3:'สลิปเงินเดือน 3 เดือน',d_lease:'สัญญาเช่า',d_g_id:'บัตรประชาชนของผู้ค้ำ',d_g_payslip:'สลิปเงินเดือนของผู้ค้ำ',d_car:'เล่มทะเบียนรถ',d_bill:'บิลค่าไฟ'
+ },
+ en:{
+  title:'Loan application',intro:'6 short steps, about 4 minutes. You can stop and continue later from the same place.',
+  pledge:'I promise to answer honestly, and I know my answers are checked against the documents.',
+  start:"Let's start",next:'Next',back:'Back',send:'Send',step:'Step {n} of 6',last:'last step',
+  s1:'Your request',amount:'How much money do you need? (THB)',months:'For how many months?',purpose:'What is it for?',
+  p_biz:'Business',p_car:'Vehicle',p_debt:'Another debt',p_family:'Family',p_other:'Other',
+  s2:'Work',source:'Where does your main income come from?',src_salary:'Salary',src_self:'My own business',src_other:'Other',
+  employer:'Workplace name',workPhone:'Workplace phone',startYear:'Since which year do you work there?',payDay:'On which day of the month is your salary paid?',
+  s3:'Money',income:'How much came into your account last month? (THB)',incomeHint:'An estimate is fine. We check it against your bank statement.',
+  debts:'How much do you pay on debts each month? (THB)',private:'Do you have a private loan or a saving-group loan?',no:'No',yes:'Yes',privateAmt:'How much per month? (THB)',
+  s4:'If it happens…',scen1:'Your income drops by 30% next month. What will you do?',sc1_save:'I have savings',sc1_cut:'Cut expenses',sc1_ask:'Borrow from someone',sc1_unsure:'Not sure',
+  scen2:'One month you cannot pay. What will you do?',sc2_notify:'Tell you early and find a solution together',sc2_delay:'Ask for a short delay',sc2_wait:'Wait until it passes',
+  s5:'Guarantor',guar:'Who can be your guarantor?',g_biz:'A business owner',g_two:'Two employees with payslips, 6+ months at work',g_none:'I have none',
+  g1:'Guarantor 1: name and phone',g2:'Guarantor 2: name and phone',gNone:'Without a guarantor we cannot approve the loan. You can still send the form and add a guarantor later.',
+  s6:'Documents',docsLead:'Almost done. Take photos of these documents:',required:'required',upload:'Take photo',again:'Change',uploaded:'Uploaded',uploading:'Uploading…',
+  weekly:'Last question: about how much money comes in each week? (THB)',missing:'{n} documents missing',
+  fill:'Please fill in the fields with a red border',saved:'Saved',saving:'Saving…',saveErr:'Could not save. Try again.',
+  doneT:'Application sent',doneL:'Thank you. We will check the details and reply through your agent within 24 hours.',d1:'✓ Sent',d2:'Checking',d3:'Answer within 24 hours',
+  bad:'This link does not work or was already used. Please ask your agent for a new link.',net:'No internet connection. Please try again.',hello:'Hello {name}',
+  d_id:'ID card',d_bank:'Bank statements, 6 months',d_payslip:'Latest payslip',d_biz:'Business registration',d_payslip3:'Payslips, 3 months',d_lease:'Rental contract',d_g_id:"Guarantor's ID card",d_g_payslip:"Guarantor's payslip",d_car:'Vehicle registration book',d_bill:'Electricity bill'
+ }
+};
+var L=(function(){try{return localStorage.getItem('yd2.apply.lang')||'th'}catch(e){return 'th'}})();
+function t(k,v){var s=(T[L]&&T[L][k])||T.th[k]||k;if(v)Object.keys(v).forEach(function(x){s=s.replace('{'+x+'}',v[x])});return s}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function $(id){return document.getElementById(id)}
+function setLang(l){L=l;try{localStorage.setItem('yd2.apply.lang',l)}catch(e){}document.documentElement.lang=l;document.querySelectorAll('.lang button').forEach(function(b){b.classList.toggle('on',b.dataset.l===l)});if(APP)draw()}
+
+var CODE=new URLSearchParams(location.search).get('c')||'';
+var sb=null,USER=null,INFO=null,APP=null,A={},S={},F={};
+function num(v){v=String(v==null?'':v).replace(/[,\s฿]/g,'');var n=parseFloat(v);return isFinite(n)?n:NaN}
+
+async function boot(){
+  setLang(L);
+  if(!CODE||!window.supabase){return fail(window.supabase?'bad':'net')}
+  sb=window.supabase.createClient(URL_,KEY_,{auth:{storageKey:'yd2.apply.auth',persistSession:true,autoRefreshToken:true}});
+  var s=(await sb.auth.getSession()).data.session;
+  if(!s){var r=await sb.auth.signInAnonymously();if(r.error)return fail('net');s=r.data.session}
+  USER=s.user;
+  var info=await sb.rpc('yd_invite_info',{c:CODE});
+  if(info.error)return fail('net');if(!info.data)return fail('bad');INFO=info.data;
+  var r2=await sb.from('yd_apps').select('*').eq('invite_code',CODE).maybeSingle();
+  if(r2.error)return fail('net');
+  if(!r2.data){var r3=await sb.from('yd_apps').insert({invite_code:CODE,signals:{startedAt:new Date().toISOString(),incomeChanges:0}}).select('*').single();if(r3.error)return fail('bad');APP=r3.data}else APP=r2.data;
+  A=APP.answers||{};S=APP.signals||{};F=APP.files||{};
+  draw();
+}
+function fail(k){$('card').innerHTML='<div class="center"><div class="big">!</div><p style="margin-top:12px">'+t(k)+'</p></div>'}
+
+function requiredDocs(){
+  var base=['id','bank',A.source==='self'?'biz':'payslip'];
+  (INFO.docs||[]).forEach(function(d){if(base.indexOf(d)<0)base.push(d)});
+  return base;
+}
+function docLabel(k){if(k.indexOf('other:')===0)return k.slice(6);return t('d_'+k)}
+
+function chips(name,opts){return '<div class="chips" data-n="'+name+'">'+opts.map(function(o){return '<button type="button" data-v="'+o[0]+'" class="'+(A[name]===o[0]?'on':'')+'" onclick="pick(\''+name+'\',\''+o[0]+'\')">'+t(o[1])+'</button>'}).join('')+'</div>'}
+function inp(name,mode,ph){return '<input id="f_'+name+'" inputmode="'+(mode||'text')+'" value="'+esc(A[name]==null?'':A[name])+'" placeholder="'+esc(ph||'')+'" oninput="setv(\''+name+'\',this.value)">'}
+function pick(n,v){A[n]=v;draw(true)}
+function setv(n,v){if(n==='income'&&A.income!==undefined&&String(A.income)!==String(v)){S._incTouched=true}A[n]=v}
+
+function draw(keepScroll){
+  if(APP.submitted_at)return drawDone();
+  var st=APP.step||0,h='';
+  if(st>0)h+='<div class="prog"><b style="width:'+Math.round(st/6*100)+'%"></b></div><div class="stepno">'+t('step',{n:st})+(st===6?', '+t('last'):'')+'</div>';
+  if(st===0){
+    h+='<h1>'+(INFO.name?t('hello',{name:esc(INFO.name)}):t('title'))+'</h1><p class="lead">'+t('intro')+'</p>'+
+       '<button type="button" id="pl" class="pledge'+(A.pledge?' on':'')+'" onclick="A.pledge=!A.pledge;this.classList.toggle(\'on\',!!A.pledge)"><i>'+(A.pledge?'✓':'')+'</i><span>'+t('pledge')+'</span></button>';
+  }else if(st===1){
+    h+='<h1>'+t('s1')+'</h1><div class="q"><label for="f_amount">'+t('amount')+'</label>'+inp('amount','numeric')+'</div>'+
+       '<div class="q"><div class="lbl">'+t('months')+'</div>'+chips('months',[['3','3'],['6','6'],['12','12'],['24','24']])+'</div>'+
+       '<div class="q"><div class="lbl">'+t('purpose')+'</div>'+chips('purpose',[['biz','p_biz'],['car','p_car'],['debt','p_debt'],['family','p_family'],['other','p_other']])+'</div>';
+  }else if(st===2){
+    h+='<h1>'+t('s2')+'</h1><div class="q"><div class="lbl">'+t('source')+'</div>'+chips('source',[['salary','src_salary'],['self','src_self'],['other','src_other']])+'</div>'+
+       '<div class="q"><label for="f_employer">'+t('employer')+'</label>'+inp('employer')+'</div>'+
+       '<div class="q"><label for="f_workPhone">'+t('workPhone')+'</label>'+inp('workPhone','tel')+'</div>'+
+       '<div class="two"><div class="q"><label for="f_startYear">'+t('startYear')+'</label>'+inp('startYear','numeric','2022')+'</div><div class="q"><label for="f_payDay">'+t('payDay')+'</label>'+inp('payDay','numeric','1-31')+'</div></div>';
+  }else if(st===3){
+    h+='<h1>'+t('s3')+'</h1><div class="q"><label for="f_income">'+t('income')+'</label>'+inp('income','numeric')+'<div class="hint">'+t('incomeHint')+'</div></div>'+
+       '<div class="q"><label for="f_debts">'+t('debts')+'</label>'+inp('debts','numeric','0')+'</div>'+
+       '<div class="q"><div class="lbl">'+t('private')+'</div>'+chips('privateLoan',[['no','no'],['yes','yes']])+'</div>'+
+       (A.privateLoan==='yes'?'<div class="q"><label for="f_privateAmt">'+t('privateAmt')+'</label>'+inp('privateAmt','numeric')+'</div>':'');
+  }else if(st===4){
+    h+='<h1>'+t('s4')+'</h1><div class="q"><div class="lbl">'+t('scen1')+'</div>'+chips('scen1',[['save','sc1_save'],['cut','sc1_cut'],['ask','sc1_ask'],['unsure','sc1_unsure']])+'</div>'+
+       '<div class="q"><div class="lbl">'+t('scen2')+'</div>'+chips('scen2',[['notify','sc2_notify'],['delay','sc2_delay'],['wait','sc2_wait']])+'</div>';
+  }else if(st===5){
+    h+='<h1>'+t('s5')+'</h1><div class="q"><div class="lbl">'+t('guar')+'</div>'+chips('guarantor',[['biz','g_biz'],['two','g_two'],['none','g_none']])+'</div>';
+    if(A.guarantor==='none')h+='<div class="note">'+t('gNone')+'</div>';
+    if(A.guarantor==='biz'||A.guarantor==='two')h+='<div class="q"><label for="f_g1">'+t('g1')+'</label>'+inp('g1')+'</div>';
+    if(A.guarantor==='two')h+='<div class="q"><label for="f_g2">'+t('g2')+'</label>'+inp('g2')+'</div>';
+  }else if(st===6){
+    var req=requiredDocs(),miss=0;
+    h+='<h1>'+t('s6')+'</h1><p class="lead">'+t('docsLead')+'</p>';
+    req.forEach(function(k){var ok=(F[k]||[]).length>0;if(!ok)miss++;
+      h+='<div class="doc'+(ok?' ok':'')+'"><div class="t"><b>'+esc(docLabel(k))+'<span class="req">'+t('required')+'</span></b><span id="ds_'+k+'">'+(ok?'✓ '+t('uploaded'):'')+'</span></div><label>'+(ok?t('again'):t('upload'))+'<input type="file" accept="image/*,application/pdf" onchange="upload(\''+k.replace(/'/g,"\\'")+'\',this)"></label></div>'});
+    h+='<div class="q" style="margin-top:12px"><label for="f_weekly">'+t('weekly')+'</label>'+inp('weekly','numeric')+'</div>';
+    h+='<div class="err" id="err">'+(miss?t('missing',{n:miss}):'')+'</div>';
+    h+='<div class="nav"><button class="btn sec" onclick="go(-1)">'+t('back')+'</button><button class="btn pri" id="sendBtn" '+(miss?'disabled':'')+' onclick="submitApp()">'+(miss?t('missing',{n:miss}):t('send'))+'</button></div>';
+    $('card').innerHTML=h;return;
+  }
+  h+='<div class="err" id="err"></div><div class="nav">'+(st>0?'<button class="btn sec" onclick="go(-1)">'+t('back')+'</button>':'<span></span>')+'<button class="btn pri" onclick="go(1)">'+(st===0?t('start'):t('next'))+'</button></div>';
+  var y=window.scrollY;$('card').innerHTML=h;if(keepScroll)window.scrollTo(0,y);else window.scrollTo(0,0);
+}
+
+function need(){
+  var st=APP.step||0,bad=[];
+  function nOk(k){var v=num(A[k]);if(!(v>=0)||A[k]===''||A[k]==null)bad.push(k)}
+  function cOk(k){if(!A[k])bad.push(k)}
+  if(st===0&&!A.pledge)bad.push('pl');
+  if(st===1){nOk('amount');cOk('months');cOk('purpose')}
+  if(st===2){cOk('source');if(!(A.employer||'').trim())bad.push('employer');var y=num(A.startYear);if(!(y>=1970&&y<=new Date().getFullYear()))bad.push('startYear');var d=num(A.payDay);if(!(d>=1&&d<=31))bad.push('payDay')}
+  if(st===3){nOk('income');nOk('debts');cOk('privateLoan');if(A.privateLoan==='yes')nOk('privateAmt')}
+  if(st===4){cOk('scen1');cOk('scen2')}
+  if(st===5){cOk('guarantor');if(A.guarantor==='biz'||A.guarantor==='two'){if(!(A.g1||'').trim())bad.push('g1')}if(A.guarantor==='two'&&!(A.g2||'').trim())bad.push('g2')}
+  return bad;
+}
+async function go(d){
+  if(d>0){var bad=need();document.querySelectorAll('.bad').forEach(function(e){e.classList.remove('bad')});
+    if(bad.length){bad.forEach(function(k){var el=$('f_'+k)||document.querySelector('.chips[data-n="'+k+'"]')||$(k);if(el)el.classList.add('bad')});$('err').textContent=t('fill');return}}
+  if(S._incTouched){S.incomeChanges=(S.incomeChanges||0)+1;delete S._incTouched}
+  var ns=Math.max(0,Math.min(6,(APP.step||0)+d));
+  if(await save({step:ns}))draw();
+}
+async function save(extra){
+  $('saving').textContent=t('saving');
+  var row=Object.assign({answers:A,signals:S,files:F,updated_at:new Date().toISOString()},extra||{});
+  var r=await sb.from('yd_apps').update(row).eq('id',APP.id).select('*').single();
+  if(r.error){$('saving').textContent=t('saveErr');return false}
+  APP=r.data;$('saving').textContent=t('saved');setTimeout(function(){$('saving').textContent=''},1500);return true;
+}
+async function upload(k,input){
+  var f=input.files&&input.files[0];if(!f)return;
+  var stEl=$('ds_'+k);if(stEl)stEl.textContent=t('uploading');
+  var ext=(f.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'jpg';
+  var safe=k.replace(/[^a-z0-9_]/gi,'_').slice(0,30);
+  var path=USER.id+'/'+safe+'-'+Date.now()+'.'+ext;
+  var r=await sb.storage.from('yd-docs').upload(path,f,{contentType:f.type||'application/octet-stream',upsert:false});
+  if(r.error){if(stEl)stEl.textContent=t('saveErr');return}
+  F[k]=(F[k]||[]).concat([path]);
+  if(await save())draw(true);
+}
+async function submitApp(){
+  var w=num(A.weekly);if(!(w>=0)||A.weekly===''||A.weekly==null){$('f_weekly').classList.add('bad');$('err').textContent=t('fill');return}
+  if(requiredDocs().some(function(k){return !(F[k]||[]).length}))return;
+  if(S._incTouched){S.incomeChanges=(S.incomeChanges||0)+1;delete S._incTouched}
+  var now=new Date();S.submittedAt=now.toISOString();
+  if(S.startedAt)S.seconds=Math.round((now-new Date(S.startedAt))/1000);
+  $('sendBtn').disabled=true;
+  if(await save({step:7,submitted_at:now.toISOString()}))draw();else $('sendBtn').disabled=false;
+}
+function drawDone(){$('card').innerHTML='<div class="center"><div class="big">✓</div><h1 style="margin-top:12px">'+t('doneT')+'</h1><p class="lead">'+t('doneL')+'</p><div class="steps3"><span>'+t('d1')+'</span><span>'+t('d2')+'</span><span>'+t('d3')+'</span></div></div>'}
+
+boot().catch(function(){fail('net')});
+</script>
+</body>
+</html>
