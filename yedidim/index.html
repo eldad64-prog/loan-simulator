@@ -818,7 +818,8 @@ function scoreOf(inv,app){
   if(wk!=null&&inc!=null){var g3=gapPct(inc,wk*4.3),p3=g3<10?12:(g3<=30?6:0);rel+=p3;why.push([p3>=12?'p':'m',p3,'שאלת הביקורת','בחודש '+money(inc)+', בשבוע '+money(wk)+' שזה כ-'+money(wk*4.3)+' בחודש'])}
   // salary day
   var pd=nz(A.payDay),bpd=nz(R.bankPayDay);
-  if(bpd==null){partial=true;why.push(['z',0,'יום המשכורת מול הבנק','עוד לא הקלדת יום משכורת מהבנק'])}
+  if(A.source&&A.source!=='salary'){rel+=4;why.push(['p',4,'יום משכורת','לא נשאל, אין לו משכורת ('+HE.source[A.source]+')'])}
+  else if(bpd==null){partial=true;why.push(['z',0,'יום המשכורת מול הבנק','עוד לא הקלדת יום משכורת מהבנק'])}
   else{var ok=pd!=null&&Math.abs(pd-bpd)<=2;rel+=ok?4:0;why.push([ok?'p':'m',ok?4:0,'יום משכורת: בשאלון '+(pd||'—')+', בבנק '+bpd,''])}
   // quiet signals
   if(S.seconds&&S.seconds<90){rel-=2;why.push(['m',-2,'מילא מהר מאוד',Math.round(S.seconds)+' שניות'])}
@@ -830,7 +831,7 @@ function scoreOf(inv,app){
   if(pay!=null&&base){var ratio=(pay+debt)/base*100;rep=ratio<=30?35:ratio<=40?25:ratio<=50?15:ratio<=60?8:0;why.push([rep>=25?'p':'m',rep,'ההחזרים לוקחים '+Math.round(ratio)+'% מההכנסה',money(pay)+' בחודש להלוואה ('+rate+'% + קרן), ועוד '+money(debt)+' חובות, מתוך '+money(base)])}
   if(A.privateLoan==='yes'){rep=Math.max(0,rep-5);why.push(['m',-5,'יש הלוואה פרטית או מקבוצה',''])}
   // stability
-  var y=nz(A.startYear),yrs=y!=null?new Date().getFullYear()-y:null;
+  var y=nz(A.startYear);if(y!=null&&y>2400)y-=543;var yrs=y!=null?new Date().getFullYear()-y:null;
   if(yrs!=null){var p6=yrs>=3?10:yrs>=1?7:2;sta+=p6;why.push([p6>=7?'p':'m',p6,'ותק: מ-'+y,yrs+' שנים'])}
   var s1={save:6,cut:5,ask:2,unsure:0}[A.scen1],s2={notify:9,delay:6,wait:0}[A.scen2];
   if(s1!=null){sta+=s1;why.push([s1>=5?'p':'m',s1,'הכנסה יורדת: '+(HE.scen1[A.scen1]||''),''])}
@@ -904,7 +905,7 @@ var CALL_GUIDE=[
 var FORM_HE=[
   ['פתיחה',[['הצהרה: "אני מתחייב לענות בכנות, וידוע לי שהתשובות נבדקות מול המסמכים"','הלקוח חייב לסמן לפני שמתחיל.']]],
   ['1. הבקשה',[['כמה כסף אתה צריך? (בבאט)',''],['לכמה חודשים?',''],['למה הכסף?','עסק / רכב / חוב אחר / משפחה / אחר']]],
-  ['2. עבודה',[['מאיפה ההכנסה העיקרית שלך?','משכורת / עסק שלי / אחר'],['שם מקום העבודה',''],['טלפון של מקום העבודה','כדי שאפשר יהיה לוודא שהוא באמת עובד שם.'],['מאיזו שנה אתה עובד שם?',''],['באיזה יום בחודש נכנסת המשכורת?','מספר בין 1 ל-31.']]],
+  ['2. עבודה',[['מאיפה ההכנסה העיקרית שלך?','משכורת / עסק שלי / אחר'],['שם מקום העבודה',''],['טלפון של מקום העבודה','כדי שאפשר יהיה לוודא שהוא באמת עובד שם.'],['מאיזו שנה אתה עובד שם?','אפשר שנה תאילנדית (למשל 2565) או לועזית.'],['באיזה יום בחודש נכנסת המשכורת?','רק למי שבחר משכורת. מספר בין 1 ל-31.']]],
   ['3. כסף',[['כמה כסף נכנס לחשבון שלך בחודש שעבר? (בבאט)','מתחת כתוב: "הערכה זה בסדר, אנחנו בודקים מול דפי הבנק".'],['כמה אתה משלם על חובות בכל חודש? (בבאט)','כל ההחזרים יחד.'],['יש לך הלוואה פרטית או הלוואה מקבוצת חיסכון?','כן / לא. קבוצת חיסכון (แชร์) היא קופה משותפת של חברים שכל חודש אחד לוקח את הכסף.'],['כמה בחודש? (בבאט)','מופיע רק אם ענה כן.']]],
   ['4. אם יקרה…',[['ההכנסה שלך יורדת ב-30% בחודש הבא. מה תעשה?','יש לי חיסכון / אצמצם הוצאות / אלווה ממישהו / לא בטוח. בודקים אם יש לו גב.'],['חודש אחד אתה לא יכול לשלם. מה תעשה?','אודיע מוקדם ונמצא פתרון יחד / אבקש דחייה קצרה / אחכה שיעבור. בודקים אם יתקשר או ייעלם.']]],
   ['5. ערב',[['מי יכול להיות הערב שלך?','בעל עסק / שני עובדים עם תלוש ו-6 חודשים בעבודה / אין לי'],['ערב 1: שם וטלפון',''],['ערב 2: שם וטלפון','רק כשבחר שני עובדים.'],['אם אין ערב','רואה: "בלי ערב לא נוכל לאשר את ההלוואה. אפשר לשלוח את הטופס ולהוסיף ערב אחר כך".']]],
@@ -944,7 +945,7 @@ async function saveInvite(code){
 }
 /* Thai mobile 08x... → 668x...; keeps numbers already in international form. */
 function waNum(p){var d=String(p||'').replace(/\D/g,'');if(d.indexOf('00')===0)d=d.slice(2);if(d.charAt(0)==='0')d='66'+d.slice(1);return d}
-function inviteText(inv){return 'สวัสดีค่ะ คุณ'+(inv.client_name||'')+'\nกรุณากรอกคำขอสินเชื่อที่ลิงก์นี้ ใช้เวลาประมาณ 4 นาที และเตรียมถ่ายรูปเอกสารไว้ด้วย:\n'+APPLY_URL+inv.code}
+function inviteText(inv){return 'สวัสดีครับ คุณ'+(inv.client_name||'')+'\nกรุณากรอกคำขอสินเชื่อที่ลิงก์นี้ ใช้เวลาประมาณ 4 นาที และเตรียมถ่ายรูปเอกสารไว้ด้วย:\n'+APPLY_URL+inv.code}
 /* Send window: WhatsApp or email straight to the client, then Eldad confirms it went out.
    The list then tracks it: sent → opened the link (a row in yd_apps) → filling → submitted. */
 function showInviteMsg(inv){
