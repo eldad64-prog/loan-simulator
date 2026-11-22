@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#F4F2EC">
-<title>Rings</title>
+<title>Rings Sport</title>
 <!--
   Yedidim, new app. Fully separate from the old app in /v2/.
   - Own storage keys (prefix "yd2.") and own auth storage key, so it never reads or writes the old app's data.
@@ -211,6 +211,12 @@ h1,h2,.num,.big,.disp{font-family:var(--display);font-weight:400}
 .lock.rg{background:#F4F2EC;padding:0}
 .lock.rg svg{width:100%;max-width:460px;display:block;-webkit-tap-highlight-color:transparent}
 .lock.rg .hit{fill:transparent;cursor:default}
+.lock.rg .sp-t{font-family:Arial,sans-serif;font-weight:700;font-size:30px;color:#13251E;letter-spacing:.5px}
+.lock.rg .sp-s{font-family:Arial,sans-serif;font-size:15px;color:#56665F;margin-top:6px}
+.lock.rg .sp-l{font-family:Arial,sans-serif;font-size:13px;color:#56665F;margin-top:26px;display:flex;align-items:center;gap:8px}
+.lock.rg .sp-l i{width:8px;height:8px;border-radius:50%;background:#C23B2A;animation:sp 1.4s infinite}
+@keyframes sp{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.lock.rg .sp-l i{animation:none}}
 
 /* leads */
 .lead{display:flex;align-items:center;gap:12px;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:8px}
@@ -815,7 +821,9 @@ function drawRings(){
   var L=$('lock');L.classList.add('rg');
   var C=[[70,80,'#2F5E8C'],[170,80,'#13251E'],[270,80,'#C23B2A'],[120,128,'#F2B134'],[220,128,'#0E5A43']],g='',h='';
   C.forEach(function(c,i){g+='<circle cx="'+c[0]+'" cy="'+c[1]+'" r="44" stroke="'+c[2]+'"/>';h+='<circle class="hit" cx="'+c[0]+'" cy="'+(i>2?c[1]+6:c[1])+'" r="22" onclick="ringTap('+(i+1)+')"/>'});
-  L.innerHTML='<svg viewBox="0 0 340 210" role="img" aria-label="Rings"><g fill="none" stroke-width="9">'+g+'</g>'+h+'</svg>';
+  L.innerHTML='<div class="sp-t" dir="ltr">Rings Sport</div><div class="sp-s" dir="ltr">Live scores, fixtures and results</div>'+
+    '<svg viewBox="0 0 340 210" role="img" aria-label="Rings"><g fill="none" stroke-width="9">'+g+'</g>'+h+'</svg>'+
+    '<div class="sp-l" dir="ltr"><i></i>Updating today\'s matches…</div>';
 }
 function ringTap(i){
   clearTimeout(ringT);ringT=setTimeout(function(){ringStep=0},5000);
