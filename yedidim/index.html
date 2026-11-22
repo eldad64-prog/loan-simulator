@@ -349,7 +349,8 @@ function renderPerson(pid){
   var h='<button class="back" onclick="go(\'home\')">→ כל התיקים</button>';
   h+='<div class="top"><div><small>כרטיס אדם</small><h1>'+esc(p.name)+'</h1></div>'+statusTag(t)+'</div>';
   if(p.note)h+='<p class="ex" style="text-align:right;margin:-6px 0 12px">'+esc(p.note)+'</p>';
-  if(t.n&&t.acc===t.n)h+='<div class="trio white" style="margin-bottom:10px;grid-template-columns:1fr 1fr"><div><span>קרן בחוץ</span><b>'+money(t.principal)+'</b></div><div><span>נוסף לקרן בחודש</span><b style="color:var(--blue)">'+money(t.fee)+'</b></div></div>';
+  if(t.n===1){}
+  else if(t.n&&t.acc===t.n)h+='<div class="trio white" style="margin-bottom:10px;grid-template-columns:1fr 1fr"><div><span>קרן בחוץ</span><b>'+money(t.principal)+'</b></div><div><span>נוסף לקרן בחודש</span><b style="color:var(--blue)">'+money(t.fee)+'</b></div></div>';
   else h+='<div class="trio white" style="margin-bottom:10px"><div><span>קרן בחוץ</span><b>'+money(t.principal)+'</b></div><div><span>לך בחודש</span><b style="color:var(--jade)">'+money(t.me)+'</b></div><div><span>לסוכן בחודש</span><b style="color:var(--gold-ink)">'+money(t.ag)+'</b></div></div>';
   if(t.arrears>0.5)h+='<div class="alert">⚠ חוב מחודשים קודמים: '+money(t.arrears)+'</div>';
   h+='<div class="sec">ההלוואות</div>';
@@ -360,7 +361,7 @@ function renderPerson(pid){
        '<div class="terms"><span class="'+per.mode+'">'+(per.mode==='acc'?'בצבירה':'תשלום כל חודש')+'</span><span>'+pct(per.rate)+' לחודש</span>'+(per.mode==='acc'?'':'<span>'+pct(per.share)+' ל'+esc(p.name)+'</span>')+(l.term?'<span>'+l.term+' חודשים</span>':'')+'</div>'+
        (per.mode==='acc'?'<div class="split3" style="grid-template-columns:1fr 1fr"><div class="t"><span>עמלה בחודש</span><b>'+money(c.cur.fee)+'</b></div><div class="me" style="background:var(--blue-soft)"><span>כולה נוספת לקרן</span><b style="color:var(--blue)">'+money(c.cur.fee)+'</b></div></div>':
        '<div class="split3"><div class="t"><span>עמלה בחודש</span><b>'+money(c.cur.fee)+'</b></div><div class="me"><span>לך</span><b>'+money(c.cur.me)+'</b></div><div class="ag"><span>ל'+esc(p.name)+'</span><b>'+money(c.cur.ag)+'</b></div></div>')+
-       '<div class="plain">'+plainText(l,esc(p.name),c)+'</div>'+
+       (per.mode==='acc'?'<div class="plain">'+plainText(l,esc(p.name),c)+'</div>':'')+
        (l.clientRef?'<div class="cli">לקוח רשום, מידע עזר: '+esc(l.clientRef)+'</div>':'')+
        planHtml(l)+
        '<div class="acts"><button class="btn pri" onclick="openPay(\''+l.id+'\')">רשום תשלום</button><button class="btn dark" onclick="openPlan(\''+l.id+'\')">שנה הסדר</button></div>'+
@@ -394,6 +395,7 @@ function planHtml(l){
   var ps=(l.periods||[]).slice().sort(function(a,b){return a.from<b.from?-1:1});
   var cur=periodAt(l,NOW),s='<div class="plan"><b>ההסדר לאורך זמן</b>';
   ps.forEach(function(x,i){
+    var pv=ps[i-1];if(pv&&pv.mode===x.mode&&+pv.rate===+x.rate&&(x.mode==='acc'||+pv.share===+x.share)&&x!==cur)return;
     var st=x===cur?'<span class="st now">עכשיו</span>':(x.from>NOW?'<span class="st fut">מתוכנן</span>':'<span class="st past">הסתיים</span>');
     s+='<div class="step '+x.mode+'"><i></i><div><b>'+mName(x.from)+'</b>'+st+'<span>'+(x.mode==='acc'?'צבירה: '+pct(x.rate)+' לחודש, כל העמלה נוספת לקרן, אין חלוקה':'תשלום כל חודש, '+pct(x.rate)+' לחודש, '+pct(x.share)+' לסוכן')+(i>0?' <button class="x" style="padding:0 4px" onclick="delPeriod(\''+l.id+'\','+i+')">בטל</button>':'')+'</span></div></div>';
   });
@@ -463,6 +465,8 @@ function planPrev(){var f=$('fFrom').value,mode=optVal('fMode'),r=$('fRate').val
 function savePlan(lid){var l=D.loans.find(function(x){return x.id===lid}),f=$('fFrom').value,r=num($('fRate').value),s=num($('fShare').value);
   if(!(r>=0)||!(s>=0)||s>100){$('fErr').textContent='בדוק את האחוזים.';return}
   if(f<l.start){$('fErr').textContent='החודש לפני תחילת ההלוואה.';return}
+  var m=optVal('fMode'),before=l.periods.filter(function(x){return x.from<f}).sort(function(a,b){return a.from<b.from?-1:1}).pop();
+  if(before&&before.mode===m&&+before.rate===r&&(m==='acc'||+before.share===s)){$('fErr').textContent='זה בדיוק ההסדר שכבר קיים בחודש הזה. בחר הסדר אחר או חודש אחר.';return}
   l.periods=l.periods.filter(function(x){return x.from!==f});l.periods.push({from:f,mode:optVal('fMode'),rate:r,share:s});l.periods.sort(function(a,b){return a.from<b.from?-1:1});
   closeSheet();save(true);toast('ההסדר נשמר');render()}
 function delPeriod(lid,i){var l=D.loans.find(function(x){return x.id===lid}),ps=l.periods.slice().sort(function(a,b){return a.from<b.from?-1:1});if(i<1)return;var rm=ps[i];
