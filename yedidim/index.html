@@ -804,7 +804,11 @@ function scoreOf(inv,app){
   // talk vs questionnaire
   var gaps=0,cmp=0;
   [['income','הכנסה'],['debts','חובות בחודש'],['amount','סכום']].forEach(function(f){var a=nz(K[f[0]]),b=nz(A[f[0]]);if(a==null||b==null)return;cmp++;if(gapPct(a,b)>=10){gaps++;why.push(['m',0,f[1]+': בשיחה '+money(a)+', בשאלון '+money(b),'פער של '+Math.round(gapPct(a,b))+'%'])}});
-  if(nz(K.startYear)!=null&&nz(A.startYear)!=null){cmp++;if(nz(K.startYear)!==nz(A.startYear)){gaps++;why.push(['m',0,'שנת התחלה: בשיחה '+K.startYear+', בשאלון '+A.startYear,''])}}
+  function yr(v){var y=nz(v);return y!=null&&y>2400?y-543:y}
+  if(nz(K.months)!=null&&nz(A.months)!=null){cmp++;if(nz(K.months)!==nz(A.months)){gaps++;why.push(['m',0,'חודשים: בשיחה '+K.months+', בשאלון '+A.months,''])}}
+  if(K.purpose&&A.purpose){cmp++;if(K.purpose!==A.purpose){gaps++;why.push(['m',0,'מטרה: בשיחה "'+HE.purpose[K.purpose]+'", בשאלון "'+HE.purpose[A.purpose]+'"',''])}}
+  if(nz(K.payDay)!=null&&nz(A.payDay)!=null){cmp++;if(Math.abs(nz(K.payDay)-nz(A.payDay))>2){gaps++;why.push(['m',0,'יום משכורת: בשיחה '+K.payDay+', בשאלון '+A.payDay,''])}}
+  if(yr(K.startYear)!=null&&yr(A.startYear)!=null){cmp++;if(yr(K.startYear)!==yr(A.startYear)){gaps++;why.push(['m',0,'שנת התחלה: בשיחה '+K.startYear+', בשאלון '+A.startYear,''])}}
   if(K.privateLoan==='yes'||K.privateLoan==='no'){if(A.privateLoan){cmp++;if(K.privateLoan!==A.privateLoan){gaps++;why.push(['m',0,'הלוואה פרטית: בשיחה "'+HE.yn[K.privateLoan]+'", בשאלון "'+HE.yn[A.privateLoan]+'"',''])}}}
   if(K.guarantor&&A.guarantor){cmp++;if(K.guarantor!==A.guarantor){gaps++;why.push(['m',0,'ערב: בשיחה "'+HE.guarantor[K.guarantor]+'", בשאלון "'+HE.guarantor[A.guarantor]+'"',''])}}
   var p1=!cmp?0:(gaps===0?12:(gaps===1?6:0));rel+=p1;
