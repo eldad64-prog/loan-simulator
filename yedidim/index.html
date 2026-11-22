@@ -316,7 +316,7 @@ function syncBadge(){
 
 /* ================= home ================= */
 function renderHome(){
-  var list=D.people.map(function(p){return {p:p,t:personStats(p.id)}}).filter(function(x){return x.t.n>0||!x.p.archived});
+  var list=D.people.map(function(p){return {p:p,t:personStats(p.id)}}).filter(function(x){return x.t.n>0});
   list.sort(function(a,b){return b.t.arrears-a.t.arrears||b.t.principal-a.t.principal});
   var T={principal:0,fee:0,me:0,ag:0,recv:0,arrears:0,late:0};
   list.forEach(function(x){['principal','fee','me','ag','recv','arrears'].forEach(function(k){T[k]+=x.t[k]});if(x.t.arrears>0.5)T.late++});
