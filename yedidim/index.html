@@ -332,7 +332,8 @@ function renderHome(){
   h+='<div class="sec">לפי אדם</div>';
   list.forEach(function(x){var p=x.p,t=x.t;
     h+='<button class="pc" onclick="go(\'p\',\''+p.id+'\')"><div class="hd"><div class="av">'+esc(letter(p.name))+'</div><div class="nm"><b>'+esc(p.name)+'</b><span class="tag n">'+(t.n===1?'הלוואה אחת':t.n+' הלוואות')+'</span>'+statusTag(t)+'</div><span class="chev">‹</span></div>'+
-       '<div class="trio"><div><span>קרן בחוץ</span><b>'+money(t.principal)+'</b></div><div><span>לך בחודש</span><b>'+money(t.me)+'</b></div><div><span>לסוכן בחודש</span><b>'+money(t.ag)+'</b></div></div></button>';
+       (t.acc===t.n?'<div class="trio" style="grid-template-columns:1fr 1fr"><div><span>קרן בחוץ</span><b>'+money(t.principal)+'</b></div><div><span>נוסף לקרן בחודש</span><b>'+money(t.fee)+'</b></div></div>':
+       '<div class="trio"><div><span>קרן בחוץ</span><b>'+money(t.principal)+'</b></div><div><span>לך בחודש</span><b>'+money(t.me)+'</b></div><div><span>לסוכן בחודש</span><b>'+money(t.ag)+'</b></div></div>')+'</button>';
   });
   $('view').innerHTML=h;
 }
@@ -348,15 +349,17 @@ function renderPerson(pid){
   var h='<button class="back" onclick="go(\'home\')">→ כל התיקים</button>';
   h+='<div class="top"><div><small>כרטיס אדם</small><h1>'+esc(p.name)+'</h1></div>'+statusTag(t)+'</div>';
   if(p.note)h+='<p class="ex" style="text-align:right;margin:-6px 0 12px">'+esc(p.note)+'</p>';
-  h+='<div class="trio white" style="margin-bottom:10px"><div><span>קרן בחוץ</span><b>'+money(t.principal)+'</b></div><div><span>לך בחודש</span><b style="color:var(--jade)">'+money(t.me)+'</b></div><div><span>לסוכן בחודש</span><b style="color:var(--gold-ink)">'+money(t.ag)+'</b></div></div>';
+  if(t.n&&t.acc===t.n)h+='<div class="trio white" style="margin-bottom:10px;grid-template-columns:1fr 1fr"><div><span>קרן בחוץ</span><b>'+money(t.principal)+'</b></div><div><span>נוסף לקרן בחודש</span><b style="color:var(--blue)">'+money(t.fee)+'</b></div></div>';
+  else h+='<div class="trio white" style="margin-bottom:10px"><div><span>קרן בחוץ</span><b>'+money(t.principal)+'</b></div><div><span>לך בחודש</span><b style="color:var(--jade)">'+money(t.me)+'</b></div><div><span>לסוכן בחודש</span><b style="color:var(--gold-ink)">'+money(t.ag)+'</b></div></div>';
   if(t.arrears>0.5)h+='<div class="alert">⚠ חוב מחודשים קודמים: '+money(t.arrears)+'</div>';
   h+='<div class="sec">ההלוואות</div>';
   if(!ls.length)h+='<div class="card empty">אין הלוואות פעילות.</div>';
   ls.forEach(function(l,i){
     var c=calcLoan(l),per=c.per;
     h+='<div class="loan"><div class="lh"><b class="num">'+money(c.principal)+'</b><span>הלוואה '+(i+1)+(l.clientRef?'<br>'+esc(l.clientRef):'')+'</span></div>'+
-       '<div class="terms"><span class="'+per.mode+'">'+(per.mode==='acc'?'בצבירה':'תשלום כל חודש')+'</span><span>'+pct(per.rate)+' לחודש</span><span>'+pct(per.share)+' ל'+esc(p.name)+'</span>'+(l.term?'<span>'+l.term+' חודשים</span>':'')+'</div>'+
-       '<div class="split3"><div class="t"><span>עמלה בחודש</span><b>'+money(c.cur.fee)+'</b></div><div class="me"><span>'+(per.mode==='acc'?'נוסף לקרן':'לך')+'</span><b>'+money(per.mode==='acc'?c.cur.fee:c.cur.me)+'</b></div><div class="ag"><span>ל'+esc(p.name)+'</span><b>'+money(c.cur.ag)+'</b></div></div>'+
+       '<div class="terms"><span class="'+per.mode+'">'+(per.mode==='acc'?'בצבירה':'תשלום כל חודש')+'</span><span>'+pct(per.rate)+' לחודש</span>'+(per.mode==='acc'?'':'<span>'+pct(per.share)+' ל'+esc(p.name)+'</span>')+(l.term?'<span>'+l.term+' חודשים</span>':'')+'</div>'+
+       (per.mode==='acc'?'<div class="split3" style="grid-template-columns:1fr 1fr"><div class="t"><span>עמלה בחודש</span><b>'+money(c.cur.fee)+'</b></div><div class="me" style="background:var(--blue-soft)"><span>כולה נוספת לקרן</span><b style="color:var(--blue)">'+money(c.cur.fee)+'</b></div></div>':
+       '<div class="split3"><div class="t"><span>עמלה בחודש</span><b>'+money(c.cur.fee)+'</b></div><div class="me"><span>לך</span><b>'+money(c.cur.me)+'</b></div><div class="ag"><span>ל'+esc(p.name)+'</span><b>'+money(c.cur.ag)+'</b></div></div>')+
        '<div class="plain">'+plainText(l,esc(p.name),c)+'</div>'+
        (l.clientRef?'<div class="cli">לקוח רשום, מידע עזר: '+esc(l.clientRef)+'</div>':'')+
        planHtml(l)+
@@ -392,7 +395,7 @@ function planHtml(l){
   var cur=periodAt(l,NOW),s='<div class="plan"><b>ההסדר לאורך זמן</b>';
   ps.forEach(function(x,i){
     var st=x===cur?'<span class="st now">עכשיו</span>':(x.from>NOW?'<span class="st fut">מתוכנן</span>':'<span class="st past">הסתיים</span>');
-    s+='<div class="step '+x.mode+'"><i></i><div><b>'+mName(x.from)+'</b>'+st+'<span>'+(x.mode==='acc'?'צבירה: כל העמלה נוספת לקרן':'תשלום כל חודש')+', '+pct(x.rate)+' לחודש, '+pct(x.share)+' לסוכן'+(i>0?' <button class="x" style="padding:0 4px" onclick="delPeriod(\''+l.id+'\','+i+')">בטל</button>':'')+'</span></div></div>';
+    s+='<div class="step '+x.mode+'"><i></i><div><b>'+mName(x.from)+'</b>'+st+'<span>'+(x.mode==='acc'?'צבירה: '+pct(x.rate)+' לחודש, כל העמלה נוספת לקרן, אין חלוקה':'תשלום כל חודש, '+pct(x.rate)+' לחודש, '+pct(x.share)+' לסוכן')+(i>0?' <button class="x" style="padding:0 4px" onclick="delPeriod(\''+l.id+'\','+i+')">בטל</button>':'')+'</span></div></div>';
   });
   return s+'</div>';
 }
@@ -426,7 +429,8 @@ function openLoanSheet(lid,pid){
   $('fNewWrap').hidden=$('fP').value!=='__new';
   if(!l)loanPrev();
 }
-function loanPrev(){var el=$('fPrev');if(!el)return;var a=num($('fAmt').value),r=num($('fRate').value),s=num($('fShare').value),mode=optVal('fMode');
+function shareVis(mode){var f=$('fShare');if(f)f.closest('.fl').style.visibility=mode==='acc'?'hidden':''}
+function loanPrev(){var el=$('fPrev');if(!el)return;var a=num($('fAmt').value),r=num($('fRate').value),s=num($('fShare').value),mode=optVal('fMode');shareVis(mode);
   if(!(a>0)||!(r>=0)){el.textContent='הזן קרן ואחוז כדי לראות חישוב.';return}
   var fee=a*r/100;el.textContent=mode==='acc'?'כל חודש '+money(fee)+' נוספים לקרן, והקרן גדלה.':'כל חודש '+money(fee)+': אליך '+money(fee*(1-(s||0)/100))+', לסוכן '+money(fee*(s||0)/100)+'.'}
 function saveLoan(lid){
@@ -454,7 +458,7 @@ function openPlan(lid){
     '<div class="prev" id="fPrev"></div><button class="btn pri full" onclick="savePlan(\''+lid+'\')">שמור הסדר חדש</button>';
   openSheet(h);planPrev();
 }
-function planPrev(){var f=$('fFrom').value,mode=optVal('fMode'),r=$('fRate').value,s=$('fShare').value;
+function planPrev(){var f=$('fFrom').value,mode=optVal('fMode'),r=$('fRate').value,s=$('fShare').value;shareVis(mode);
   $('fPrev').textContent='עד סוף '+mName(addM(f,-1))+' נשאר ההסדר הנוכחי. מ'+mName(f)+': '+(mode==='acc'?'כל העמלה ('+r+'% לחודש) נוספת לקרן ולא משולמת.':'הקרן נשארת קבועה, '+r+'% לחודש, '+s+'% לסוכן והשאר אליך.')+' מה שכבר נצבר נשאר בקרן.'}
 function savePlan(lid){var l=D.loans.find(function(x){return x.id===lid}),f=$('fFrom').value,r=num($('fRate').value),s=num($('fShare').value);
   if(!(r>=0)||!(s>=0)||s>100){$('fErr').textContent='בדוק את האחוזים.';return}
@@ -786,6 +790,7 @@ async function renderLead(code){
   // docs
   var F=app.files||{},req=['id','bank',A.source==='self'?'biz':'payslip'].concat((inv.docs||[]).filter(function(d){return ['id','bank','payslip','biz'].indexOf(d)<0}));
   h+='<div class="sec">מסמכים</div><div class="card">'+req.map(function(k){var fs=F[k]||[];return '<div class="docrow"><span>'+esc(docHe(k))+'</span>'+(fs.length?fs.map(function(p,i){return '<button class="btn sec2" style="width:auto;padding:6px 12px" onclick="openDoc(\''+p.replace(/'/g,'')+'\')">פתח'+(fs.length>1?' '+(i+1):'')+'</button>'}).join(' '):'<span class="tag late">חסר</span>')+'</div>'}).join('')+'</div>';
+  h+='<div class="sec">בדיקה ממוחשבת של המסמכים</div><div class="card" id="docCheck"><div class="empty" style="padding:10px">קורא את המסמכים…</div></div>';
   // signals + answers
   var S=app.signals||{};
   h+='<div class="sec">סימנים שקטים</div><div class="card" style="font-size:14px;line-height:1.6">מילא ב-'+(S.seconds?(S.seconds<90?S.seconds+' שניות':Math.round(S.seconds/60)+' דקות'):'—')+'. שינה את תשובת ההכנסה '+(S.incomeChanges||0)+' פעמים. נשלח ב-'+new Date(app.submitted_at).toLocaleString('he-IL')+'.</div>';
@@ -801,6 +806,80 @@ async function renderLead(code){
   if(app.decision==='approved')h+='<button class="btn dark full" style="margin-top:8px" onclick="loanFromLead(\''+code+'\')">פתח הלוואה בתיקים</button>';
   h+='<button class="more-link" onclick="openInvite(\''+code+'\')">עריכת סיכום השיחה ‹</button>';
   $('view').innerHTML=h;
+  runDocCheck(code);
+}
+
+/* ================= free in-browser document check (text PDFs only) ================= */
+var PDFJS_URL='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+var PDFJS_WORKER='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+var DOCCACHE={};
+function loadPdfJs(){return new Promise(function(res,rej){if(window.pdfjsLib)return res(window.pdfjsLib);var s=document.createElement('script');s.src=PDFJS_URL;s.onload=function(){window.pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS_WORKER;res(window.pdfjsLib)};s.onerror=rej;document.head.appendChild(s)})}
+async function pdfLines(path){
+  var dl=await cloud.sb.storage.from('yd-docs').download(path);if(dl.error)throw new Error('download');
+  var buf=new Uint8Array(await dl.data.arrayBuffer());
+  if(String.fromCharCode.apply(null,buf.slice(0,5))!=='%PDF-')return {notPdf:true,lines:[]};
+  var lib=await loadPdfJs(),doc=await lib.getDocument({data:buf}).promise,lines=[];
+  for(var p=1;p<=Math.min(doc.numPages,30);p++){
+    var tc=await (await doc.getPage(p)).getTextContent(),rows={};
+    tc.items.forEach(function(it){var y=Math.round(it.transform[5]/3);(rows[y]=rows[y]||[]).push({x:it.transform[4],s:it.str})});
+    Object.keys(rows).sort(function(a,b){return b-a}).forEach(function(y){lines.push(rows[y].sort(function(a,b){return a.x-b.x}).map(function(o){return o.s}).join(' ').replace(/\s+/g,' ').trim())});
+  }
+  return {notPdf:false,lines:lines.filter(Boolean)};
+}
+var RX_DATE=/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/;
+var RX_AMT=/\d{1,3}(?:,\d{3})+(?:\.\d{2})|\d+\.\d{2}/g;
+var RX_SAL=/salary|payroll|sal\b|payrl|เงินเดือน|ค่าจ้าง|โอนเงินเดือน|เงินเดือนเข้า/i;
+function amts(line){return (line.match(RX_AMT)||[]).map(function(a){return parseFloat(a.replace(/,/g,''))}).filter(function(n){return n>0})}
+function analyzeBank(lines,employer){
+  var emp=(employer||'').toLowerCase().split(/\s+/).filter(function(w){return w.length>=4})[0]||null,hits=[];
+  lines.forEach(function(l){var d=l.match(RX_DATE);if(!d)return;var low=l.toLowerCase();
+    if(RX_SAL.test(l)||(emp&&low.indexOf(emp)>=0)){var a=amts(l);if(a.length)hits.push({day:+d[1],mon:d[2]+'/'+d[3],amt:a[0],line:l})}});
+  var byMon={};hits.forEach(function(h){if(!byMon[h.mon]||h.amt>byMon[h.mon].amt)byMon[h.mon]=h});
+  var ms=Object.keys(byMon).map(function(k){return byMon[k]});
+  if(!ms.length)return {found:false,lineCount:lines.length};
+  var avg=ms.reduce(function(s,h){return s+h.amt},0)/ms.length,days={};ms.forEach(function(h){days[h.day]=(days[h.day]||0)+1});
+  var day=+Object.keys(days).sort(function(a,b){return days[b]-days[a]})[0];
+  return {found:true,months:ms.length,avg:avg,day:day,sample:ms.slice(0,6)};
+}
+function analyzePayslip(lines,employer){
+  var net=null,emp=(employer||'').toLowerCase().split(/\s+/).filter(function(w){return w.length>=4})[0]||null,empFound=false;
+  var RX_NET=/net\s*pay|net\s*salary|net\s*income|เงินได้สุทธิ|รับสุทธิ|ยอดสุทธิ|เงินเดือนสุทธิ|total\s*income|รวมเงินได้/i;
+  lines.forEach(function(l,i){if(emp&&l.toLowerCase().indexOf(emp)>=0)empFound=true;if(net==null&&RX_NET.test(l)){var a=amts(l);if(!a.length&&lines[i+1])a=amts(lines[i+1]);if(a.length)net=Math.max.apply(null,a)}});
+  return {net:net,empFound:empFound,emp:emp,lineCount:lines.length};
+}
+function verdict(gap){return gap==null?'y':gap<10?'g':gap<=30?'y':'r'}
+async function runDocCheck(code){
+  var box=$('docCheck');if(!box)return;
+  var inv=LD.inv.find(function(x){return x.code===code}),app=appOf(code);if(!app)return;
+  var A=app.answers||{},F=app.files||{},inc=nz(A.income),out=[],auto=null;
+  try{
+    if(!DOCCACHE[code]){DOCCACHE[code]={};
+      for(var k of ['bank','payslip']){var fs=F[k]||[];if(!fs.length)continue;var all=[],notPdf=false;
+        for(var p of fs){try{var r=await pdfLines(p);if(r.notPdf)notPdf=true;all=all.concat(r.lines)}catch(e){notPdf=notPdf||false}}
+        DOCCACHE[code][k]={lines:all,notPdf:notPdf}}}
+    var C=DOCCACHE[code];
+    if(C.bank){var b=C.bank;
+      if(b.notPdf&&!b.lines.length)out.push(['y','דפי בנק','זה לא קובץ PDF של הבנק, ולכן אי אפשר לקרוא אותו. לבדוק ידנית.']);
+      else if(!b.lines.length)out.push(['y','דפי בנק','לא נמצא טקסט בקובץ. כנראה סריקה או צילום. לבדוק ידנית.']);
+      else{var ab=analyzeBank(b.lines,A.employer);
+        if(!ab.found)out.push(['y','דפי בנק','נקראו '+ab.lineCount+' שורות, אבל לא זוהתה משכורת (לא נמצאה המילה "เงินเดือน" או "SALARY" או שם המעסיק). לבדוק ידנית.']);
+        else{var g=gapPct(inc,ab.avg);auto={bankIncome:Math.round(ab.avg),bankPayDay:ab.day};
+          out.push([verdict(g),'דפי בנק','זוהתה משכורת ב-'+ab.months+' חודשים. ממוצע '+money(ab.avg)+', בדרך כלל ב-'+ab.day+' לחודש. הלקוח כתב '+money(inc)+(g!=null?', פער של '+Math.round(g)+'%':'')+'. יום משכורת בשאלון: '+(A.payDay||'—')+'.'])}}}
+    if(C.payslip){var s=C.payslip;
+      if(!s.lines.length)out.push(['y','תלוש',''+(s.notPdf?'זה לא קובץ PDF':'אין טקסט בקובץ')+'. לבדוק ידנית.']);
+      else{var ap=analyzePayslip(s.lines,A.employer),g2=ap.net!=null?gapPct(inc,ap.net):null;
+        out.push([ap.net==null?'y':verdict(g2),'תלוש',(ap.net!=null?'שכר בתלוש '+money(ap.net)+', הלקוח כתב '+money(inc)+', פער של '+Math.round(g2)+'%.':'לא נמצא סכום שכר נטו בתלוש.')+(ap.emp?(ap.empFound?' שם המעסיק מופיע בתלוש.':' שם המעסיק "'+esc(A.employer)+'" לא נמצא בתלוש.'):'')])}}
+    if(!out.length)out.push(['y','מסמכים','אין דפי בנק או תלוש לקריאה.']);
+  }catch(e){out=[['y','מסמכים','הקריאה נכשלה. בדוק שיש חיבור לאינטרנט ונסה שוב.']]}
+  box.innerHTML=out.map(function(o){return '<div class="why"><b class="pt '+(o[0]==='g'?'p':o[0]==='r'?'m':'z')+'">'+(o[0]==='g'?'✓':o[0]==='r'?'!':'?')+'</b><div><b>'+o[1]+'</b><span>'+o[2]+'</span></div></div>'}).join('')+
+    (auto?'<p class="ex" style="text-align:right">הנתונים מהבנק נכנסו לציון באופן אוטומטי. אפשר לתקן אותם למעלה, ב"בדיקה שלך מול דפי הבנק".</p>':'')+
+    '<p class="ex" style="text-align:right">הקריאה החינמית עובדת רק על קובצי PDF מקוריים מהבנק או מהמעסיק.</p>';
+  // fill bank fields automatically if empty
+  if(auto&&app.review&&(app.review.bankIncome==null||app.review.bankIncome==='')&&!app.review.autoDone){
+    var R=Object.assign({},app.review,{bankIncome:String(auto.bankIncome),bankPayDay:String(auto.bankPayDay),auto:true,autoDone:true});
+    var rr=await cloud.sb.rpc('yd_review',{app:app.id,rev:R,d:app.decision||null});
+    if(!rr.error){app.review=R;toast('הציון עודכן לפי דפי הבנק');renderLead(code)}
+  }
 }
 async function saveReview(id,code){var app=appOf(code),R=Object.assign({},app.review||{});
   R.bankIncome=$('r_bank').value.trim()||null;R.bankPayDay=$('r_pd').value.trim()||null;var rt=num($('r_rate').value);R.rate=isFinite(rt)?rt:20;R.note=$('r_note').value.trim();
