@@ -662,6 +662,8 @@ function cloudInit(){
   if(!window.supabase)return;
   cloud.sb=window.supabase.createClient(CLOUD_URL,CLOUD_KEY,{auth:{storageKey:'yd2.auth',persistSession:true,detectSessionInUrl:true,flowType:'implicit'}});
   cloud.sb.auth.onAuthStateChange(function(ev,session){cloud.user=session?session.user:null;if(cloud.user){cloudPull()}else{cloud.state='local';render()}});
+  // app resumed from the background: fetch what changed on another device
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&cloud.user&&cloud.state!=='busy'&&$('sheet').hidden)cloudPull()});
 }
 function openCloud(){openSheet('<h2>חיבור לענן</h2><div class="sub">נשלח אליך קישור כניסה למייל. פותחים אותו בטלפון הזה, והנתונים נשמרים בענן ולא יאבדו.</div><div class="err" id="fErr"></div><div class="fl"><label for="fMail">מייל</label><input id="fMail" type="email" inputmode="email" autocomplete="email"></div><button class="btn pri full" id="mailBtn" onclick="sendLink()">שלח לי קישור</button>')}
 async function sendLink(){var m=($('fMail').value||'').trim();if(!/^\S+@\S+\.\S+$/.test(m)){$('fErr').textContent='המייל לא נראה תקין.';return}
@@ -674,15 +676,20 @@ async function cloudPull(){
   cloud.state='busy';cloud.msg='';render();
   var r=await cloud.sb.from(TABLE).select('data,rev,updated_at').eq('owner_id',cloud.user.id).maybeSingle();
   if(r.error){cloud.state='err';cloud.msg=r.error.code==='42P01'||/does not exist|schema cache/i.test(r.error.message)?'הענן של האפליקציה החדשה עוד לא הוגדר. נגדיר אותו יחד.':'קריאה מהענן נכשלה: '+r.error.message;return render()}
-  if(r.data&&r.data.data&&(+r.data.rev||0)>(+D.rev||0)){D=r.data.data;lsSet(KEY,JSON.stringify(D));toast('נטען מהענן')}
-  else if(!r.data||(+D.rev||0)>(+r.data.rev||0)){await cloudPush()}
+  if(r.data&&r.data.data&&(+r.data.rev||0)>(+D.rev||0)){D=r.data.data;lsSet(KEY,JSON.stringify(D));cloud.base=+r.data.rev||0;toast('נטען מהענן')}
+  else if(!r.data||(+D.rev||0)>(+r.data.rev||0)){cloud.base=r.data?+r.data.rev||0:0;await cloudPush()}
+  else cloud.base=+r.data.rev||0;
   cloud.state='ok';cloud.last=new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});render();
 }
 function cloudQueue(){if(!cloud.user)return;clearTimeout(cloud.timer);cloud.timer=setTimeout(cloudPush,800)}
 async function cloudPush(){
   if(!cloud.user||!cloud.sb)return;cloud.state='busy';
+  // never overwrite newer data saved from another device
+  var chk=await cloud.sb.from(TABLE).select('data,rev').eq('owner_id',cloud.user.id).maybeSingle();
+  if(chk.data&&cloud.base!=null&&(+chk.data.rev||0)>cloud.base){D=chk.data.data;lsSet(KEY,JSON.stringify(D));cloud.base=+chk.data.rev||0;cloud.state='ok';if(!$('sheet').hidden)closeSheet();render();
+    openSheet('<h2>נטענו נתונים חדשים</h2><div class="sub">בזמן שהאפליקציה הייתה פתוחה כאן, הנתונים עודכנו ממכשיר אחר. הם נטענו עכשיו. השינוי האחרון שעשית כאן לא נשמר, אז עשה אותו שוב.</div><button class="btn pri full" onclick="closeSheet()">הבנתי</button>');return}
   var r=await cloud.sb.from(TABLE).upsert({owner_id:cloud.user.id,data:D,rev:D.rev||0,updated_at:new Date().toISOString()},{onConflict:'owner_id'});
-  if(r.error){cloud.state='err';cloud.msg='שמירה בענן נכשלה: '+r.error.message}else{cloud.state='ok';cloud.msg='';cloud.last=new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}
+  if(r.error){cloud.state='err';cloud.msg='שמירה בענן נכשלה: '+r.error.message}else{cloud.state='ok';cloud.base=D.rev||0;cloud.msg='';cloud.last=new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}
   if(route.v!=='p'||$('sheet').hidden)render();
 }
 
