@@ -15,6 +15,7 @@
 -->
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Secular+One&display=swap" rel="stylesheet">
 <style>
@@ -1242,6 +1243,7 @@ function loanFromLead(code){var inv=LD.inv.find(function(x){return x.code===code
 
 /* ================= start ================= */
 load();readHash();render();checkLock();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(function(){});
 try{cloudInit()}catch(e){cloud.state='err';cloud.msg='טעינת הענן נכשלה'}
 </script>
 </body>
