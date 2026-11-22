@@ -671,7 +671,7 @@ async function sendLink(){var m=($('fMail').value||'').trim();if(!/^\S+@\S+\.\S+
   $('mailBtn').textContent='שולח…';var r=await cloud.sb.auth.signInWithOtp({email:m,options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:false}});
   if(r.error){$('fErr').textContent='השליחה נכשלה: '+r.error.message;$('mailBtn').textContent='שלח לי קישור';return}
   $('sheet').innerHTML='<div class="grab"></div><h2>נשלח</h2><div class="sub">פתח את המייל בטלפון הזה ולחץ על הקישור. האפליקציה תיפתח מחוברת.</div><button class="btn pri full" onclick="closeSheet()">סגור</button>'}
-async function cloudOut(){if(cloud.sb)await cloud.sb.auth.signOut();cloud.user=null;cloud.state='local';render()}
+async function cloudOut(){if(cloud.sb)await cloud.sb.auth.signOut({scope:'local'});cloud.user=null;cloud.state='local';render()}
 async function cloudPull(){
   cloud.state='busy';cloud.msg='';render();
   var r=await cloud.sb.from(TABLE).select('data,rev,updated_at').eq('owner_id',cloud.user.id).maybeSingle();
