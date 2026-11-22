@@ -90,19 +90,19 @@ var T={
   s1:'คำขอ',amount:'ต้องการกู้เงินเท่าไร (บาท)',months:'ต้องการผ่อนกี่เดือน',purpose:'กู้ไปทำอะไร',
   p_biz:'ธุรกิจ',p_car:'รถ',p_debt:'ใช้หนี้อื่น',p_family:'ครอบครัว',p_other:'อื่น ๆ',
   s2:'งาน',source:'รายได้หลักมาจากอะไร',src_salary:'เงินเดือน',src_self:'ธุรกิจของตัวเอง',src_other:'อื่น ๆ',
-  employer:'ชื่อที่ทำงาน',workPhone:'เบอร์โทรของที่ทำงาน',startYear:'เริ่มทำงานที่นี่ตั้งแต่ปีไหน (ค.ศ.)',payDay:'เงินเดือนเข้าวันที่เท่าไรของเดือน',
+  employer:'ชื่อที่ทำงาน',workPhone:'เบอร์โทรของที่ทำงาน',startYear:'เริ่มทำงานที่นี่ตั้งแต่ปีไหน',payDay:'เงินเดือนเข้าวันที่เท่าไรของเดือน',
   s3:'การเงิน',income:'เดือนที่แล้วมีเงินเข้าบัญชีเท่าไร (บาท)',incomeHint:'ประมาณได้ เราจะตรวจสอบกับรายการเดินบัญชี',
   debts:'ตอนนี้ผ่อนหนี้เดือนละเท่าไร (บาท)',private:'มีหนี้นอกระบบ หรือแชร์ อยู่หรือไม่',no:'ไม่มี',yes:'มี',privateAmt:'ผ่อนเดือนละเท่าไร (บาท)',
   s4:'ถ้าเกิด…',scen1:'ถ้าเดือนหน้ารายได้ลดลง 30% จะทำอย่างไร',sc1_save:'มีเงินเก็บ',sc1_cut:'ลดค่าใช้จ่าย',sc1_ask:'ขอยืมคนอื่น',sc1_unsure:'ยังไม่แน่ใจ',
   scen2:'ถ้ามีเดือนหนึ่งจ่ายไม่ได้ จะทำอย่างไร',sc2_notify:'แจ้งล่วงหน้าและหาทางออกด้วยกัน',sc2_delay:'ขอเลื่อนสั้น ๆ',sc2_wait:'รอให้ผ่านไปเอง',
   s5:'ผู้ค้ำประกัน',guar:'ใครสามารถค้ำประกันให้ได้',g_biz:'เจ้าของธุรกิจ',g_two:'พนักงาน 2 คน มีสลิปเงินเดือน ทำงาน 6 เดือนขึ้นไป',g_none:'ไม่มี',
   g1:'ผู้ค้ำคนที่ 1: ชื่อและเบอร์โทร',g2:'ผู้ค้ำคนที่ 2: ชื่อและเบอร์โทร',gNone:'ถ้าไม่มีผู้ค้ำ เราไม่สามารถอนุมัติได้ คุณยังส่งคำขอได้ และเพิ่มผู้ค้ำภายหลังได้',
-  s6:'เอกสาร',docsLead:'ใกล้เสร็จแล้ว ถ่ายรูปเอกสารเหล่านี้:',required:'จำเป็น',upload:'ถ่ายรูป',again:'เปลี่ยน',uploaded:'อัปโหลดแล้ว',uploading:'กำลังอัปโหลด…',
+  s6:'เอกสาร',docsLead:'ใกล้เสร็จแล้ว ถ่ายรูปเอกสารเหล่านี้:',required:'จำเป็น',upload:'ถ่ายรูป',again:'+ เพิ่มหน้า',uploaded:'อัปโหลดแล้ว {n} ไฟล์',uploading:'กำลังอัปโหลด…',
   weekly:'คำถามสุดท้าย: โดยประมาณ มีเงินเข้าสัปดาห์ละเท่าไร (บาท)',missing:'ยังขาดเอกสาร {n} รายการ',
   fill:'กรุณากรอกช่องที่มีกรอบสีแดง',saved:'บันทึกแล้ว',saving:'กำลังบันทึก…',saveErr:'บันทึกไม่สำเร็จ ลองอีกครั้ง',
   doneT:'ส่งคำขอแล้ว',doneL:'ขอบคุณ เราจะตรวจสอบข้อมูลและติดต่อกลับผ่านตัวแทนภายใน 24 ชั่วโมง',d1:'✓ ส่งแล้ว',d2:'กำลังตรวจสอบ',d3:'ตอบกลับภายใน 24 ชม.',
   bad:'ลิงก์นี้ใช้ไม่ได้ หรือถูกใช้ไปแล้ว กรุณาขอลิงก์ใหม่จากตัวแทน',net:'ไม่มีการเชื่อมต่ออินเทอร์เน็ต ลองใหม่อีกครั้ง',hello:'สวัสดี {name}',
-  d_id:'บัตรประชาชน',d_bank:'รายการเดินบัญชี 6 เดือน',d_payslip:'สลิปเงินเดือนล่าสุด',d_biz:'เอกสารจดทะเบียนธุรกิจ',d_payslip3:'สลิปเงินเดือน 3 เดือน',d_lease:'สัญญาเช่า',d_g_id:'บัตรประชาชนของผู้ค้ำ',d_g_payslip:'สลิปเงินเดือนของผู้ค้ำ',d_car:'เล่มทะเบียนรถ',d_bill:'บิลค่าไฟ'
+  d_id:'บัตรประชาชน',d_bank:'รายการเดินบัญชี 6 เดือน',d_payslip:'สลิปเงินเดือนล่าสุด',d_biz:'เอกสารจดทะเบียนธุรกิจ',d_payslip3:'สลิปเงินเดือน 3 เดือน',d_lease:'สัญญาเช่า',d_g_id:'บัตรประชาชนของผู้ค้ำ',d_g_payslip:'สลิปเงินเดือนของผู้ค้ำ',d_car:'เล่มทะเบียนรถ',d_bill:'บิลค่าไฟ',pdfOnly:'PDF เท่านั้น',pdfHint:'รายการเดินบัญชี: ดาวน์โหลดไฟล์ PDF จากแอปธนาคาร ไม่รับรูปถ่ายหรือภาพหน้าจอ เอกสารอื่นถ่ายรูปได้ ถ้ามีหลายหน้ากด "เพิ่มหน้า"',pdfBad:'เอกสารนี้ต้องเป็นไฟล์ PDF เท่านั้น',choose:'เลือกไฟล์ PDF'
  },
  en:{
   title:'Loan application',intro:'6 short steps, about 4 minutes. You can stop and continue later from the same place.',
@@ -118,12 +118,12 @@ var T={
   scen2:'One month you cannot pay. What will you do?',sc2_notify:'Tell you early and find a solution together',sc2_delay:'Ask for a short delay',sc2_wait:'Wait until it passes',
   s5:'Guarantor',guar:'Who can be your guarantor?',g_biz:'A business owner',g_two:'Two employees with payslips, 6+ months at work',g_none:'I have none',
   g1:'Guarantor 1: name and phone',g2:'Guarantor 2: name and phone',gNone:'Without a guarantor we cannot approve the loan. You can still send the form and add a guarantor later.',
-  s6:'Documents',docsLead:'Almost done. Take photos of these documents:',required:'required',upload:'Take photo',again:'Change',uploaded:'Uploaded',uploading:'Uploading…',
+  s6:'Documents',docsLead:'Almost done. Take photos of these documents:',required:'required',upload:'Take photo',again:'+ Add page',uploaded:'{n} file(s) uploaded',uploading:'Uploading…',
   weekly:'Last question: about how much money comes in each week? (THB)',missing:'{n} documents missing',
   fill:'Please fill in the fields with a red border',saved:'Saved',saving:'Saving…',saveErr:'Could not save. Try again.',
   doneT:'Application sent',doneL:'Thank you. We will check the details and reply through your agent within 24 hours.',d1:'✓ Sent',d2:'Checking',d3:'Answer within 24 hours',
   bad:'This link does not work or was already used. Please ask your agent for a new link.',net:'No internet connection. Please try again.',hello:'Hello {name}',
-  d_id:'ID card',d_bank:'Bank statements, 6 months',d_payslip:'Latest payslip',d_biz:'Business registration',d_payslip3:'Payslips, 3 months',d_lease:'Rental contract',d_g_id:"Guarantor's ID card",d_g_payslip:"Guarantor's payslip",d_car:'Vehicle registration book',d_bill:'Electricity bill'
+  d_id:'ID card',d_bank:'Bank statements, 6 months',d_payslip:'Latest payslip',d_biz:'Business registration',d_payslip3:'Payslips, 3 months',d_lease:'Rental contract',d_g_id:"Guarantor's ID card",d_g_payslip:"Guarantor's payslip",d_car:'Vehicle registration book',d_bill:'Electricity bill',pdfOnly:'PDF only',pdfHint:'Bank statement: download the PDF file from your bank app. Photos and screenshots are not accepted. Other documents can be photos; for several pages tap "Add page".',pdfBad:'This document must be a PDF file',choose:'Choose PDF'
  }
 };
 var L=(function(){try{return localStorage.getItem('yd2.apply.lang')||'th'}catch(e){return 'th'}})();
@@ -180,7 +180,8 @@ function draw(keepScroll){
     h+='<h1>'+t('s2')+'</h1><div class="q"><div class="lbl">'+t('source')+'</div>'+chips('source',[['salary','src_salary'],['self','src_self'],['other','src_other']])+'</div>'+
        '<div class="q"><label for="f_employer">'+t('employer')+'</label>'+inp('employer')+'</div>'+
        '<div class="q"><label for="f_workPhone">'+t('workPhone')+'</label>'+inp('workPhone','tel')+'</div>'+
-       '<div class="two"><div class="q"><label for="f_startYear">'+t('startYear')+'</label>'+inp('startYear','numeric','2022')+'</div><div class="q"><label for="f_payDay">'+t('payDay')+'</label>'+inp('payDay','numeric','1-31')+'</div></div>';
+       '<div class="q"><label for="f_startYear">'+t('startYear')+'</label>'+inp('startYear','numeric',L==='th'?'2565':'2022')+'</div>'+
+       (A.source==='salary'?'<div class="q"><label for="f_payDay">'+t('payDay')+'</label>'+inp('payDay','numeric','1-31')+'</div>':'');
   }else if(st===3){
     h+='<h1>'+t('s3')+'</h1><div class="q"><label for="f_income">'+t('income')+'</label>'+inp('income','numeric')+'<div class="hint">'+t('incomeHint')+'</div></div>'+
        '<div class="q"><label for="f_debts">'+t('debts')+'</label>'+inp('debts','numeric','0')+'</div>'+
@@ -198,7 +199,7 @@ function draw(keepScroll){
     var req=requiredDocs(),miss=0;
     h+='<h1>'+t('s6')+'</h1><p class="lead">'+t('docsLead')+'</p>';
     req.forEach(function(k){var ok=(F[k]||[]).length>0;if(!ok)miss++;
-      h+='<div class="doc'+(ok?' ok':'')+'"><div class="t"><b>'+esc(docLabel(k))+'<span class="req">'+t('required')+'</span></b><span id="ds_'+k+'">'+(ok?'✓ '+t('uploaded'):'')+'</span></div><label>'+(ok?t('again'):t('upload'))+'<input type="file" accept="image/*,application/pdf" onchange="upload(\''+k.replace(/'/g,"\\'")+'\',this)"></label></div>'});
+      var po=pdfOnly(k);h+='<div class="doc'+(ok?' ok':'')+'"><div class="t"><b>'+esc(docLabel(k))+'<span class="req">'+t('required')+'</span>'+(po?'<span class="req" style="background:var(--gold-soft);color:var(--gold-ink)">'+t('pdfOnly')+'</span>':'')+'</b><span id="ds_'+k+'">'+(ok?'✓ '+t('uploaded',{n:F[k].length}):'')+'</span></div><label>'+(ok?t('again'):(po?t('choose'):t('upload')))+'<input type="file" accept="'+(po?'application/pdf,.pdf':'image/*,application/pdf')+'" onchange="upload(\''+k.replace(/'/g,"\\'")+'\',this)"></label></div>'});if(req.some(pdfOnly))h+='<div class="note" style="margin-top:6px">'+t('pdfHint')+'</div>';
     h+='<div class="q" style="margin-top:12px"><label for="f_weekly">'+t('weekly')+'</label>'+inp('weekly','numeric')+'</div>';
     h+='<div class="err" id="err">'+(miss?t('missing',{n:miss}):'')+'</div>';
     h+='<div class="nav"><button class="btn sec" onclick="go(-1)">'+t('back')+'</button><button class="btn pri" id="sendBtn" '+(miss?'disabled':'')+' onclick="submitApp()">'+(miss?t('missing',{n:miss}):t('send'))+'</button></div>';
@@ -214,7 +215,7 @@ function need(){
   function cOk(k){if(!A[k])bad.push(k)}
   if(st===0&&!A.pledge)bad.push('pl');
   if(st===1){nOk('amount');cOk('months');cOk('purpose')}
-  if(st===2){cOk('source');if(!(A.employer||'').trim())bad.push('employer');var y=num(A.startYear);if(!(y>=1970&&y<=new Date().getFullYear()))bad.push('startYear');var d=num(A.payDay);if(!(d>=1&&d<=31))bad.push('payDay')}
+  if(st===2){cOk('source');if(!(A.employer||'').trim())bad.push('employer');var y=num(A.startYear),cy=new Date().getFullYear();if(y>=2513&&y<=cy+543){y-=543;A.startYear=String(y)}if(!(y>=1970&&y<=cy))bad.push('startYear');if(A.source==='salary'){var d=num(A.payDay);if(!(d>=1&&d<=31))bad.push('payDay')}else delete A.payDay}
   if(st===3){nOk('income');nOk('debts');cOk('privateLoan');if(A.privateLoan==='yes')nOk('privateAmt')}
   if(st===4){cOk('scen1');cOk('scen2')}
   if(st===5){cOk('guarantor');if(A.guarantor==='biz'||A.guarantor==='two'){if(!(A.g1||'').trim())bad.push('g1')}if(A.guarantor==='two'&&!(A.g2||'').trim())bad.push('g2')}
@@ -234,9 +235,14 @@ async function save(extra){
   if(r.error){$('saving').textContent=t('saveErr');return false}
   APP=r.data;$('saving').textContent=t('saved');setTimeout(function(){$('saving').textContent=''},1500);return true;
 }
+/* Only the bank statement must be the bank app's PDF (one file holds all 6 months, and it can be read automatically). */
+function pdfOnly(k){return k==='bank'}
+async function isPdf(f){if(!/\.pdf$/i.test(f.name)&&f.type!=='application/pdf')return false;try{var b=new Uint8Array(await f.slice(0,5).arrayBuffer());return String.fromCharCode.apply(null,b)==='%PDF-'}catch(e){return false}}
 async function upload(k,input){
   var f=input.files&&input.files[0];if(!f)return;
-  var stEl=$('ds_'+k);if(stEl)stEl.textContent=t('uploading');
+  var stEl=$('ds_'+k);
+  if(pdfOnly(k)&&!(await isPdf(f))){if(stEl){stEl.textContent=t('pdfBad');stEl.style.color='var(--red)';stEl.style.fontWeight='700'}try{input.value=''}catch(e){}return}
+  if(stEl){stEl.style.color='';stEl.textContent=t('uploading')}
   var ext=(f.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'jpg';
   var safe=k.replace(/[^a-z0-9_]/gi,'_').slice(0,30);
   var path=USER.id+'/'+safe+'-'+Date.now()+'.'+ext;
