@@ -124,6 +124,22 @@ h1,h2,.num,.big,.disp{font-family:var(--display);font-weight:400}
 /* tab bar */
 .tabs{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;padding:8px max(6px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));z-index:5}
 .tabs button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--muted);font-weight:600;min-width:56px;padding:4px}
+.gate{min-height:calc(100vh - 40px);display:flex;flex-direction:column;gap:14px}
+.g-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.g-top .mark{font-family:var(--display);font-size:20px;color:var(--jade);margin-bottom:10px}
+.g-top .mark span{color:var(--gold-ink)}
+.g-top small{color:var(--muted);font-size:14px}
+.g-top h1{font-size:30px;margin-top:2px}
+.g-set{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--muted);flex:none}
+.g-set svg{width:24px;height:24px}
+.g-btn{flex:1;width:100%;min-height:180px;border-radius:26px;padding:22px;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;text-align:right;gap:4px}
+.g-btn svg{width:44px;height:44px;margin-bottom:auto}
+.g-btn b{font-family:var(--display);font-weight:400;font-size:30px;line-height:1.15}
+.g-btn span{font-size:16px;opacity:.85}
+.g-btn.g1{background:var(--jade);color:var(--on-dark)}
+.g-btn.g1 svg{color:var(--gold)}
+.g-btn.g2{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.g-btn.g2 svg{color:var(--jade)}
 .gate-hi small{color:var(--muted);font-size:14px}
 .gate-hi h1{margin:2px 0 16px}
 .tile{display:block;width:100%;border-radius:20px;padding:16px;margin-bottom:12px;text-align:right}
@@ -240,7 +256,6 @@ details.qa[open] summary::after{content:"−"}
 <nav class="tabs" id="tabs">
   <button data-t="gate" onclick="go('gate')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>בית</button>
   <button data-t="home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg>תיקים</button>
-  <button class="fab" onclick="openLoanSheet()" aria-label="הלוואה חדשה"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
   <button data-t="leads" onclick="go('leads')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4h6l1 2h3v15H5V6h3z"/><path d="M9 12l2 2 4-4"/></svg>לקוחות</button>
   <button data-t="more" onclick="go('more')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>עוד</button>
 </nav>
@@ -315,8 +330,10 @@ function go(v,id){route={v:v,id:id||null};var h='#'+v+(id?'-'+id:'');if(location
 function readHash(){var h=(location.hash||'').slice(1);if(h.indexOf('p-')===0)route={v:'p',id:h.slice(2)};else if(h.indexOf('lead-')===0)route={v:'lead',id:h.slice(5)};else if(h==='more'||h==='leads'||h==='home')route={v:h,id:null};else route={v:'gate',id:null}}
 window.addEventListener('popstate',function(){readHash();render()});
 
+var BACK_GATE='<button class="back" onclick="go(\'gate\')">→ חזרה</button>';
 function render(){
   NOW=mk();
+  document.querySelector('.tabs').hidden=route.v==='gate';
   document.querySelectorAll('.tabs [data-t]').forEach(function(b){b.classList.toggle('on',b.dataset.t===route.v||(route.v==='p'&&b.dataset.t==='home')||(route.v==='lead'&&b.dataset.t==='leads'))});
   if(route.v==='p'&&person(route.id))return renderPerson(route.id);
   if(route.v==='leads')return renderLeads();
@@ -326,16 +343,13 @@ function render(){
   renderGate();
 }
 function renderGate(){
-  var T={principal:0,me:0,recv:0,wv:0,arrears:0};
-  D.people.forEach(function(p){var t=personStats(p.id);T.principal+=t.principal;T.me+=t.me;T.recv+=t.recv;T.wv+=t.wv;T.arrears+=t.arrears});
   var d=new Date(),hr=d.getHours(),hi=hr<5?'לילה טוב':hr<12?'בוקר טוב':hr<17?'צהריים טובים':hr<21?'ערב טוב':'לילה טוב';
   var day=d.toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long'});
-  var pend=LD.loaded?LD.apps.filter(function(a){return a.submitted_at&&!a.decision}).length:null;
-  var h='<div class="top gate-hi"><div><small>'+esc(day)+'</small><h1>'+hi+', אלדד</h1></div>'+syncBadge()+'</div>';
-  h+='<button class="tile t1" onclick="go(\'home\')"><div class="tt">תיקי סוכנים <span aria-hidden="true">‹</span></div><div class="lbl">כסף בחוץ</div><div class="big">'+money(T.principal)+'</div>'+
-     '<div class="row"><div>עוד צפוי אליך החודש<b>'+money(Math.max(0,T.me-T.recv-T.wv))+'</b></div><div>חוב מחודשים קודמים<b>'+money(T.arrears)+'</b></div></div></button>';
-  h+='<button class="tile t2" onclick="go(\'leads\')"><div class="tt">לקוחות פוטנציאליים '+(pend==null?'':pend?'<span class="pill">'+(pend===1?'ממתין 1 לבדיקה':pend+' ממתינים לבדיקה')+'</span>':'<span class="pill ok">אין ממתינים</span>')+'</div><p>שאלונים, מסמכים וציון סיכון</p></button>';
-  h+='<div class="gate2"><button onclick="openLoanSheet()">+ הלוואה חדשה<span>לאדם קיים או חדש</span></button><button onclick="go(\'more\')">גיבוי והגדרות<span>ענן, טביעת אצבע</span></button></div>';
+  var pend=LD.loaded?LD.apps.filter(function(a){return a.submitted_at&&!a.decision}).length:0;
+  var h='<div class="gate"><div class="g-top"><div><div class="mark">ידי<span>דים</span></div><small>'+esc(day)+'</small><h1>'+hi+', אלדד</h1></div>'+
+    '<button class="g-set" onclick="go(\'more\')" aria-label="הגדרות"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>'+
+    '<button class="g-btn g1" onclick="go(\'home\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg><b>תיקי סוכנים</b><span>הלוואות, תשלומים והסדרים</span></button>'+
+    '<button class="g-btn g2" onclick="go(\'leads\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 4h6l1 2h3v15H5V6h3z"/><path d="M9 12l2 2 4-4"/></svg><b>לקוחות פוטנציאליים</b><span>'+(pend?(pend===1?'ממתין 1 לבדיקה':pend+' ממתינים לבדיקה'):'שאלונים, מסמכים וציון סיכון')+'</span></button></div>';
   $('view').innerHTML=h;
   if(!LD.loaded&&cloud.user&&!renderGate.busy){renderGate.busy=true;leadsLoad().then(function(){renderGate.busy=false;if(route.v==='gate')renderGate()})}
 }
@@ -352,7 +366,7 @@ function renderHome(){
   list.sort(function(a,b){return b.t.arrears-a.t.arrears||b.t.principal-a.t.principal});
   var T={principal:0,fee:0,me:0,ag:0,recv:0,wv:0,arrears:0,late:0};
   list.forEach(function(x){['principal','fee','me','ag','recv','wv','arrears'].forEach(function(k){T[k]+=x.t[k]});if(x.t.arrears>0.5)T.late++});
-  var h='<div class="top"><div><small>'+mName(NOW)+'</small><h1>תיקי סוכנים</h1></div>'+syncBadge()+'</div>';
+  var h=BACK_GATE+'<div class="top"><div><small>'+mName(NOW)+'</small><h1>תיקי סוכנים</h1></div>'+syncBadge()+'</div>';
   if(!D.people.length){
     h+='<div class="card empty"><b class="disp" style="font-size:20px;color:var(--ink)">עוד אין כאן תיקים</b><br>אפשר להעתיק את כל הנתונים מהאפליקציה הישנה בלחיצה, בלי לשנות בה כלום.<br><br><button class="btn pri" onclick="openImport()">העתקה מהאפליקציה הישנה</button><br><br><button class="btn sec2" onclick="openLoanSheet()">או הוספת הלוואה ראשונה</button></div>';
     $('view').innerHTML=h;return;
@@ -367,6 +381,7 @@ function renderHome(){
        (t.acc===t.n?'<div class="trio" style="grid-template-columns:1fr 1fr"><div><span>קרן בחוץ</span><b>'+money(t.principal)+'</b></div><div><span>נוסף לקרן בחודש</span><b>'+money(t.fee)+'</b></div></div>':
        '<div class="trio"><div><span>קרן בחוץ</span><b>'+money(t.principal)+'</b></div><div><span>לך בחודש</span><b>'+money(t.me)+'</b></div><div><span>לסוכן בחודש</span><b>'+money(t.ag)+'</b></div></div>')+'</button>';
   });
+  h+='<button class="btn pri full" style="margin-top:6px" onclick="openLoanSheet()">+ הלוואה חדשה</button>';
   $('view').innerHTML=h;
 }
 
@@ -378,7 +393,7 @@ function plainText(l,name,c){
 }
 function renderPerson(pid){
   var p=person(pid),t=personStats(pid),ls=loansOf(pid);
-  var h='<button class="back" onclick="go(\'home\')">→ כל התיקים</button>';
+  var h='<button class="back" onclick="go(\'home\')">→ חזרה</button>';
   h+='<div class="top"><div><small>כרטיס אדם</small><h1>'+esc(p.name)+'</h1></div>'+statusTag(t)+'</div>';
   if(p.note)h+='<p class="ex" style="text-align:right;margin:-6px 0 12px">'+esc(p.note)+'</p>';
   if(t.n===1){}
@@ -602,7 +617,7 @@ function savePerson(pid){var p=person(pid),nm=$('fName').value.trim();if(!nm){$(
 
 /* ================= more / settings ================= */
 function renderMore(){
-  var h='<div class="top"><div><small>הגדרות</small><h1>עוד</h1></div>'+syncBadge()+'</div>';
+  var h=BACK_GATE+'<div class="top"><div><small>הגדרות</small><h1>עוד</h1></div>'+syncBadge()+'</div>';
   h+='<div class="sec">ענן</div><div class="card set">';
   if(cloud.user)h+='<div class="row"><div><b>מחובר</b><span>'+esc(cloud.user.email||'')+(cloud.last?', נשמר '+cloud.last:'')+'</span></div><button class="btn sec2" onclick="cloudOut()">התנתק</button></div>';
   else h+='<div class="row"><div><b>הנתונים שמורים רק בטלפון</b><span>כדי שלא יאבדו, מתחברים לענן עם מייל.</span></div><button class="btn pri" onclick="openCloud()">חיבור</button></div>';
@@ -798,7 +813,7 @@ function scoreOf(inv,app){
 function lvText(s){if(!s.gate)return 'לא לאשר בלי ערב';return s.lv==='g'?'סיכון נמוך':s.lv==='y'?'סיכון בינוני':'סיכון גבוה'}
 
 async function renderLeads(){
-  var h='<div class="top"><div><small>לקוחות חדשים</small><h1>מי ביקש הלוואה</h1></div>'+syncBadge()+'</div>';
+  var h=BACK_GATE+'<div class="top"><div><small>לקוחות חדשים</small><h1>מי ביקש הלוואה</h1></div>'+syncBadge()+'</div>';
   if(!cloud.user){$('view').innerHTML=h+'<div class="card empty">כדי לראות לקוחות חדשים צריך להיות מחובר לענן.<br><br><button class="btn pri" onclick="go(\'more\')">לחיבור</button></div>';return}
   $('view').innerHTML=h+'<div class="card empty">טוען…</div>';
   await leadsLoad();
@@ -878,7 +893,7 @@ async function renderLead(code){
   if(!LD.loaded){$('view').innerHTML='<div class="card empty">טוען…</div>';await leadsLoad()}
   var inv=LD.inv.find(function(x){return x.code===code});if(!inv){go('leads');return}
   var app=appOf(code),A=(app&&app.answers)||{},K=inv.talk||{},R=(app&&app.review)||{};
-  var h='<button class="back" onclick="go(\'leads\')">→ לקוחות חדשים</button><div class="top"><div><small>'+(inv.agent?esc(inv.agent)+' הביא. ':'')+(A.amount?'מבקש '+money(A.amount)+(A.months?' ל-'+A.months+' חודשים':''):'')+(A.purpose?', '+HE.purpose[A.purpose]:'')+'</small><h1>'+esc(inv.client_name||'ללא שם')+'</h1></div></div>';
+  var h='<button class="back" onclick="go(\'leads\')">→ חזרה</button><div class="top"><div><small>'+(inv.agent?esc(inv.agent)+' הביא. ':'')+(A.amount?'מבקש '+money(A.amount)+(A.months?' ל-'+A.months+' חודשים':''):'')+(A.purpose?', '+HE.purpose[A.purpose]:'')+'</small><h1>'+esc(inv.client_name||'ללא שם')+'</h1></div></div>';
   if(!app||!app.submitted_at){
     h+='<div class="card empty">'+(app?'הלקוח באמצע השאלון: שלב '+(app.step||0)+' מתוך 6.':'הלקוח עוד לא פתח את הקישור.')+'</div>'+
        '<div class="acts"><button class="btn pri" onclick="showInviteMsg(LD.inv.find(function(x){return x.code===\''+code+'\'}));$(\'sheet\').hidden=false;$(\'veil\').hidden=false">שלח שוב את ההודעה</button><button class="btn sec2" onclick="openInvite(\''+code+'\')">עריכת סיכום שיחה</button></div>'+
