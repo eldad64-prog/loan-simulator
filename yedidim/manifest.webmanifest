@@ -1,13 +1,13 @@
 {
-  "name": "ידידים",
-  "short_name": "ידידים",
+  "name": "Rings",
+  "short_name": "Rings",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "dir": "rtl",
   "lang": "he",
-  "background_color": "#E9EFEB",
-  "theme_color": "#0E5A43",
+  "background_color": "#F4F2EC",
+  "theme_color": "#F4F2EC",
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
   ]
