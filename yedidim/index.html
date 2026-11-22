@@ -874,10 +874,10 @@ function openInvite(code){
   function f(k,l,mode){return '<div class="fl"><label for="k_'+k+'">'+l+'</label><input id="k_'+k+'" inputmode="'+(mode||'text')+'" value="'+esc(K[k]==null?'':K[k])+'"></div>'}
   function sel(k,l,map){return '<div class="fl"><label for="k_'+k+'">'+l+'</label><select id="k_'+k+'"><option value="">לא עלה בשיחה</option>'+Object.keys(map).map(function(v){return '<option value="'+v+'"'+(K[k]===v?' selected':'')+'>'+map[v]+'</option>'}).join('')+'</select></div>'}
   var agents=D.people.map(function(p){return '<option value="'+esc(p.name)+'">'}).join('');
-  var h='<h2>'+(inv?'עריכת סיכום שיחה':'שאלון ללקוח חדש')+'</h2><div class="sub">ממלאים רק מה שעלה בשיחה. הלקוח לא רואה את הסיכום.</div><button class="more-link" style="margin:0 0 8px" onclick="openCallGuide()">מה לשאול בשיחה ‹</button><div class="err" id="fErr"></div>'+
+  var h='<h2>'+(inv?'עדכון נתוני שיחה':'שליחת שאלון ללקוח חדש')+'</h2><div class="sub">'+(inv?'ממלאים רק מה שעלה בשיחה. הלקוח לא רואה את זה.':'למי לשלוח. את נתוני השיחה מוסיפים אחר כך, בדף של הלקוח.')+'</div>'+(inv?'<button class="more-link" style="margin:0 0 8px" onclick="openCallGuide()">מה לשאול בשיחה ‹</button>':'')+'<div class="err" id="fErr"></div>'+
     '<div class="two"><div class="fl"><label for="k_name">שם הלקוח</label><input id="k_name" value="'+esc(inv?inv.client_name:'')+'"></div><div class="fl"><label for="k_agent">מי הביא</label><input id="k_agent" list="agList" value="'+esc(inv?inv.agent:'')+'"><datalist id="agList">'+agents+'</datalist></div></div>'+
     '<div class="two"><div class="fl"><label for="k__phone">וואטסאפ של הלקוח</label><input id="k__phone" type="tel" inputmode="tel" dir="ltr" placeholder="08x xxx xxxx" value="'+esc(K._phone||'')+'"></div><div class="fl"><label for="k__email">מייל (לא חובה)</label><input id="k__email" type="email" inputmode="email" dir="ltr" value="'+esc(K._email||'')+'"></div></div>'+
-    '<div class="sec" style="font-size:16px">מה סיפר בשיחה</div>'+
+    (inv?'<div class="sec" style="font-size:16px">מה סיפר בשיחה</div>'+
     '<div class="two">'+f('amount','סכום שביקש','numeric')+f('months','לכמה חודשים','numeric')+'</div>'+
     sel('purpose','למה',HE.purpose)+
     '<div class="two">'+f('employer','איפה עובד')+f('startYear','מאיזו שנה','numeric')+'</div>'+
@@ -885,11 +885,11 @@ function openInvite(code){
     '<div class="two">'+f('debts','חובות בחודש','numeric')+sel('privateLoan','הלוואה פרטית',{yes:'כן',no:'לא'})+'</div>'+
     sel('guarantor','ערב',HE.guarantor)+
     '<div class="two">'+f('home','מגורים')+f('dependents','כמה מפרנס','numeric')+'</div>'+
-    f('feel','התחושה שלך (לא נכנס לציון)')+
+    f('feel','התחושה שלך (לא נכנס לציון)'):'')+
     '<div class="sec" style="font-size:16px">מסמכים שהלקוח חייב לצרף</div><div class="chk" style="margin-bottom:8px"><label class="base">✓ תעודת זהות</label><label class="base">✓ דפי בנק 6 חודשים</label><label class="base">✓ תלוש או רישום עסק</label></div>'+
     '<div class="chk" id="docChk" style="margin-bottom:10px">'+DOCS_EXTRA.map(function(d){return '<label><input type="checkbox" value="'+d[0]+'"'+(docs.indexOf(d[0])>=0?' checked':'')+'>'+d[1]+'</label>'}).join('')+'</div>'+
     '<div class="fl"><label for="k_other">מסמך אחר (באנגלית או בתאית, כדי שהלקוח יבין)</label><input id="k_other" value="'+esc(other)+'" placeholder="למשל: Work contract"></div>'+
-    '<button class="btn pri full" onclick="saveInvite('+(inv?'\''+inv.code+'\'':'null')+')">'+(inv?'שמור':'צור שאלון וקבל הודעה לשליחה')+'</button>';
+    '<button class="btn pri full" onclick="saveInvite('+(inv?'\''+inv.code+'\'':'null')+')">'+(inv?'שמור':'המשך לשליחה')+'</button>';
   openSheet(h);
 }
 /* Reference sheets for Eldad: what to ask on the call, and the client's form in Hebrew with what each question means. */
@@ -920,8 +920,8 @@ function leadTools(code){return '<div class="ltools"><button onclick="openCallGu
 function randCode(){var a='abcdefghjkmnpqrstuvwxyz23456789',s='',r=crypto.getRandomValues(new Uint8Array(10));for(var i=0;i<10;i++)s+=a[r[i]%a.length];return s}
 async function saveInvite(code){
   var name=$('k_name').value.trim();if(!name){$('fErr').textContent='חסר שם הלקוח.';return}
-  var K={};['amount','months','employer','startYear','income','payDay','debts','home','dependents','feel'].forEach(function(k){var v=$('k_'+k).value.trim();if(v)K[k]=v});
-  ['purpose','privateLoan','guarantor'].forEach(function(k){var v=$('k_'+k).value;if(v)K[k]=v});
+  var K={};['amount','months','employer','startYear','income','payDay','debts','home','dependents','feel'].forEach(function(k){var e=$('k_'+k),v=e?e.value.trim():'';if(v)K[k]=v});
+  ['purpose','privateLoan','guarantor'].forEach(function(k){var e=$('k_'+k),v=e?e.value:'';if(v)K[k]=v});
   var ph=$('k__phone').value.trim(),em=$('k__email').value.trim();
   if(!ph&&!em){$('fErr').textContent='חסר וואטסאפ או מייל של הלקוח, כדי שאפשר יהיה לשלוח לו את השאלון.';return}
   if(em&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){$('fErr').textContent='כתובת המייל לא תקינה.';return}
