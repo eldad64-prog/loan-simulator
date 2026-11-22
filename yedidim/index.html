@@ -849,7 +849,7 @@ async function renderLeads(){
   await leadsLoad();
   if(route.v!=='leads')return;
   if(LD.err){$('view').innerHTML=h+'<div class="card empty">לא הצלחתי לטעון: '+esc(LD.err)+'</div>';return}
-  h+='<button class="btn pri full" style="margin-bottom:14px" onclick="openInvite()">שלח שאלון ללקוח חדש</button>';
+  h+='<button class="btn pri full" style="margin-bottom:10px" onclick="openInvite()">שלח שאלון ללקוח חדש</button>'+leadTools(null);
   var wait=[],prog=[],done=[];
   LD.inv.forEach(function(inv){var app=appOf(inv.code);if(app&&app.decision)done.push([inv,app]);else if(app&&app.submitted_at)wait.push([inv,app]);else prog.push([inv,app])});
   function row(inv,app){
@@ -916,7 +916,12 @@ function refSheet(title,sub,groups){
 }
 function openCallGuide(){refSheet('מה לשאול בשיחה','לפי הסדר. מה שהלקוח עונה רושמים ב"עדכון נתוני שיחה".',CALL_GUIDE)}
 function openFormHe(){refSheet('השאלון של הלקוח, בעברית','מה הלקוח רואה בכל שלב (אצלו בתאית או באנגלית), ומה הכוונה בכל שאלה.',FORM_HE)}
-function leadTools(code){return '<div class="ltools"><button onclick="openCallGuide()">מה לשאול בשיחה</button><button onclick="openInvite(\''+code+'\')">עדכון נתוני שיחה</button><button onclick="openFormHe()">השאלון בעברית</button></div>'}
+function leadTools(code){return '<div class="ltools"><button onclick="openCallGuide()">מה לשאול בשיחה</button><button onclick="'+(code?'openInvite(\''+code+'\')':'pickTalk()')+'">עדכון נתוני שיחה</button><button onclick="openFormHe()">השאלון בעברית</button></div>'}
+/* From the list page: choose which client the call details belong to. */
+function pickTalk(){
+  var open=LD.inv.filter(function(inv){var a=appOf(inv.code);return !(a&&a.decision)});
+  openSheet('<h2>עדכון נתוני שיחה</h2><div class="sub">של איזה לקוח?</div>'+(open.length?open.map(function(inv){return '<button class="btn sec2 full" style="margin-bottom:8px;text-align:right" onclick="openInvite(\''+inv.code+'\')">'+esc(inv.client_name||'ללא שם')+(inv.agent?' <span style="color:var(--muted);font-weight:400">('+esc(inv.agent)+')</span>':'')+'</button>'}).join(''):'<div class="card empty">אין עדיין לקוחות. קודם שלח שאלון ללקוח חדש.</div>')+'<button class="btn sec2 full" onclick="closeSheet()">סגור</button>');
+}
 function randCode(){var a='abcdefghjkmnpqrstuvwxyz23456789',s='',r=crypto.getRandomValues(new Uint8Array(10));for(var i=0;i<10;i++)s+=a[r[i]%a.length];return s}
 async function saveInvite(code){
   var name=$('k_name').value.trim();if(!name){$('fErr').textContent='חסר שם הלקוח.';return}
