@@ -270,25 +270,25 @@ function calcLoan(l){
   var p=+l.principal||0,rows=[],m=l.start,guard=0,arrears=0;
   while(m<=NOW&&guard<240){
     var per=periodAt(l,m),fee=p*(+per.rate||0)/100,ag=per.mode==='pay'?fee*(+per.share||0)/100:0,me=per.mode==='pay'?fee-ag:0;
-    var recv=0,prin=0;(l.payments||[]).forEach(function(x){if(x.month===m){if(x.kind==='fee')recv+=+x.amount;else prin+=+x.amount}});
-    rows.push({m:m,p:p,fee:fee,mode:per.mode,me:me,ag:ag,recv:recv,prin:prin,rate:per.rate,share:per.share});
-    if(m<NOW&&per.mode==='pay')arrears+=Math.max(0,me-recv);
+    var recv=0,prin=0,wv=0;(l.payments||[]).forEach(function(x){if(x.month===m){if(x.kind==='fee')recv+=+x.amount;else if(x.kind==='waive'||x.kind==='todebt')wv+=+x.amount;else prin+=+x.amount}});
+    rows.push({m:m,p:p,fee:fee,mode:per.mode,me:me,ag:ag,recv:recv,wv:wv,prin:prin,rate:per.rate,share:per.share});
+    if(m<NOW&&per.mode==='pay')arrears+=Math.max(0,me-recv-wv);
     if(m<NOW){ if(per.mode==='acc')p+=fee; p=Math.max(0,p-prin); }
     m=addM(m,1);guard++;
   }
-  var cur=rows[rows.length-1]||{p:p,fee:0,me:0,ag:0,recv:0,prin:0,mode:'pay'};
+  var cur=rows[rows.length-1]||{p:p,fee:0,me:0,ag:0,recv:0,wv:0,prin:0,mode:'pay'};
   return {rows:rows,principal:Math.max(0,cur.p-cur.prin),cur:cur,arrears:arrears,per:periodAt(l,NOW)};
 }
 function personStats(pid){
-  var t={principal:0,fee:0,me:0,ag:0,recv:0,arrears:0,acc:0,n:0};
-  loansOf(pid).forEach(function(l){var c=calcLoan(l);t.n++;t.principal+=c.principal;t.fee+=c.cur.fee;t.me+=c.cur.me;t.ag+=c.cur.ag;t.recv+=c.cur.recv;t.arrears+=c.arrears;if(c.cur.mode==='acc')t.acc++});
+  var t={principal:0,fee:0,me:0,ag:0,recv:0,wv:0,arrears:0,acc:0,n:0};
+  loansOf(pid).forEach(function(l){var c=calcLoan(l);t.n++;t.principal+=c.principal;t.fee+=c.cur.fee;t.me+=c.cur.me;t.ag+=c.cur.ag;t.recv+=c.cur.recv;t.wv+=c.cur.wv||0;t.arrears+=c.arrears;if(c.cur.mode==='acc')t.acc++});
   return t;
 }
 function statusTag(t){
   if(t.n===0)return '<span class="tag n">אין הלוואות פעילות</span>';
   if(t.arrears>0.5)return '<span class="tag late">חוב '+money(t.arrears)+'</span>';
   if(t.acc===t.n)return '<span class="tag acc">בצבירה</span>';
-  if(t.me>0&&t.recv>=t.me-0.5)return '<span class="tag ok">שולם החודש</span>';
+  if(t.me>0&&t.recv+t.wv>=t.me-0.5)return '<span class="tag ok">שולם החודש</span>';
   return '<span class="tag due">לתשלום החודש</span>';
 }
 
@@ -353,10 +353,24 @@ function renderPerson(pid){
   else if(t.n&&t.acc===t.n)h+='<div class="trio white" style="margin-bottom:10px;grid-template-columns:1fr 1fr"><div><span>קרן בחוץ</span><b>'+money(t.principal)+'</b></div><div><span>נוסף לקרן בחודש</span><b style="color:var(--blue)">'+money(t.fee)+'</b></div></div>';
   else h+='<div class="trio white" style="margin-bottom:10px"><div><span>קרן בחוץ</span><b>'+money(t.principal)+'</b></div><div><span>לך בחודש</span><b style="color:var(--jade)">'+money(t.me)+'</b></div><div><span>לסוכן בחודש</span><b style="color:var(--gold-ink)">'+money(t.ag)+'</b></div></div>';
   if(t.arrears>0.5)h+='<div class="alert">⚠ חוב מחודשים קודמים: '+money(t.arrears)+'</div>';
+  (D.temps||[]).filter(function(x){return x.pid===pid}).forEach(function(x){
+    var live=NOW<x.end;
+    h+='<div class="card" style="border:2px solid var(--gold);margin-bottom:10px"><b style="font-size:17px">'+(live?'הסדר זמני':'הסדר זמני שהסתיים')+'</b>'+
+      '<div style="font-size:15px;line-height:1.6;margin-top:6px">'+esc(x.text)+'</div>'+
+      '<div class="acts" style="grid-template-columns:1fr"><button class="btn sec2" onclick="askUndoTemp(\''+x.id+'\')">ביטול ההסדר הזמני, חזרה למה שהיה</button></div></div>';
+  });
   h+='<div class="sec">ההלוואות</div>';
   if(!ls.length)h+='<div class="card empty">אין הלוואות פעילות.</div>';
   ls.forEach(function(l,i){
     var c=calcLoan(l),per=c.per;
+    if(l.free){
+      var back=(l.payments||[]).reduce(function(s,x){return s+(x.kind==='principal'?+x.amount:0)},0);
+      h+='<div class="loan"><div class="lh"><b class="num">'+money(c.principal)+'</b><span>הלוואה '+(i+1)+'</span></div>'+
+        '<div class="terms"><span class="pay">חוב בלי עמלה</span></div>'+
+        '<div class="plain">'+esc(l.note||'')+'. על הסכום הזה אין עמלה. כל החזר מקטין אותו עד שהוא נסגר.'+(back>0?' הוחזרו עד עכשיו '+money(back)+'.':'')+'</div>'+
+        '<div class="acts"><button class="btn pri" onclick="openPay(\''+l.id+'\')">רשום החזר</button><button class="btn sec2" onclick="openLoanSheet(\''+l.id+'\')">עריכה או סגירה</button></div></div>';
+      return;
+    }
     h+='<div class="loan"><div class="lh"><b class="num">'+money(c.principal)+'</b><span>הלוואה '+(i+1)+(l.clientRef?'<br>'+esc(l.clientRef):'')+'</span></div>'+
        '<div class="terms"><span class="'+per.mode+'">'+(per.mode==='acc'?'בצבירה':'תשלום כל חודש')+'</span><span>'+pct(per.rate)+' לחודש</span>'+(per.mode==='acc'?'':'<span>'+pct(per.share)+' ל'+esc(p.name)+'</span>')+(l.term?'<span>'+l.term+' חודשים</span>':'')+'</div>'+
        (per.mode==='acc'?'<div class="split3" style="grid-template-columns:1fr 1fr"><div class="t"><span>עמלה בחודש</span><b>'+money(c.cur.fee)+'</b></div><div class="me" style="background:var(--blue-soft)"><span>כולה נוספת לקרן</span><b style="color:var(--blue)">'+money(c.cur.fee)+'</b></div></div>':
@@ -368,29 +382,85 @@ function renderPerson(pid){
        '<button class="more-link" onclick="openLoanSheet(\''+l.id+'\')">עריכת הלוואה, העברה לאדם אחר או סגירה ‹</button></div>';
   });
   // monthly table for the person
-  var months={};ls.forEach(function(l){calcLoan(l).rows.forEach(function(r){var x=months[r.m]||(months[r.m]={me:0,recv:0,acc:0});x.me+=r.me;x.recv+=r.recv;if(r.mode==='acc')x.acc+=r.fee})});
+  var months={};ls.forEach(function(l){calcLoan(l).rows.forEach(function(r){var x=months[r.m]||(months[r.m]={me:0,recv:0,wv:0,acc:0});x.me+=r.me;x.recv+=r.recv;x.wv+=r.wv||0;if(r.mode==='acc')x.acc+=r.fee})});
   var keys=Object.keys(months).sort().reverse().slice(0,12);
   if(keys.length){
     h+='<div class="sec">כל חודש</div><div class="card"><table class="ledger"><thead><tr><th>חודש</th><th>צריך להגיע</th><th>התקבל</th><th>מצב</th></tr></thead><tbody>';
     keys.forEach(function(k){var x=months[k],st;
       if(x.me<0.5&&x.acc>0)st='<span class="tag acc">נוסף לקרן '+money(x.acc)+'</span>';
+      else if(x.wv>0.5&&x.recv+x.wv>=x.me-0.5)st='<span class="tag ok">הוסדר</span>';
       else if(x.recv>=x.me-0.5)st='<span class="tag ok">שולם</span>';
       else if(k===NOW)st='<span class="tag due">החודש</span>';
-      else st='<span class="tag late">חסר '+money(x.me-x.recv)+'</span>';
+      else st='<span class="tag late">חסר '+money(x.me-x.recv-x.wv)+'</span>';
       h+='<tr><td class="k">'+mName(k)+'</td><td>'+money(x.me)+'</td><td>'+money(x.recv)+'</td><td>'+st+'</td></tr>';
     });
     h+='</tbody></table></div>';
   }
   // payments list
-  var pays=[];ls.forEach(function(l,i){(l.payments||[]).forEach(function(x){pays.push({l:l,i:i,x:x})})});
+  var pays=[];ls.forEach(function(l,i){(l.payments||[]).forEach(function(x){if(x.note!=='הסדר זמני')pays.push({l:l,i:i,x:x})})});
   pays.sort(function(a,b){return a.x.date<b.x.date?1:-1});
   h+='<div class="sec">תשלומים שנרשמו</div><div class="card pay-list">';
   if(!pays.length)h+='<div class="empty" style="padding:12px">עוד לא נרשמו תשלומים.</div>';
-  pays.forEach(function(o){h+='<div class="row"><div><b>'+money(o.x.amount)+'</b> '+(o.x.kind==='fee'?'עמלה':'החזר קרן')+'<span>'+esc(o.x.date)+', על '+mName(o.x.month)+', הלוואה '+(o.i+1)+(o.x.note?', '+esc(o.x.note):'')+'</span></div><button class="x" onclick="delPay(\''+o.l.id+'\',\''+o.x.id+'\')" aria-label="מחיקת תשלום">מחק</button></div>'});
+  pays.forEach(function(o){h+='<div class="row"><div><b>'+money(o.x.amount)+'</b> '+({fee:'עמלה',waive:'ויתור (לא כסף)',todebt:'עבר לחוב בלי עמלה'}[o.x.kind]||'החזר קרן')+'<span>'+esc(o.x.date)+', על '+mName(o.x.month)+', הלוואה '+(o.i+1)+(o.x.note?', '+esc(o.x.note):'')+'</span></div><button class="x" onclick="delPay(\''+o.l.id+'\',\''+o.x.id+'\')" aria-label="מחיקת תשלום">מחק</button></div>'});
   h+='</div>';
   h+='<div class="acts"><button class="btn sec2" onclick="openLoanSheet(null,\''+pid+'\')">+ הלוואה נוספת</button><button class="btn sec2" onclick="openPerson(\''+pid+'\')">עריכת פרטים</button></div>';
+  if(ls.some(function(l){return !l.free}))h+='<div class="acts" style="grid-template-columns:1fr"><button class="btn dark" onclick="openTemp(\''+pid+'\')">הסדר זמני: הסוכן מתקשה לשלם</button></div>';
   $('view').innerHTML=h;
 }
+
+/* temporary arrangement: unpaid fee split into interest-free debt + waiver, lower fee for N months, then back */
+function feeLoans(pid){return loansOf(pid).filter(function(l){return !l.free&&calcLoan(l).per.mode==='pay'})}
+function openTemp(pid){
+  var p=person(pid),ls=feeLoans(pid);
+  if(!ls.length){toast('אין הלוואה בתשלום חודשי');return}
+  var due=0;ls.forEach(function(l){var c=calcLoan(l);due+=Math.max(0,c.cur.me-c.cur.recv-(c.cur.wv||0))});
+  var h='<h2>הסדר זמני ל'+esc(p.name)+'</h2><div class="sub">לסוכן שמתקשה לשלם. אפשר לבטל את ההסדר בלחיצה אחת, וכל מה שהיה יחזור.</div><div class="err" id="fErr"></div>'+
+    '<div class="two"><div class="fl"><label for="tMon">עמלה שלא שולמה, על חודש</label><select id="tMon" onchange="tempPrev(\''+pid+'\')">'+monthOptions(NOW,addM(NOW,-6),7)+'</select></div><div class="fl"><label for="tDue">כמה לא שולם (฿)</label><input id="tDue" inputmode="decimal" value="'+Math.round(due)+'" oninput="tempPrev(\''+pid+'\')"></div></div>'+
+    '<div class="two"><div class="fl"><label for="tDebt">עובר לחוב בלי עמלה (฿)</label><input id="tDebt" inputmode="decimal" value="" oninput="tempPrev(\''+pid+'\')"></div><div class="fl"><label>ויתור (השאר)</label><input id="tWaive" disabled></div></div>'+
+    '<div class="two"><div class="fl"><label for="tFee">עמלה חדשה לחודש (฿)</label><input id="tFee" inputmode="decimal" value="" oninput="tempPrev(\''+pid+'\')"></div><div class="fl"><label for="tN">לכמה חודשים</label><input id="tN" inputmode="numeric" value="4" oninput="tempPrev(\''+pid+'\')"></div></div>'+
+    '<div class="fl"><label for="tFrom">העמלה החדשה מחודש</label><select id="tFrom" onchange="tempPrev(\''+pid+'\')">'+monthOptions(addM(NOW,1),addM(NOW,-1),13)+'</select></div>'+
+    '<div class="prev" id="fPrev"></div><button class="btn pri full" onclick="saveTemp(\''+pid+'\')">שמור הסדר זמני</button>';
+  openSheet(h);tempPrev(pid);
+}
+function tempCalc(pid){
+  var ls=feeLoans(pid),base=0;ls.forEach(function(l){base+=calcLoan(l).principal});
+  var due=num($('tDue').value)||0,debt=num($('tDebt').value)||0,fee=num($('tFee').value),n=parseInt($('tN').value,10),from=$('tFrom').value;
+  return {ls:ls,base:base,due:due,debt:debt,waive:Math.max(0,due-debt),fee:fee,n:n,from:from,end:n>0?addM(from,n):from,mon:$('tMon').value,rate:base>0&&fee>=0?fee/base*100:NaN};
+}
+function tempPrev(pid){var x=tempCalc(pid),p=person(pid);
+  $('tWaive').value=money(x.waive);
+  if(!(x.fee>=0)||!(x.n>0)){$('fPrev').textContent='הזן עמלה חדשה ומספר חודשים.';return}
+  $('fPrev').textContent='על '+mName(x.mon)+': '+money(x.debt)+' עוברים לחוב בלי עמלה (הקופה גדלה בסכום הזה), '+money(x.waive)+' ויתור, והחודש נסגר כמוסדר. מ'+mName(x.from)+' עד סוף '+mName(addM(x.end,-1))+': עמלה '+money(x.fee)+' לחודש, כלומר '+pct(x.rate)+' מקרן של '+money(x.base)+', כולה אליך. מ'+mName(x.end)+' חוזרים התנאים הנוכחיים.'}
+function saveTemp(pid){var x=tempCalc(pid),p=person(pid);
+  if(!(x.due>0)||x.debt<0||x.debt>x.due){$('fErr').textContent='בדוק את הסכום שלא שולם ואת החוב בלי עמלה.';return}
+  if(!(x.fee>=0)||!(x.n>0)||!(x.rate>=0)){$('fErr').textContent='הזן עמלה חדשה ומספר חודשים.';return}
+  var id=uid(),snap={};x.ls.forEach(function(l){snap[l.id]={periods:JSON.parse(JSON.stringify(l.periods||[])),payments:JSON.parse(JSON.stringify(l.payments||[]))}});
+  // settle the unpaid month across loans by their share of that month
+  var parts=x.ls.map(function(l){var r=calcLoan(l).rows.find(function(r){return r.m===x.mon});return r?Math.max(0,r.me-r.recv-(r.wv||0)):0}),tot=parts.reduce(function(a,b){return a+b},0)||1;
+  var today=new Date().toISOString().slice(0,10),leftD=x.debt,leftW=x.waive;
+  x.ls.forEach(function(l,i){var last=i===x.ls.length-1,d=last?leftD:Math.round(x.debt*parts[i]/tot),w=last?leftW:Math.round(x.waive*parts[i]/tot);leftD-=d;leftW-=w;
+    l.payments=l.payments||[];
+    if(d>0)l.payments.push({id:uid(),date:today,month:x.mon,kind:'todebt',amount:d,note:'הסדר זמני'});
+    if(w>0)l.payments.push({id:uid(),date:today,month:x.mon,kind:'waive',amount:w,note:'הסדר זמני'});
+    var ret=JSON.parse(JSON.stringify(periodAt(l,x.end)));delete ret.temp;ret.from=x.end;
+    l.periods=(l.periods||[]).filter(function(q){return q.from<x.from||q.from>x.end});
+    l.periods.push({from:x.from,mode:'pay',rate:Math.round(x.rate*10000)/10000,share:0});l.periods.push(ret);
+    l.periods.sort(function(a,b){return a.from<b.from?-1:1});
+  });
+  var debtId=null;
+  if(x.debt>0){debtId=uid();D.loans.push({id:debtId,personId:pid,principal:x.debt,start:x.mon,term:null,clientRef:'',free:true,note:'עמלה שלא שולמה על '+mName(x.mon)+', עברה לחוב',periods:[{from:x.mon,mode:'pay',rate:0,share:0}],payments:[]})}
+  D.temps=D.temps||[];
+  D.temps.push({id:id,pid:pid,created:today,end:x.end,debtId:debtId,snap:snap,
+    text:'עמלה של '+money(x.due)+' על '+mName(x.mon)+' לא שולמה: '+money(x.debt)+' עברו לחוב בלי עמלה, '+money(x.waive)+' ויתור. מ'+mName(x.from)+' עד סוף '+mName(addM(x.end,-1))+' משלם '+money(x.fee)+' לחודש ('+pct(x.rate)+'). מ'+mName(x.end)+' חוזר לתנאים הקודמים.'});
+  closeSheet();save(true);toast('ההסדר הזמני נשמר');render()}
+function askUndoTemp(id){openSheet('<h2>לבטל את ההסדר הזמני?</h2><div class="sub">האחוזים והתשלומים יחזרו בדיוק למה שהיה לפני ההסדר, והחוב בלי עמלה יימחק. תשלומים שנרשמו אחרי ההסדר יישמרו.</div><div class="acts"><button class="btn danger" id="okDel">כן, לבטל</button><button class="btn sec2" onclick="closeSheet()">ביטול</button></div>');
+  $('okDel').onclick=function(){var t=(D.temps||[]).find(function(x){return x.id===id});if(!t)return;
+    Object.keys(t.snap).forEach(function(lid){var l=D.loans.find(function(x){return x.id===lid});if(!l)return;var old=t.snap[lid];
+      var oldIds={};old.payments.forEach(function(q){oldIds[q.id]=1});
+      var later=(l.payments||[]).filter(function(q){return !oldIds[q.id]&&q.note!=='הסדר זמני'});
+      l.periods=old.periods;l.payments=old.payments.concat(later)});
+    if(t.debtId)D.loans=D.loans.filter(function(x){return x.id!==t.debtId});
+    D.temps=D.temps.filter(function(x){return x.id!==id});closeSheet();save(true);toast('בוטל, הכל חזר כמו שהיה');render()}}
 function planHtml(l){
   var ps=(l.periods||[]).slice().sort(function(a,b){return a.from<b.from?-1:1});
   var cur=periodAt(l,NOW),s='<div class="plan"><b>ההסדר לאורך זמן</b>';
@@ -477,8 +547,8 @@ function delPeriod(lid,i){var l=D.loans.find(function(x){return x.id===lid}),ps=
 function openPay(lid){
   var l=D.loans.find(function(x){return x.id===lid}),c=calcLoan(l),p=person(l.personId);
   var h='<h2>רישום תשלום</h2><div class="sub">'+esc(p.name)+'. צפוי ממנו החודש: '+money(c.cur.me)+'.</div><div class="err" id="fErr"></div>'+
-    '<div class="fl"><label>סוג</label><div class="opts" id="fKind"><button data-v="fee" class="on" onclick="pickOpt(this)">עמלה<small>החלק שמגיע לך</small></button><button data-v="principal" onclick="pickOpt(this)">החזר קרן<small>מקטין את הקרן</small></button></div></div>'+
-    '<div class="two"><div class="fl"><label for="fAmt">סכום (฿)</label><input id="fAmt" inputmode="decimal" value="'+(c.cur.me>0?Math.round(c.cur.me):'')+'"></div><div class="fl"><label for="fMon">על חודש</label><select id="fMon">'+monthOptions(NOW,l.start<addM(NOW,-12)?addM(NOW,-12):l.start,24)+'</select></div></div>'+
+    '<div class="fl"><label>סוג</label><div class="opts" id="fKind"><button data-v="fee" class="'+(l.free?'':'on')+'" onclick="pickOpt(this)">עמלה<small>החלק שמגיע לך</small></button><button data-v="principal" class="'+(l.free?'on':'')+'" onclick="pickOpt(this)">החזר קרן<small>מקטין את הקרן</small></button><button data-v="waive" onclick="pickOpt(this)">ויתור<small>נחשב שולם, בלי כסף</small></button></div></div>'+
+    '<div class="two"><div class="fl"><label for="fAmt">סכום (฿)</label><input id="fAmt" inputmode="decimal" value="'+(!l.free&&c.cur.me>0?Math.round(c.cur.me):'')+'"></div><div class="fl"><label for="fMon">על חודש</label><select id="fMon">'+monthOptions(NOW,l.start<addM(NOW,-12)?addM(NOW,-12):l.start,24)+'</select></div></div>'+
     '<div class="two"><div class="fl"><label for="fDate">תאריך</label><input id="fDate" type="date" value="'+new Date().toISOString().slice(0,10)+'"></div><div class="fl"><label for="fNote">הערה</label><input id="fNote"></div></div>'+
     '<button class="btn pri full" onclick="savePay(\''+lid+'\')">שמור תשלום</button>';
   openSheet(h);
