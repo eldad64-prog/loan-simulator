@@ -123,7 +123,23 @@ h1,h2,.num,.big,.disp{font-family:var(--display);font-weight:400}
 
 /* tab bar */
 .tabs{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;padding:8px max(6px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));z-index:5}
-.tabs button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--muted);font-weight:600;min-width:72px;padding:4px}
+.tabs button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--muted);font-weight:600;min-width:56px;padding:4px}
+.gate-hi small{color:var(--muted);font-size:14px}
+.gate-hi h1{margin:2px 0 16px}
+.tile{display:block;width:100%;border-radius:20px;padding:16px;margin-bottom:12px;text-align:right}
+.tile .tt{font-family:var(--display);font-size:21px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tile.t1{background:var(--jade);color:var(--on-dark)}
+.tile.t1 .lbl{opacity:.85;font-size:14px;margin-top:8px}
+.tile.t1 .big{font-family:var(--display);font-size:36px;line-height:1.1;font-variant-numeric:tabular-nums}
+.tile.t1 .row{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.22);font-size:14px}
+.tile.t1 .row b{display:block;font-size:17px}
+.tile.t2{background:var(--surface);border:1px solid var(--line)}
+.tile.t2 p{color:var(--muted);font-size:15px;margin-top:4px}
+.tile .pill{background:var(--gold-soft);color:var(--gold-ink);border-radius:20px;padding:3px 10px;font-family:var(--body);font-weight:700;font-size:13px;white-space:nowrap}
+.tile .pill.ok{background:var(--jade-soft);color:var(--jade)}
+.gate2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gate2 button{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;font-weight:700;font-size:16px;text-align:right}
+.gate2 span{display:block;color:var(--muted);font-weight:400;font-size:13px;margin-top:2px}
 .tabs button svg{width:24px;height:24px}
 .tabs button.on{color:var(--jade)}
 .tabs .fab{width:58px;height:58px;border-radius:50%;background:var(--gold);color:var(--jade);margin-top:-30px;box-shadow:0 6px 16px rgba(14,90,67,.3);justify-content:center;min-width:0}
@@ -222,9 +238,10 @@ details.qa[open] summary::after{content:"−"}
 </div>
 
 <nav class="tabs" id="tabs">
-  <button data-t="home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>תיקים</button>
-  <button data-t="leads" onclick="go('leads')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4h6l1 2h3v15H5V6h3z"/><path d="M9 12l2 2 4-4"/></svg>לקוחות</button>
+  <button data-t="gate" onclick="go('gate')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>בית</button>
+  <button data-t="home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg>תיקים</button>
   <button class="fab" onclick="openLoanSheet()" aria-label="הלוואה חדשה"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button data-t="leads" onclick="go('leads')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4h6l1 2h3v15H5V6h3z"/><path d="M9 12l2 2 4-4"/></svg>לקוחות</button>
   <button data-t="more" onclick="go('more')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>עוד</button>
 </nav>
 
@@ -293,9 +310,9 @@ function statusTag(t){
 }
 
 /* ================= router ================= */
-var route={v:'home',id:null};
+var route={v:'gate',id:null};
 function go(v,id){route={v:v,id:id||null};var h='#'+v+(id?'-'+id:'');if(location.hash!==h){try{history.pushState(null,'',h)}catch(e){location.hash=h}}render();window.scrollTo(0,0)}
-function readHash(){var h=(location.hash||'').slice(1);if(h.indexOf('p-')===0)route={v:'p',id:h.slice(2)};else if(h.indexOf('lead-')===0)route={v:'lead',id:h.slice(5)};else if(h==='more'||h==='leads')route={v:h,id:null};else route={v:'home',id:null}}
+function readHash(){var h=(location.hash||'').slice(1);if(h.indexOf('p-')===0)route={v:'p',id:h.slice(2)};else if(h.indexOf('lead-')===0)route={v:'lead',id:h.slice(5)};else if(h==='more'||h==='leads'||h==='home')route={v:h,id:null};else route={v:'gate',id:null}}
 window.addEventListener('popstate',function(){readHash();render()});
 
 function render(){
@@ -305,7 +322,22 @@ function render(){
   if(route.v==='leads')return renderLeads();
   if(route.v==='lead')return renderLead(route.id);
   if(route.v==='more')return renderMore();
-  renderHome();
+  if(route.v==='home')return renderHome();
+  renderGate();
+}
+function renderGate(){
+  var T={principal:0,me:0,recv:0,wv:0,arrears:0};
+  D.people.forEach(function(p){var t=personStats(p.id);T.principal+=t.principal;T.me+=t.me;T.recv+=t.recv;T.wv+=t.wv;T.arrears+=t.arrears});
+  var d=new Date(),hr=d.getHours(),hi=hr<5?'לילה טוב':hr<12?'בוקר טוב':hr<17?'צהריים טובים':hr<21?'ערב טוב':'לילה טוב';
+  var day=d.toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long'});
+  var pend=LD.loaded?LD.apps.filter(function(a){return a.submitted_at&&!a.decision}).length:null;
+  var h='<div class="top gate-hi"><div><small>'+esc(day)+'</small><h1>'+hi+', אלדד</h1></div>'+syncBadge()+'</div>';
+  h+='<button class="tile t1" onclick="go(\'home\')"><div class="tt">תיקי סוכנים <span aria-hidden="true">‹</span></div><div class="lbl">כסף בחוץ</div><div class="big">'+money(T.principal)+'</div>'+
+     '<div class="row"><div>עוד צפוי אליך החודש<b>'+money(Math.max(0,T.me-T.recv-T.wv))+'</b></div><div>חוב מחודשים קודמים<b>'+money(T.arrears)+'</b></div></div></button>';
+  h+='<button class="tile t2" onclick="go(\'leads\')"><div class="tt">לקוחות פוטנציאליים '+(pend==null?'':pend?'<span class="pill">'+(pend===1?'ממתין 1 לבדיקה':pend+' ממתינים לבדיקה')+'</span>':'<span class="pill ok">אין ממתינים</span>')+'</div><p>שאלונים, מסמכים וציון סיכון</p></button>';
+  h+='<div class="gate2"><button onclick="openLoanSheet()">+ הלוואה חדשה<span>לאדם קיים או חדש</span></button><button onclick="go(\'more\')">גיבוי והגדרות<span>ענן, טביעת אצבע</span></button></div>';
+  $('view').innerHTML=h;
+  if(!LD.loaded&&cloud.user&&!renderGate.busy){renderGate.busy=true;leadsLoad().then(function(){renderGate.busy=false;if(route.v==='gate')renderGate()})}
 }
 function syncBadge(){
   if(cloud.state==='ok')return '<span class="sync ok">נשמר בענן</span>';
@@ -318,8 +350,8 @@ function syncBadge(){
 function renderHome(){
   var list=D.people.map(function(p){return {p:p,t:personStats(p.id)}}).filter(function(x){return x.t.n>0});
   list.sort(function(a,b){return b.t.arrears-a.t.arrears||b.t.principal-a.t.principal});
-  var T={principal:0,fee:0,me:0,ag:0,recv:0,arrears:0,late:0};
-  list.forEach(function(x){['principal','fee','me','ag','recv','arrears'].forEach(function(k){T[k]+=x.t[k]});if(x.t.arrears>0.5)T.late++});
+  var T={principal:0,fee:0,me:0,ag:0,recv:0,wv:0,arrears:0,late:0};
+  list.forEach(function(x){['principal','fee','me','ag','recv','wv','arrears'].forEach(function(k){T[k]+=x.t[k]});if(x.t.arrears>0.5)T.late++});
   var h='<div class="top"><div><small>'+mName(NOW)+'</small><h1>תיקי סוכנים</h1></div>'+syncBadge()+'</div>';
   if(!D.people.length){
     h+='<div class="card empty"><b class="disp" style="font-size:20px;color:var(--ink)">עוד אין כאן תיקים</b><br>אפשר להעתיק את כל הנתונים מהאפליקציה הישנה בלחיצה, בלי לשנות בה כלום.<br><br><button class="btn pri" onclick="openImport()">העתקה מהאפליקציה הישנה</button><br><br><button class="btn sec2" onclick="openLoanSheet()">או הוספת הלוואה ראשונה</button></div>';
@@ -327,7 +359,7 @@ function renderHome(){
   }
   h+='<div class="sum"><div class="lbl">כסף בחוץ</div><div class="big num">'+money(T.principal)+'</div>'+
      '<div class="split"><div><span>עמלה החודש</span><b class="num">'+money(T.fee)+'</b></div><div><span>לך החודש</span><b class="num">'+money(T.me)+'</b></div><div><span>לסוכנים</span><b class="num">'+money(T.ag)+'</b></div></div></div>';
-  h+='<div class="trio white" style="margin-bottom:12px"><div><span>התקבל החודש</span><b class="num" style="color:var(--jade)">'+money(T.recv)+'</b></div><div><span>עוד צפוי החודש</span><b class="num">'+money(Math.max(0,T.me-T.recv))+'</b></div><div><span>חוב מחודשים קודמים</span><b class="num" style="color:'+(T.arrears>0.5?'var(--red)':'var(--ink)')+'">'+money(T.arrears)+'</b></div></div>';
+  h+='<div class="trio white" style="margin-bottom:12px"><div><span>התקבל החודש</span><b class="num" style="color:var(--jade)">'+money(T.recv)+'</b></div><div><span>עוד צפוי החודש</span><b class="num">'+money(Math.max(0,T.me-T.recv-T.wv))+'</b></div><div><span>חוב מחודשים קודמים</span><b class="num" style="color:'+(T.arrears>0.5?'var(--red)':'var(--ink)')+'">'+money(T.arrears)+'</b></div></div>';
   if(T.late)h+='<div class="alert">⚠ '+T.late+(T.late===1?' אדם חייב':' אנשים חייבים')+' תשלום מחודשים קודמים</div>';
   h+='<div class="sec">לפי אדם</div>';
   list.forEach(function(x){var p=x.p,t=x.t;
@@ -650,6 +682,12 @@ function bioHelp(){
 }
 function bioReset(){try{localStorage.removeItem(KEY);localStorage.removeItem(PINKEY);localStorage.removeItem('yd2.auth')}catch(e){}D=blank();$('lock').hidden=true;go('more');toast('הנעילה הוסרה. התחבר לענן כדי להחזיר את הנתונים.')}
 function bioOff(){try{localStorage.removeItem(PINKEY)}catch(e){}toast('טביעת האצבע כובתה');render()}
+// lock again when the app comes back after more than a minute in the background
+var hiddenAt=0;
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='hidden'){hiddenAt=Date.now();return}
+  if(hiddenAt&&Date.now()-hiddenAt>60000&&bioId())lockNow();
+});
 function lockNow(){try{sessionStorage.removeItem(UNLOCK)}catch(e){}checkLock()}
 function checkLock(){var u=null;try{u=sessionStorage.getItem(UNLOCK)}catch(e){}if(bioId()&&!u){$('lock').hidden=false;drawLock();setTimeout(bioUnlock,250)}}
 
