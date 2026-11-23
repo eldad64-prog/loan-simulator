@@ -604,8 +604,13 @@ function renderPerson(pid){
   h+='</div>';
   h+='<div class="acts"><button class="btn sec2" onclick="openLoanSheet(null,\''+pid+'\')">+ הלוואה נוספת</button><button class="btn sec2" onclick="openPerson(\''+pid+'\')">עריכת פרטים</button></div>';
   if(ls.some(function(l){return !l.free}))h+='<div class="acts" style="grid-template-columns:1fr"><button class="btn dark" onclick="openTemp(\''+pid+'\')">הסדר זמני: הסוכן מתקשה לשלם</button></div>';
+  h+='<div class="acts" style="grid-template-columns:1fr;margin-top:22px"><button class="btn danger" onclick="askDelPerson(\''+pid+'\')">מחק את '+esc(p.name)+' וכל התיק</button></div>';
   $('view').innerHTML=h;
 }
+/* delete a person with every loan, payment and temporary arrangement of theirs (new app only) */
+function askDelPerson(pid){var p=person(pid),all=D.loans.filter(function(l){return l.personId===pid}),np=0;all.forEach(function(l){np+=(l.payments||[]).length});
+  openSheet('<h2>למחוק את '+esc(p.name)+'?</h2><div class="sub">יימחקו '+esc(p.name)+', '+all.length+' הלוואות ו-'+np+' תשלומים. אי אפשר להחזיר את זה. האפליקציה הישנה לא מושפעת.</div><div class="acts"><button class="btn danger" id="okDel">כן, למחוק הכל</button><button class="btn sec2" onclick="closeSheet()">ביטול</button></div>');
+  $('okDel').onclick=function(){D.loans=D.loans.filter(function(l){return l.personId!==pid});D.temps=(D.temps||[]).filter(function(x){return x.pid!==pid});D.people=D.people.filter(function(x){return x.id!==pid});closeSheet();save(true);toast('נמחק');go('home')}}
 
 /* ================= agent view: a clean Thai screen with only this person's loans; closing it locks the app ================= */
 var TM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
