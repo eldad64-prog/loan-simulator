@@ -1,113 +1,11 @@
 <!doctype html>
-<html lang="he" dir="rtl">
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#7c3aed">
-<title>ידידים</title>
-<style>
-  *{box-sizing:border-box}
-  body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#2a1d4a;
-    background:linear-gradient(160deg,#7c3aed 0%,#db2777 45%,#f97316 100%);background-attachment:fixed;overflow-x:hidden}
-  .blob{position:fixed;border-radius:50%;opacity:.25;filter:blur(6px);pointer-events:none}
-  .b1{width:260px;height:260px;background:#fde047;top:-80px;left:-70px}
-  .b2{width:200px;height:200px;background:#22d3ee;bottom:-60px;right:-50px}
-  .b3{width:120px;height:120px;background:#a7f3d0;top:45%;right:-30px}
-  .wrap{position:relative;max-width:520px;margin:0 auto;padding:44px 18px 40px}
-  .hello{text-align:center;color:#fff}
-  .hello .emoji{font-size:56px;line-height:1;display:inline-block;animation:bob 2.4s ease-in-out infinite}
-  h1{font-size:34px;margin:10px 0 4px;text-shadow:0 3px 14px rgba(0,0,0,.2)}
-  .sub{margin:0 0 30px;font-size:18px;color:#fff3e0}
-  .choice{display:flex;align-items:center;gap:16px;width:100%;margin:0 0 16px;padding:18px 18px;border:0;border-radius:24px;
-    background:#fff;color:#2a1d4a;text-decoration:none;box-shadow:0 10px 0 rgba(0,0,0,.12),0 14px 30px rgba(0,0,0,.18);
-    transition:transform .12s ease,box-shadow .12s ease}
-  .choice:active{transform:translateY(6px);box-shadow:0 4px 0 rgba(0,0,0,.12)}
-  .ico{flex:0 0 64px;height:64px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff}
-  .agents .ico{background:linear-gradient(135deg,#22c55e,#06b6d4)}
-  .manager .ico{background:linear-gradient(135deg,#f59e0b,#ef4444)}
-  .txt{text-align:right;flex:1}
-  .txt b{display:block;font-size:22px;margin-bottom:2px}
-  .txt small{color:#6b5b8a;font-size:15px}
-  .arrow{font-size:26px;color:#c4b5fd}
-  .stars{text-align:center;margin-top:26px;color:#fff;font-size:20px;letter-spacing:6px}
-  @keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-8px) rotate(4deg)}}
-  @media (max-width:380px){h1{font-size:28px}.ico{flex-basis:54px;height:54px;font-size:26px}}
-</style>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="refresh" content="0; url=../yedidim/">
+<title>Rings Sport</title>
+<script>location.replace('../yedidim/');</script>
 </head>
-<body>
-<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
-<div class="wrap">
-  <div class="hello">
-    <div class="emoji">🎉</div>
-    <h1>ברוך הבא לידידים!</h1>
-    <p class="sub">איך נתחיל היום? בחר כניסה</p>
-  </div>
-  <a class="choice agents" href="./agent.html">
-    <span class="ico">👩‍💼</span>
-    <span class="txt"><b>ניהול סוכנים</b><small>הלקוחות שלך במקום אחד: הוספה והסרה</small></span>
-    <span class="arrow">‹</span>
-  </a>
-  <a class="choice manager" href="./manager.html" id="mgrLink">
-    <span class="ico">🛠</span>
-    <span class="txt"><b>ניהול מנהל</b><small>כל המערכת: סוכנים, הלוואות, עמלות וקופה</small></span>
-    <span class="arrow">‹</span>
-  </a>
-  <div class="stars">✨ ⭐ ✨</div>
-</div>
-<script>
-// קישור כניסה לענן (מהמייל) חוזר לכאן עם האישור בכתובת: מעבירים אותו לדף הניהול שקורא אותו
-if(location.hash.indexOf("access_token=")>-1){ try{ sessionStorage.setItem("loan_bio_ok","1"); }catch(e){} location.replace("./manager.html" + location.hash); }
-// "ניהול מנהל": קופצת דרישת טביעת אצבע מיד, ואחריה נפתח מסך הניהול ישירות
-(function(){
-  function b64ToBytes(s){ s=s.replace(/-/g,"+").replace(/_/g,"/"); while(s.length%4) s+="="; const bin=atob(s), out=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) out[i]=bin.charCodeAt(i); return out; }
-  const link = document.getElementById("mgrLink");
-  if(!link) return;
-  async function pinHash(pin, saltB64){
-    const enc = new TextEncoder();
-    const key = await crypto.subtle.importKey("raw", enc.encode(pin), "PBKDF2", false, ["deriveBits"]);
-    const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", salt: b64ToBytes(saltB64), iterations: 200000, hash: "SHA-256" }, key, 256);
-    let s = btoa(String.fromCharCode(...new Uint8Array(bits))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    return s;
-  }
-  // אימות בקוד 4 ספרות: 3 ניסיונות ואז נעילה (אותם מפתחות כמו בדף הניהול)
-  async function askPin(){
-    const stored = localStorage.getItem("loan_pin_hash"), salt = localStorage.getItem("loan_pin_salt");
-    if(!stored || !salt) return false;
-    const lock = Number(localStorage.getItem("loan_pin_lock") || 0);
-    if(lock && Date.now() < lock){ alert("נעול זמנית. נסה שוב מאוחר יותר."); return false; }
-    for(let i = 0; i < 3; i++){
-      const pin = (prompt("הזן קוד 4 ספרות:") || "").trim();
-      if(!pin) return false;
-      if(/^\d{4}$/.test(pin) && (await pinHash(pin, salt)) === stored){
-        localStorage.removeItem("loan_pin_fails"); localStorage.removeItem("loan_pin_lock");
-        return true;
-      }
-    }
-    localStorage.setItem("loan_pin_lock", String(Date.now() + 5 * 60 * 1000));
-    alert("יותר מדי ניסיונות. נעול ל-5 דקות.");
-    return false;
-  }
-  link.addEventListener("click", async function(e){
-    e.preventDefault();
-    let ok = false;
-    const id = localStorage.getItem("loan_passkey_id");
-    if(id && window.PublicKeyCredential && navigator.credentials && window.isSecureContext){
-      try{
-        const challenge = new Uint8Array(32); crypto.getRandomValues(challenge);
-        const credential = await navigator.credentials.get({ publicKey: {
-          challenge: challenge, rpId: location.hostname,
-          allowCredentials: [{ type: "public-key", id: b64ToBytes(id) }],
-          userVerification: "required", timeout: 60000 } });
-        ok = !!credential;
-      }catch(err){ ok = false; }
-    }
-    if(!ok) ok = await askPin();
-    if(ok){
-      sessionStorage.setItem("loan_bio_ok", "1");
-    }
-    location.href = "./manager.html";
-  });
-})();
-</script>
-</body>
+<body><p><a href="../yedidim/">Open</a></p></body>
 </html>
